@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SWMS Douala Pro - Administration Grande Échelle</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;800&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --blue: #00d2ff;
+            --green: #39ff14;
+            --red: #ff3131;
+            --orange: #ff9100;
+            --bg: #05070a;
+            --card-bg: #0f172a;
+            --citizen-purple: #bc13fe; 
+        }
+
+        body {
+            background: var(--bg);
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+
+        #alert-popup-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .critical-pop {
+            background: var(--red);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-family: 'Orbitron';
+            font-weight: 800;
+            border: 2px solid white;
+            box-shadow: 0 0 20px rgba(255, 49, 49, 0.8);
+            animation: popBlink 1s infinite alternate;
+            text-transform: uppercase;
+        }
+
+        .repair-status {
+            font-size: 0.65rem;
+            color: var(--orange);
+            background: rgba(255, 145, 0, 0.1);
+            padding: 2px 6px;
+            border: 1px solid var(--orange);
+            border-radius: 4px;
+            font-weight: bold;
+            display: inline-block;
+            margin-left: 10px;
+            animation: pulseRepair 1.5s infinite;
+        }
+
+        @keyframes pulseRepair {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes popBlink {
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0.7; transform: scale(1.05); }
+        }
+
+        @keyframes urgentBlink {
+            0% { background: var(--red); box-shadow: 0 0 5px var(--red); }
+            100% { background: transparent; box-shadow: 0 0 15px var(--red); }
+        }
+
+        .blink-btn {
+            background: var(--red);
+            color: white;
+            border: none;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            cursor: pointer;
+            animation: urgentBlink 0.6s infinite alternate;
+            margin-left: 8px;
+            font-family: 'Orbitron';
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px;
+            margin-bottom: 30px;
+            background: linear-gradient(180deg, rgba(0, 210, 255, 0.08) 0%, transparent 100%);
+            border-radius: 15px;
+            border: 1px solid rgba(0, 210, 255, 0.2);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .title-wrapper { flex-grow: 1; text-align: center; }
+
+        h1 {
+            font-family: 'Orbitron';
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            background: linear-gradient(to right, #00d2ff, #39ff14);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 12px rgba(0, 210, 255, 0.5));
+            margin: 0;
+            line-height: 1.1;
+        }
+
+        h1 small {
+            display: block;
+            font-size: 0.5em;
+            letter-spacing: 5px;
+            color: #94a3b8;
+            -webkit-text-fill-color: #94a3b8;
+            margin-top: 8px;
+        }
+
+        #clock {
+            font-family: 'Orbitron';
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--green);
+            text-shadow: 0 0 15px rgba(57, 255, 20, 0.4);
+            border: 1px solid rgba(57, 255, 20, 0.3);
+            padding: 12px 25px;
+            border-radius: 10px;
+            background: rgba(57, 255, 20, 0.03);
+            min-width: 140px;
+            text-align: center;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border-left: 4px solid var(--blue);
+        }
+
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .control-group { display: flex; gap: 10px; align-items: center; }
+
+        .search-container { position: relative; display: flex; align-items: center; }
+        .search-container input { padding-left: 35px; }
+        .search-icon { position: absolute; left: 10px; color: #94a3b8; pointer-events: none; }
+
+        input, select { 
+            padding: 8px; 
+            border-radius: 5px; 
+            border: 1px solid #334155; 
+            background: #1e293b; 
+            color: white; 
+            font-family: 'Rajdhani';
+            width: 100%;
+        }
+
+        button {
+            padding: 8px 15px;
+            border: 1px solid var(--blue);
+            background: rgba(0, 210, 255, 0.1);
+            color: var(--blue);
+            cursor: pointer;
+            font-family: 'Rajdhani';
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        button:hover { background: var(--blue); color: black; }
+
+        .btn-refresh { border-color: var(--blue); font-family: 'Orbitron'; font-size: 0.8rem; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: var(--card-bg); border-radius: 8px; overflow: hidden; }
+        th { background: #1e293b; color: var(--blue); text-transform: uppercase; font-size: 0.8rem; padding: 12px; }
+        td { padding: 12px; text-align: left; border-bottom: 1px solid #1e293b; }
+
+        .progress-bar { height: 8px; background: #222; border-radius: 4px; overflow: hidden; margin-top: 5px; }
+        .progress-fill { height: 100%; transition: width 0.5s; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 25px;
+            width: 95%;
+            max-width: 1250px;
+            border-radius: 15px;
+            border: 1px solid var(--blue);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .status-pill { padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+        
+        .notif { position: fixed; bottom: 100px; right: 20px; z-index: 2000; }
+        .toast { background: #1e293b; border-left: 4px solid var(--blue); color: white; padding: 12px 20px; border-radius: 5px; margin-top: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        
+        .btn-delete {
+            border-color: var(--red);
+            color: var(--red);
+            font-size: 1.1rem;
+            padding: 4px 10px;
+            line-height: 1;
+        }
+        .btn-delete:hover { background: var(--red); color: white; }
+
+        .msg-badge { background: var(--red); color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.6rem; position: absolute; top: -5px; right: -5px; }
+        .msg-item { border-left: 3px solid var(--citizen-purple); background: rgba(188, 19, 254, 0.05); padding: 10px; margin-bottom: 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+    </style>
+</head>
+<body>
+
+<div id="alert-popup-container"></div>
+
+<header>
+    <div class="title-wrapper">
+        <h1>DOUALA WASTE COMMAND CENTER <small>UNITÉ DE RÉPONSE RAPIDE ET COORDINATION URBAINE</small></h1>
+    </div>
+    <div id="clock">--:--:--</div>
+</header>
+
+<div class="stats">
+    <div class="card">Moyenne Remplissage (Unités Actives)<h2 id="avg">0%</h2></div>
+    <div class="card">Alertes Critiques (Online)<h2 id="alerts" style="color: var(--red);">0</h2></div>
+    <div class="card" style="border-left-color: var(--citizen-purple); position: relative;">
+        Signalements Citoyens
+        <h2 id="citCount" style="color: var(--citizen-purple);">0</h2>
+    </div>
+</div>
+
+<div class="controls-bar">
+    <div class="control-group">
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" placeholder="Rechercher un quartier..." oninput="search=this.value;render()">
+        </div>
+        <button class="btn-refresh" onclick="manualRefresh()">🔄 ACTUALISER</button>
+    </div>
+    <div class="control-group">
+        <button onclick="setFilter('ALL')">TOUS</button>
+        <button onclick="setFilter('URGENT')" style="border-color: var(--red);">URGENT</button>
+        <button onclick="openEnrollModal()" style="border-color: var(--green); color: var(--green);">＋ ENRÔLER POUBELLE</button>
+        <button onclick="if(confirm('Reset total?')){localStorage.clear();location.reload();}" style="border-color:#555; font-size:0.7rem; color:#aaa;">RESET DB</button>
+    </div>
+    <div class="control-group">
+        <button onclick="openMap()">🗺️ CARTE</button>
+        <button onclick="openCitizenInbox()" style="border-color: var(--citizen-purple); color: var(--citizen-purple); position: relative;">
+            📩 MESSAGES <span id="msgNew" class="msg-badge" style="display:none;">!</span>
+        </button>
+        <button onclick="openCitizenPortal()" style="background: var(--citizen-purple); color: white; border: none;">📢 PORTAIL CITOYEN</button>
+    </div>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID Quartier</th>
+            <th>Quartier</th>
+            <th>Remplissage (%)</th>
+            <th>Unités (Online/Total)</th>
+            <th>Bacs Pleins</th>
+            <th>État Global</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody id="mainBody"></tbody>
+</table>
+
+<h2 style="font-family: Orbitron; margin-top:30px; color: var(--blue); font-size: 1.2rem;">📊 ANALYSE PAR SECTEUR (Bâtons)</h2>
+<canvas id="chart" style="max-height: 250px;"></canvas>
+
+<div class="modal" id="citizenInboxModal">
+    <div class="modal-content" style="max-width: 600px;">
+        <h2 style="font-family: Orbitron; color: var(--citizen-purple);">INBOX : SIGNALEMENTS PUBLICS</h2>
+        <div id="citizenInboxBody" style="margin-top:20px;">
+            <p style="color: #64748b; text-align: center;">Aucun message en attente.</p>
+        </div>
+        <br>
+        <button onclick="closeCitizenInbox()">FERMER L'INBOX</button>
+    </div>
+</div>
+
+<div class="modal" id="citizenPortalModal">
+    <div class="modal-content" style="max-width: 500px; border-color: var(--citizen-purple);">
+        <h2 style="font-family: Orbitron; color: var(--citizen-purple);">SIGNALER UN DÉBORDEMENT</h2>
+        <p style="font-size: 0.9rem; color: #94a3b8;">Aidez-nous à identifier les zones critiques non équipées de capteurs.</p>
+        <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+            <input type="text" id="citName" placeholder="Votre nom">
+            <select id="citQuartier">
+                <option value="Akwa">Akwa</option>
+                <option value="New Bell">New Bell</option>
+                <option value="Deido">Deido</option>
+                <option value="Bonabéri">Bonabéri</option>
+                <option value="Ndokoti">Ndokoti</option>
+                <option value="Logpom">Logpom</option>
+                <option value="Village">Village</option>
+            </select>
+            <input type="text" id="citLoc" placeholder="Localisation précise (ex: Face Cinéma Abbia)">
+            <select id="citLvl">
+                <option value="Critique">Poubelle qui déborde</option>
+                <option value="Urgent">Dépôt sauvage d'ordures</option>
+            </select>
+            <button onclick="submitCitizenReport()" style="background: var(--citizen-purple); color: white; border: none; padding: 12px;">ENVOYER L'ALERTE</button>
+        </div>
+        <br>
+        <button onclick="closeCitizenPortal()" style="border-color: #555; color: #555;">ANNULER</button>
+    </div>
+</div>
+
+<div class="modal" id="detailsModal">
+    <div class="modal-content">
+        <h2 id="modalTitle" style="font-family: Orbitron; color: var(--blue);"></h2>
+        <table style="font-size: 0.85rem;">
+            <thead>
+                <tr>
+                    <th>ID UNITÉ</th>
+                    <th>LOCALISATION </th>
+                    <th>REMPLISSAGE</th>
+                    <th>ÉTAT COUVERCLE</th>
+                    <th>STATUT</th>
+                    <th>RÉSEAU</th>
+                    <th>BATTERIE</th>
+                    <th>DERNIÈRE ACTIVITÉ</th>
+                    <th>ALERTE</th>
+                    <th>ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody id="modalTableBody"></tbody>
+        </table><br>
+        <button onclick="closeModal()">RETOUR AU TABLEAU DE BORD</button>
+    </div>
+</div>
+
+<div class="modal" id="enrollModal">
+    <div class="modal-content" style="max-width: 500px;">
+        <h2 style="font-family: Orbitron; color: var(--green);">ENRÔLEMENT CAPTEUR</h2>
+        <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+            <label>1. Arrondissement</label>
+            <select id="selArr" onchange="updateSelMairie()"></select>
+            <label>2. Mairie de Secteur</label>
+            <select id="selMairie" onchange="updateSelQuartier()"></select>
+            <label>3. Quartier & Points</label>
+            <select id="newBinQuartier"></select>
+            <input type="text" id="newBinId" placeholder="ID du Capteur (Ex: DOU-105)">
+            <input type="text" id="newBinLoc" placeholder="Détail Localisation (Ex: Face Boulangerie)">
+        </div>
+        <br>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="saveNewBin()" style="flex:1; background: var(--green); color: black;">VALIDER</button>
+            <button onclick="closeEnrollModal()" style="flex:1; border-color: #555; color: #555;">ANNULER</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="mapModal">
+    <div class="modal-content" style="width:90%;">
+        <h2 style="font-family: Orbitron;">PLAN DE RAMASSAGE - DOUALA</h2>
+        <div id="bigMap" style="height: 450px; width: 100%; border-radius: 10px; background: #111; border: 1px solid var(--blue);"></div><br>
+        <button onclick="closeMap()">FERMER LA CARTE</button>
+    </div>
+</div>
+
+<div class="notif" id="notifContainer"></div>
+
+<script>
+const firebaseConfig = {
+    databaseURL: "https://douala-clean-default-rtdb.firebaseio.com"
+};
+firebase.initializeApp(firebaseConfig);
+const db_online = firebase.database();
+
+const doualaGeo = {
+    "Douala 1er": { mairies: ["Mairie de Bonanjo", "CUD (Direction)"], quartiers: ["Bonanjo - Poste", "Akwa - Palais Dika", "Bali - Koumassi", "Deido - Rond Point"] },
+    "Douala 2e": { mairies: ["Mairie de New Bell"], quartiers: ["New Bell - Marché", "Nkololoun - Rail", "Babylone", "Nylon - Tergal"] },
+    "Douala 3e": { mairies: ["Mairie de Logbaba"], quartiers: ["Ndokoti - Tunnel", "Logbaba - Magzi", "Village - Jumeaux", "Nyalla - Rail"] },
+    "Douala 4e": { mairies: ["Mairie de Bonabéri"], quartiers: ["Bonassama - Pont", "Mabanda - Grand Marché", "Sodiko", "Boquette"] },
+    "Douala 5e": { mairies: ["Mairie de Kotto"], quartiers: ["Bonamoussadi - Bijou", "Logpom - Bassong", "Kotto - Santa Lucia", "Makepe - Rhône-Poulenc"] }
+};
+
+const pointTemplate = ["Marché", "Station-Service", "Supermarché", "Pharmacie", "École", "Hôpital", "Carrefour Principal", "Entrée Rue", "Mairie de Zone", "Stade de proximité", "Boulangerie", "Poste de Police"];
+
+const configurationDouala = [
+    { nom: "Bonanjo", lat: 4.044, lng: 9.684, points: pointTemplate.map(p => p + " Bonanjo") },
+    { nom: "Akwa", lat: 4.050, lng: 9.700, points: pointTemplate.map(p => p + " Akwa") },
+    { nom: "New Bell", lat: 4.035, lng: 9.715, points: pointTemplate.map(p => p + " New Bell") },
+    { nom: "Ndokoti", lat: 4.048, lng: 9.742, points: pointTemplate.map(p => p + " Ndokoti") },
+    { nom: "Bonamoussadi", lat: 4.085, lng: 9.735, points: pointTemplate.map(p => p + " Bonamoussadi") },
+    { nom: "Deido", lat: 4.062, lng: 9.702, points: pointTemplate.map(p => p + " Deido") },
+    { nom: "Logpom", lat: 4.095, lng: 9.750, points: pointTemplate.map(p => p + " Logpom") },
+    { nom: "Village", lat: 4.020, lng: 9.770, points: pointTemplate.map(p => p + " Village") },
+    { nom: "Logbaba", lat: 4.040, lng: 9.760, points: pointTemplate.map(p => p + " Logbaba") },
+    { nom: "Bonabéri", lat: 4.075, lng: 9.670, points: pointTemplate.map(p => p + " Bonabéri") }
+];
+
+let filter = "ALL", search = "";
+let map, markers = [];
+let citizenReports = []; 
+
+function persist() { 
+    localStorage.setItem('DOUALA_DB', JSON.stringify(db)); 
+}
+
+let db = localStorage.getItem('DOUALA_DB') ? JSON.parse(localStorage.getItem('DOUALA_DB')) : configurationDouala.map((q, idx) => ({
+    id: "Q-" + (idx + 1).toString().padStart(3, '0'),
+    nom: q.nom, lat: q.lat, lng: q.lng,
+    units: q.points.map((pt, i) => ({
+        id: q.nom.slice(0, 3).toUpperCase() + "-" + (100 + i),
+        loc: pt, lvl: Math.random() * 40, bat: 100, online: true, lidOpen: false,
+        lastUpdate: new Date().toLocaleString('fr-FR')
+    }))
+}));
+
+const alertCooldowns = {};
+
+db_online.ref('reports').on('value', (snapshot) => {
+    const data = snapshot.val();
+    citizenReports = data ? Object.entries(data).map(([key, val]) => ({...val, firebaseId: key})).reverse() : [];
+    updateCitizenInboxUI();
+    
+    if(citizenReports.length > 0 && citizenReports[0].status === "En attente") {
+        document.getElementById("msgNew").style.display = "block";
+    }
+});
+
+function openCitizenPortal() { document.getElementById("citizenPortalModal").style.display = "flex"; }
+function closeCitizenPortal() { document.getElementById("citizenPortalModal").style.display = "none"; }
+function openCitizenInbox() { 
+    document.getElementById("citizenInboxModal").style.display = "flex"; 
+    document.getElementById("msgNew").style.display = "none";
+}
+function closeCitizenInbox() { document.getElementById("citizenInboxModal").style.display = "none"; }
+
+function submitCitizenReport() {
+    const name = document.getElementById("citName").value;
+    const loc = document.getElementById("citLoc").value;
+    const q = document.getElementById("citQuartier").value;
+    const type = document.getElementById("citLvl").value;
+
+    if(!name || !loc) return alert("Veuillez remplir les informations.");
+
+    const report = {
+        id: Date.now(),
+        name, loc, q, type,
+        time: new Date().toLocaleTimeString(),
+        status: "En attente"
+    };
+
+    db_online.ref('reports/' + report.id).set(report)
+    .then(() => {
+        closeCitizenPortal();
+        notify(`🔔 Signalement envoyé au cloud pour ${q}`);
+    });
+}
+
+function updateCitizenInboxUI() {
+    const body = document.getElementById("citizenInboxBody");
+    const count = citizenReports.filter(r => r.status === "En attente").length;
+    document.getElementById("citCount").innerText = count;
+    
+    if(citizenReports.length === 0) {
+        body.innerHTML = `<p style="color: #64748b; text-align: center;">Aucun message en attente.</p>`;
+        return;
+    }
+
+    body.innerHTML = citizenReports.map(r => `
+        <div class="msg-item" style="opacity: ${r.status === 'Traité' ? 0.5 : 1}">
+            <div>
+                <b style="color:var(--citizen-purple)">${r.name}</b> (${r.time})<br>
+                <small>📍 ${r.loc} [${r.q}]</small><br>
+                <span style="font-size:0.7rem; color:var(--orange)">PROBLÈME: ${r.type}</span>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                ${r.status === 'En attente' ? 
+                `<button onclick="processCitizenReport('${r.firebaseId}')" style="font-size:0.6rem; border-color:var(--green); color:var(--green);">DEPLOYER UNE  EQUIPE</button>` : 
+                `<span style="color:var(--green); font-size:0.7rem; font-weight:bold;">TRAITÉ ✓</span>`}
+                <button onclick="deleteCitizenReport('${r.firebaseId}')" style="background:none; border:none; color:var(--red); cursor:pointer; font-size:1.1rem;">🗑️</button>
+            </div>
+        </div>
+    `).join("");
+}
+
+function processCitizenReport(id) {
+    db_online.ref('reports/' + id).update({ status: "Traité" })
+    .then(() => { notify("Action enregistrée."); });
+}
+
+function deleteCitizenReport(id) {
+    if(confirm("Supprimer définitivement ce signalement ?")) {
+        db_online.ref('reports/' + id).remove()
+        .then(() => { notify("Signalement supprimé du cloud."); });
+    }
+}
+
+function triggerCriticalPop(nomQuartier, count) {
+    const container = document.getElementById("alert-popup-container");
+    const id = "pop-" + nomQuartier;
+    if (document.getElementById(id)) return; 
+    const pop = document.createElement("div");
+    pop.id = id;
+    pop.className = "critical-pop";
+    pop.innerText = `URGENT : ${nomQuartier} (${count} BACS PLEINS)`;
+    container.appendChild(pop);
+    setTimeout(() => { if (pop) pop.remove(); }, 5000);
+}
+
+function getStatusInfo(lvl, online) {
+    if (!online) return { txt: "HORS-LIGNE", color: "#555", alert: "MAINTENANCE" };
+    if (lvl > 90) return { txt: "BLOQUÉ (PLEIN)", color: "#ff3131", alert: "URGENT" };
+    if (lvl > 70) return { txt: "ATTENTION", color: "#ff9100", alert: "ATTENTION" };
+    if (lvl > 40) return { txt: "MOYEN", color: "#00d2ff", alert: "OK" };
+    return { txt: "OPTIMAL", color: "#39ff14", alert: "OK" };
+}
+
+function render() {
+    const body = document.getElementById("mainBody");
+    body.innerHTML = "";
+    let totalLvlCity = 0, totalBatCity = 0, activeUnitsCity = 0, globalAlerts = 0;
+    const NOW = Date.now();
+
+    db.forEach(q => {
+        if (!q.nom.toLowerCase().includes(search.toLowerCase())) return;
+        const onlineUnits = q.units.filter(u => u.online);
+        const offlineUnits = q.units.filter(u => !u.online);
+        let avgLvl = onlineUnits.length > 0 ? onlineUnits.reduce((a, b) => a + b.lvl, 0) / onlineUnits.length : 0;
+        let avgBat = q.units.reduce((a, b) => a + b.bat, 0) / q.units.length;
+        let fullBins = onlineUnits.filter(u => u.lvl > 90).length; 
+        
+        if (fullBins >= 3 && (!alertCooldowns[q.nom] || (NOW - alertCooldowns[q.nom] > 300000))) {
+            triggerCriticalPop(q.nom, fullBins);
+            alertCooldowns[q.nom] = NOW;
+        }
+
+        let s = getStatusInfo(avgLvl, onlineUnits.length > 0);
+        if (filter !== "ALL" && s.alert !== filter) return;
+        globalAlerts += fullBins;
+        if (onlineUnits.length > 0) { totalLvlCity += onlineUnits.reduce((a, b) => a + b.lvl, 0); activeUnitsCity += onlineUnits.length; }
+        totalBatCity += avgBat;
+
+        const alertBadge = fullBins > 0 ? `<button class="blink-btn" onclick="openModal('${q.nom}')">VIDER</button>` : "";
+        const repairBadge = offlineUnits.length > 0 ? `<span class="repair-status">🛠️ PANNE RÉSEAU (${offlineUnits.length})</span>` : "";
+
+        body.innerHTML += `<tr>
+            <td style="color:var(--blue); font-weight:bold;">${q.id}</td>
+            <td style="font-weight:bold;">${q.nom} ${repairBadge}</td>
+            <td>${onlineUnits.length > 0 ? avgLvl.toFixed(1) + '%' : '<span style="color:#555">SIGNAL GELÉ</span>'}
+                <div class="progress-bar"><div class="progress-fill" style="width:${avgLvl}%; background:${onlineUnits.length > 0 ? s.color : '#334155'}"></div></div>
+            </td>
+            <td>${onlineUnits.length} / ${q.units.length}</td>
+            <td style="color:${fullBins > 0 ? 'var(--red)' : 'white'}; font-weight:bold;">${fullBins} ${alertBadge}</td>
+            <td><span class="status-pill" style="border:1px solid ${s.color}; color:${s.color}">${s.txt}</span></td>
+            <td><button onclick="openModal('${q.nom}')">GÉRER LES UNITÉS</button></td>
+        </tr>`;
+    });
+
+    document.getElementById("avg").innerText = activeUnitsCity > 0 ? (totalLvlCity / activeUnitsCity).toFixed(1) + "%" : "---";
+    document.getElementById("alerts").innerText = globalAlerts;
+}
+
+function simulate() {
+    db.forEach(q => {
+        q.units.forEach(u => {
+            if (Math.random() > 0.99) { u.online = !u.online; if(!u.online) notify(`📡 SIGNAL PERDU : ${u.id}`); }
+            if(u.online) {
+                if (u.lvl < 91) { u.lvl = Math.max(0, Math.min(100, u.lvl + (Math.random() * 6))); }
+                u.bat = Math.max(5, u.bat - 0.05);
+                u.lastUpdate = new Date().toLocaleString('fr-FR');
+                if (u.lvl > 90) { u.lidOpen = false; } else { u.lidOpen = Math.random() > 0.8; }
+            }
+        });
+    });
+    persist(); 
+    render(); updateGraph();
+}
+
+function openMap() {
+    document.getElementById("mapModal").style.display = "flex";
+    if (!map) {
+        map = L.map('bigMap').setView([4.0511, 9.7679], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    }
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+    db.forEach(q => {
+        const onlineUnits = q.units.filter(u => u.online);
+        const avg = onlineUnits.length > 0 ? onlineUnits.reduce((a,b)=> a+b.lvl,0)/onlineUnits.length : 0;
+        let color = avg > 90 ? 'red' : (avg > 70 ? 'orange' : 'cyan');
+        const m = L.circleMarker([q.lat, q.lng], { radius: 12, fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.8 }).addTo(map).bindPopup(`<b>${q.nom}</b><br>Remplissage: ${avg.toFixed(1)}%`);
+        markers.push(m);
+    });
+}
+function closeMap() { document.getElementById("mapModal").style.display = "none"; }
+
+function openModal(nomQuartier) {
+    let q = db.find(x => x.nom == nomQuartier);
+    document.getElementById("modalTitle").innerText = `LOGS UNITÉS : ${nomQuartier.toUpperCase()}`;
+    const tableBody = document.getElementById("modalTableBody");
+    tableBody.innerHTML = "";
+    q.units.forEach(u => {
+        let s = getStatusInfo(u.lvl, u.online);
+        let lidStatus = u.lvl > 90 ? `<span style="color:var(--red); font-weight:bold;">🔒 VERROUILLÉ</span>` : (u.lidOpen ? `<span style="color:var(--green);">OUVERT</span>` : `<span style="color:#aaa;">FERMÉ</span>`);
+        tableBody.innerHTML += `<tr>
+            <td style="color:var(--blue); font-weight:600;">${u.id}</td>
+            <td>📍 ${u.loc}</td>
+            <td>${u.online ? u.lvl.toFixed(1) + '%' : '--'}</td>
+            <td>${lidStatus}</td>
+            <td style="color:${s.color}">${s.txt}</td>
+            <td style="color:${u.online ? 'var(--green)' : 'var(--red)'}">${u.online ? 'CONNECTÉ' : 'DÉCONNECTÉ'}</td>
+            <td>${u.bat.toFixed(0)}%</td>
+            <td style="font-size:0.75rem;">${u.lastUpdate}</td>
+            <td><span class="status-pill" style="border:1px solid ${s.color}">${s.alert}</span></td>
+            <td><button class="btn-delete" onclick="deleteBin('${nomQuartier}', '${u.id}')">🗑️</button></td>
+        </tr>`;
+    });
+    document.getElementById("detailsModal").style.display = "flex";
+}
+
+function saveNewBin() {
+    const id = document.getElementById("newBinId").value.trim().toUpperCase();
+    const detailLoc = document.getElementById("newBinLoc").value.trim();
+    const qPoint = document.getElementById("newBinQuartier").value;
+    if(!id || !detailLoc) return alert("Veuillez remplir les informations.");
+    let quartierRacine = qPoint.split(" - ")[0];
+    let qObj = db.find(x => x.nom === quartierRacine);
+    qObj.units.push({ id, loc: qPoint + " (" + detailLoc + ")", lvl: 0, bat: 100, online: true, lidOpen: false, lastUpdate: new Date().toLocaleString('fr-FR') });
+    persist(); 
+    notify(`✅ Capteur ${id} installé`); closeEnrollModal(); render();
+}
+
+let chart = new Chart(document.getElementById("chart"), {
+    type: "bar",
+    data: { labels: db.map(q => q.nom), datasets: [{ label: "Niveau moyen (%)", data: db.map(q => 0), backgroundColor: 'rgba(0, 210, 255, 0.4)', borderColor: '#00d2ff', borderWidth: 1 }] },
+    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 }, x: { ticks: { color: "#fff", font: { size: 9 } } } } }
+});
+
+function updateGraph() {
+    chart.data.labels = db.map(q => q.nom);
+    chart.data.datasets[0].data = db.map(q => {
+        const on = q.units.filter(u => u.online);
+        return on.length > 0 ? (on.reduce((a,b)=>a+b.lvl,0)/on.length).toFixed(1) : 0;
+    });
+    chart.update();
+}
+
+function manualRefresh() { simulate(); notify("🔄 Rafraîchissement des flux IoT..."); }
+function notify(msg) {
+    const t = document.createElement("div"); t.className = "toast"; t.innerText = msg;
+    document.getElementById("notifContainer").appendChild(t);
+    setTimeout(() => t.remove(), 4000);
+}
+function closeModal() { document.getElementById("detailsModal").style.display = "none"; }
+function closeEnrollModal() { document.getElementById("enrollModal").style.display = "none"; }
+function setFilter(f) { filter = f; render(); }
+function openEnrollModal() {
+    document.getElementById("selArr").innerHTML = Object.keys(doualaGeo).map(a => `<option value="${a}">${a}</option>`).join("");
+    updateSelMairie(); document.getElementById("enrollModal").style.display = "flex";
+}
+function updateSelMairie() {
+    const arr = document.getElementById("selArr").value;
+    document.getElementById("selMairie").innerHTML = doualaGeo[arr].mairies.map(m => `<option value="${m}">${m}</option>`).join("");
+    updateSelQuartier();
+}
+function updateSelQuartier() {
+    const arr = document.getElementById("selArr").value;
+    document.getElementById("newBinQuartier").innerHTML = doualaGeo[arr].quartiers.map(q => `<option value="${q}">${q}</option>`).join("");
+}
+function deleteBin(qNom, id) {
+    if (confirm(`Confirmer la suppression ?`)) {
+        let q = db.find(x => x.nom === qNom);
+        q.units = q.units.filter(u => u.id !== id);
+        persist(); 
+        openModal(qNom); render();
+    }
+}
+
+setInterval(() => { document.getElementById("clock").innerText = new Date().toLocaleString('fr-FR'); }, 1000);
+setInterval(simulate, 6000);
+render(); updateGraph();
+</script>
+</body>
+</html>
