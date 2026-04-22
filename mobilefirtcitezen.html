@@ -14,6 +14,8 @@
             --citizen-purple: #bc13fe;
             --bg: #05070a;
             --card-bg: #0f172a;
+            --blue: #00d2ff;
+            --green: #39ff14;
         }
 
         body {
@@ -21,11 +23,11 @@
             color: white;
             font-family: 'Rajdhani', sans-serif;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            padding: 10px;
+            padding: 20px;
         }
 
         .container {
@@ -35,90 +37,82 @@
             border: 1px solid var(--citizen-purple);
             box-shadow: 0 0 20px rgba(188, 19, 254, 0.2);
             width: 100%;
-            max-width: 400px;
-        }
-
-        h1 {
-            font-family: 'Orbitron';
-            color: var(--citizen-purple);
-            font-size: 1.3rem;
-            text-align: center;
+            max-width: 450px;
             margin-bottom: 20px;
         }
 
+        h1 { font-family: 'Orbitron'; color: var(--citizen-purple); font-size: 1.3rem; text-align: center; margin-bottom: 20px; }
         .form-group { margin-bottom: 15px; }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 0.8rem;
-            color: #94a3b8;
-            text-transform: uppercase;
-            font-weight: bold;
+        label { display: block; margin-bottom: 5px; font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; font-weight: bold; }
+        
+        input, select, textarea { 
+            width: 100%; padding: 12px; border-radius: 5px; border: 1px solid #334155; 
+            background: #1e293b; color: white; box-sizing: border-box; font-family: 'Rajdhani'; font-size: 1rem;
         }
 
-        input, select {
-            width: 100%;
-            padding: 12px;
-            border-radius: 5px;
-            border: 1px solid #334155;
-            background: #1e293b;
-            color: white;
-            box-sizing: border-box;
-            font-family: 'Rajdhani';
-            font-size: 1rem;
-        }
-
-        /* Style spécifique pour le bouton photo */
         .photo-btn-wrapper {
-            background: rgba(188, 19, 254, 0.1);
-            border: 1px dashed var(--citizen-purple);
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.3s;
+            background: rgba(188, 19, 254, 0.1); border: 1px dashed var(--citizen-purple);
+            padding: 15px; border-radius: 5px; text-align: center; cursor: pointer;
         }
 
-        .photo-btn-wrapper:hover { background: rgba(188, 19, 254, 0.2); }
-
-        #photoPreview {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 5px;
-            margin-top: 10px;
-            display: none;
-            border: 1px solid var(--citizen-purple);
+        #galleryPreview { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 8px; 
+            margin-top: 10px; 
+        }
+        .img-thumb { 
+            width: 100%; height: 80px; object-fit: cover; border-radius: 5px; 
+            border: 1px solid var(--citizen-purple); 
+        }
+        .thumb-container { position: relative; }
+        .remove-badge {
+            position: absolute; top: -5px; right: -5px; background: red; color: white;
+            border-radius: 50%; width: 18px; height: 18px; font-size: 12px;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
         }
 
         button#sendBtn {
-            width: 100%;
-            padding: 15px;
-            background: var(--citizen-purple);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-family: 'Orbitron';
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-            margin-top: 10px;
+            width: 100%; padding: 15px; background: var(--citizen-purple); color: white; border: none;
+            border-radius: 5px; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; margin-top: 10px;
         }
-
         button#sendBtn:disabled { background: #444; cursor: not-allowed; }
 
-        .success-msg {
-            display: none;
-            color: #39ff14;
-            text-align: center;
-            margin-top: 15px;
-            font-weight: bold;
-            padding: 10px;
-            border: 1px solid #39ff14;
-            border-radius: 5px;
-            background: rgba(57, 255, 20, 0.1);
+        .tracking-section {
+            background: rgba(0, 0, 0, 0.4);
+            border-top: 2px solid var(--citizen-purple);
+            padding: 20px;
+            width: 100%;
+            max-width: 450px;
+            border-radius: 0 0 15px 15px;
         }
+
+        .track-item {
+            background: #1e293b;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            border-left: 4px solid var(--citizen-purple);
+            font-size: 0.9rem;
+        }
+
+        .status-pill {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        .status-en-attente { background: #444; color: #aaa; }
+        .status-vu { background: rgba(0, 210, 255, 0.2); color: var(--blue); border: 1px solid var(--blue); }
+        .status-traite { background: rgba(57, 255, 20, 0.2); color: var(--green); border: 1px solid var(--green); animation: pulse 1.5s infinite; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        
+        .success-msg { display: none; color: var(--green); text-align: center; padding: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -127,150 +121,231 @@
     <h1>📢 SIGNALEMENT CITOYEN</h1>
     
     <div class="form-group">
-        <label>Votre Nom</label>
+        <label>Votre Nom complet</label>
         <input type="text" id="citName" placeholder="Ex: Paul Atangana">
     </div>
 
     <div class="form-group">
+        <label>Numéro de Téléphone (9 chiffres)</label>
+        <input type="tel" id="citPhone" placeholder="Ex: 6xx xx xx xx" maxlength="9" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+    </div>
+
+    <div class="form-group">
         <label>Quartier de Douala</label>
-        <select id="citQuartier">
-            <option value="Akwa">Akwa</option>
-            <option value="New Bell">New Bell</option>
-            <option value="Deido">Deido</option>
-            <option value="Bonabéri">Bonabéri</option>
-            <option value="Ndokoti">Ndokoti</option>
-            <option value="Logpom">Logpom</option>
-            <option value="Village">Village</option>
-        </select>
+        <input list="quartiers-list" id="citQuartier" placeholder="Tapez le nom du quartier...">
+        <datalist id="quartiers-list"></datalist>
     </div>
 
     <div class="form-group">
         <label>Localisation précise</label>
-        <input type="text" id="citLoc" placeholder="Ex: Face Marché Central">
+        <input type="text" id="citLoc" placeholder="Ex: Face immeuble bleu">
     </div>
 
     <div class="form-group">
-        <label>Type de problème</label>
-        <select id="citLvl">
-            <option value="Poubelle qui déborde">Poubelle qui déborde</option>
-            <option value="Dépôt sauvage">Dépôt sauvage d'ordures</option>
-            <option value="Caniveau bouché">Caniveau bouché (Déchets)</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label>📸 PREUVE VISUELLE (OBLIGATOIRE)</label>
+        <label>📸 PHOTOS DU PROBLÈME</label>
         <div class="photo-btn-wrapper" onclick="document.getElementById('citPhoto').click()">
             <span id="photoStatusText">📷 CLIQUEZ POUR FILMER</span>
-            <input type="file" id="citPhoto" accept="image/*" capture="environment" style="display:none" onchange="handleFile(this)">
-            <img id="photoPreview">
+            <input type="file" id="citPhoto" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFiles(this)">
+            <div id="galleryPreview"></div>
         </div>
     </div>
 
     <button id="sendBtn" onclick="sendToDashboard()">ENVOYER L'ALERTE</button>
-    <div id="success" class="success-msg">✓ Alerte envoyée ! Merci pour votre civisme.</div>
+    <div id="success" class="success-msg">✓ Alerte transmise avec succès !</div>
+</div>
+
+<div class="tracking-section">
+    <h3 style="font-family: Orbitron; font-size: 0.9rem; color: var(--citizen-purple);">🔍 SUIVRE MES SIGNALEMENTS</h3>
+    <p style="font-size: 0.8rem; color: #94a3b8;">Entrez votre numéro pour voir la liste de vos alertes.</p>
+    <div style="display: flex; gap: 5px;">
+        <input type="tel" id="trackPhone" placeholder="Saisir vos 9 chiffres" maxlength="9" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="margin:0;">
+        <button id="trackBtn" onclick="checkMyReports()" style="background: var(--citizen-purple); border:none; color:white; padding: 0 15px; border-radius:5px; cursor:pointer;">OK</button>
+    </div>
+    <div id="trackResult"></div>
 </div>
 
 <script>
-    const firebaseConfig = {
-        databaseURL: "https://douala-clean-default-rtdb.firebaseio.com"
-    };
+    // Configuration Firebase
+    const firebaseConfig = { databaseURL: "https://douala-clean-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db_online = firebase.database();
 
-    let compressedImageBase64 = null;
+    // Liste des quartiers
+    const quartiersDouala = ["Akwa", "Bali", "Bonadjo", "Deido", "Bépanda", "New Bell", "Ndokoti", "Logbaba", "Village", "Bonabéri", "Bonamoussadi", "Kotto", "Logpom", "Makepe"];
+    const dataList = document.getElementById('quartiers-list');
+    quartiersDouala.sort().forEach(q => {
+        let option = document.createElement('option');
+        option.value = q;
+        dataList.appendChild(option);
+    });
 
-    // Fonction pour gérer la photo et afficher un aperçu
-    async function handleFile(input) {
-        const file = input.files[0];
-        if (!file) return;
+    let photosArray = [];
 
-        document.getElementById("photoStatusText").innerText = "⌛ Traitement de l'image...";
+    // Validation Cameroun (Commence par 6, 9 chiffres)
+    function isValidCamPhone(num) {
+        return /^6[256789][0-9]{7}$/.test(num);
+    }
+
+    // Gestion photos multiples
+    async function handleFiles(input) {
+        const files = Array.from(input.files);
+        if (files.length === 0) return;
         
-        // Compression de l'image (Canvas)
-        compressedImageBase64 = await compressImage(file);
+        document.getElementById("photoStatusText").innerText = "⌛ Traitement...";
         
-        // Affichage de l'aperçu
-        const preview = document.getElementById("photoPreview");
-        preview.src = compressedImageBase64;
-        preview.style.display = "block";
-        document.getElementById("photoStatusText").innerText = "✅ Image prête";
+        for (let file of files) {
+            if (photosArray.length >= 5) { 
+                alert("Maximum 5 photos autorisées."); 
+                break; 
+            }
+            const base64 = await compressImage(file);
+            photosArray.push(base64);
+        }
+        
+        renderGallery();
+        document.getElementById("photoStatusText").innerText = `✅ ${photosArray.length} photo(s) prête(s)`;
+    }
+
+    function renderGallery() {
+        const preview = document.getElementById("galleryPreview");
+        preview.innerHTML = "";
+        photosArray.forEach((src, index) => {
+            const container = document.createElement("div");
+            container.className = "thumb-container";
+            container.innerHTML = `
+                <img src="${src}" class="img-thumb">
+                <div class="remove-badge" onclick="removePhoto(${index}, event)">×</div>
+            `;
+            preview.appendChild(container);
+        });
+    }
+
+    function removePhoto(index, event) {
+        event.stopPropagation();
+        photosArray.splice(index, 1);
+        renderGallery();
+        document.getElementById("photoStatusText").innerText = photosArray.length > 0 ? `✅ ${photosArray.length} photo(s) prête(s)` : "📷 CLIQUEZ POUR FILMER";
     }
 
     function compressImage(file) {
         return new Promise((resolve) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
-            reader.onload = (event) => {
+            reader.onload = (e) => {
                 const img = new Image();
-                img.src = event.target.result;
+                img.src = e.target.result;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 500; // Taille optimale pour Firebase
-                    const scaleSize = MAX_WIDTH / img.width;
+                    const MAX_WIDTH = 600; // Un peu plus grand pour la clarté
                     canvas.width = MAX_WIDTH;
-                    canvas.height = img.height * scaleSize;
-                    
+                    canvas.height = img.height * (MAX_WIDTH / img.width);
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    resolve(canvas.toDataURL('image/jpeg', 0.7)); // Qualité 70%
+                    resolve(canvas.toDataURL('image/jpeg', 0.6)); // Compression 60% pour économiser la DB
                 };
             };
         });
     }
 
+    // Envoi avec Gestion d'erreur
     async function sendToDashboard() {
-        const name = document.getElementById("citName").value;
-        const loc = document.getElementById("citLoc").value;
-        const q = document.getElementById("citQuartier").value;
-        const type = document.getElementById("citLvl").value;
+        const name = document.getElementById("citName").value.trim();
+        const rawPhone = document.getElementById("citPhone").value.trim();
+        const q = document.getElementById("citQuartier").value.trim();
+        const loc = document.getElementById("citLoc").value.trim();
         const btn = document.getElementById("sendBtn");
 
-        if(!name || !loc || !compressedImageBase64) {
-            alert("Veuillez remplir tous les champs et prendre une photo.");
+        if (!isValidCamPhone(rawPhone)) {
+            alert("Veuillez entrer un numéro de téléphone valide (9 chiffres commençant par 6).");
             return;
         }
 
-        btn.disabled = true;
-        btn.innerText = "TRANSMISSION CLOUD...";
+        if(!name || !q || !loc || photosArray.length === 0) {
+            alert("Veuillez remplir tous les champs et ajouter au moins une photo.");
+            return;
+        }
 
-        const reportId = Date.now();
-        const newReport = {
-            id: reportId,
-            name: name,
-            loc: loc,
-            q: q,
-            type: type,
-            photo: compressedImageBase64, // Image compressée incluse
+        const phone = "+237" + rawPhone;
+        btn.disabled = true;
+        btn.innerText = "TRANSMISSION EN COURS...";
+
+        const id = Date.now();
+        const data = {
+            id, name, phone, q, loc, 
+            photos: photosArray,
+            status: "En attente",
             time: new Date().toLocaleTimeString('fr-FR'),
-            status: "En attente"
+            date: new Date().toLocaleDateString('fr-FR')
         };
 
-        db_online.ref('reports/' + reportId).set(newReport)
-        .then(() => {
+        try {
+            await db_online.ref('reports/' + id).set(data);
             document.getElementById("success").style.display = "block";
-            
-            // Reset Formulaire
-            document.getElementById("citName").value = "";
-            document.getElementById("citLoc").value = "";
-            document.getElementById("photoPreview").style.display = "none";
-            document.getElementById("photoStatusText").innerText = "📷 CLIQUEZ POUR FILMER";
-            compressedImageBase64 = null;
-
+            setTimeout(() => location.reload(), 2500);
+        } catch (error) {
+            alert("Erreur réseau : Impossible d'envoyer l'alerte. Vérifiez votre connexion.");
             btn.disabled = false;
-            btn.innerText = "ENVOYER L'ALERTE";
+            btn.innerText = "RÉESSAYER L'ENVOI";
+        }
+    }
 
-            setTimeout(() => {
-                document.getElementById("success").style.display = "none";
-            }, 5000);
-        })
-        .catch((error) => {
-            alert("Erreur réseau : " + error.message);
-            btn.disabled = false;
-            btn.innerText = "RÉESSAYER";
+    // Suivi et Suppression
+    function checkMyReports() {
+        const rawPhone = document.getElementById("trackPhone").value.trim();
+        const resultDiv = document.getElementById("trackResult");
+        const trackBtn = document.getElementById("trackBtn");
+        
+        if (rawPhone.length !== 9) {
+            alert("Veuillez entrer les 9 chiffres de votre numéro.");
+            return;
+        }
+
+        const finalPhone = "+237" + rawPhone;
+        resultDiv.innerHTML = "<p style='font-size:0.8rem; color:var(--citizen-purple);'>⌛ Recherche dans la base...</p>";
+        trackBtn.disabled = true;
+
+        db_online.ref('reports').orderByChild('phone').equalTo(finalPhone).once('value', (snapshot) => {
+            trackBtn.disabled = false;
+            const data = snapshot.val();
+            if(!data) {
+                resultDiv.innerHTML = "<p style='color:#ff4444; font-size:0.8rem; margin-top:10px;'>Aucun signalement trouvé pour le " + finalPhone + ".</p>";
+                return;
+            }
+
+            let html = "";
+            Object.entries(data).reverse().forEach(([dbKey, r]) => {
+                let statusClass = "status-en-attente";
+                if(r.status.includes("Vu")) statusClass = "status-vu";
+                if(r.status.includes("Équipe") || r.status.includes("cours") || r.status.includes("traité")) statusClass = "status-traite";
+
+                html += `
+                    <div class="track-item" id="item-${dbKey}">
+                        <div style="display:flex; justify-content:space-between; align-items: flex-start;">
+                            <div>
+                                <b style="color:var(--citizen-purple)">${r.q}</b> 
+                                <br><small style="color:#94a3b8">${r.date || ''} à ${r.time}</small>
+                            </div>
+                            <button onclick="deleteMyReport('${dbKey}')" style="background:none; border:none; color:#ff4444; cursor:pointer; font-size:1.2rem;" title="Supprimer">🗑️</button>
+                        </div>
+                        <div class="status-pill ${statusClass}">${r.status}</div>
+                    </div>
+                `;
+            });
+            resultDiv.innerHTML = html;
+        }, (error) => {
+            trackBtn.disabled = false;
+            alert("Erreur de recherche : " + error.message);
         });
     }
-</script>
 
+    function deleteMyReport(id) {
+        if(confirm("Voulez-vous vraiment supprimer ce signalement de l'historique ?")) {
+            db_online.ref('reports/' + id).remove().then(() => {
+                const el = document.getElementById('item-' + id);
+                if(el) el.remove();
+            }).catch(err => alert("Erreur lors de la suppression."));
+        }
+    }
+</script>
 </body>
 </html>

@@ -182,7 +182,7 @@
         .search-container input { padding-left: 35px; }
         .search-icon { position: absolute; left: 10px; color: #94a3b8; pointer-events: none; }
 
-        input, select { 
+        input, select, textarea { 
             padding: 8px; 
             border-radius: 5px; 
             border: 1px solid #334155; 
@@ -250,7 +250,14 @@
         .btn-delete:hover { background: var(--red); color: white; }
 
         .msg-badge { background: var(--red); color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.6rem; position: absolute; top: -5px; right: -5px; }
-        .msg-item { border-left: 3px solid var(--citizen-purple); background: rgba(188, 19, 254, 0.05); padding: 10px; margin-bottom: 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        .msg-item { border-left: 4px solid var(--citizen-purple); background: rgba(188, 19, 254, 0.05); padding: 12px; margin-bottom: 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        
+        #imgFullView {
+            max-width: 100%;
+            border-radius: 8px;
+            border: 2px solid var(--citizen-purple);
+            margin: 15px 0;
+        }
     </style>
 </head>
 <body>
@@ -315,7 +322,7 @@
 <canvas id="chart" style="max-height: 250px;"></canvas>
 
 <div class="modal" id="citizenInboxModal">
-    <div class="modal-content" style="max-width: 600px;">
+    <div class="modal-content" style="max-width: 700px;">
         <h2 style="font-family: Orbitron; color: var(--citizen-purple);">INBOX : SIGNALEMENTS PUBLICS</h2>
         <div id="citizenInboxBody" style="margin-top:20px;">
             <p style="color: #64748b; text-align: center;">Aucun message en attente.</p>
@@ -325,12 +332,23 @@
     </div>
 </div>
 
+<div id="photoViewModal" class="modal" onclick="this.style.display='none'">
+    <div class="modal-content" style="max-width: 500px; text-align: center; position: relative;" onclick="event.stopPropagation()">
+        <h3 id="photoTitle" style="font-family: Orbitron; color: var(--citizen-purple); margin-bottom:15px;">PREUVE VISUELLE</h3>
+        <img id="imgFullView" src="">
+        <p id="photoLegend" style="margin-top:10px; font-style:italic; color:#94a3b8;"></p>
+        <br>
+        <button onclick="document.getElementById('photoViewModal').style.display='none'">FERMER</button>
+    </div>
+</div>
+
 <div class="modal" id="citizenPortalModal">
     <div class="modal-content" style="max-width: 500px; border-color: var(--citizen-purple);">
         <h2 style="font-family: Orbitron; color: var(--citizen-purple);">SIGNALER UN DÉBORDEMENT</h2>
         <p style="font-size: 0.9rem; color: #94a3b8;">Aidez-nous à identifier les zones critiques non équipées de capteurs.</p>
         <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
             <input type="text" id="citName" placeholder="Votre nom">
+            <input type="text" id="citPhone" placeholder="N° de téléphone (WhatsApp)">
             <select id="citQuartier">
                 <option value="Akwa">Akwa</option>
                 <option value="New Bell">New Bell</option>
@@ -341,6 +359,7 @@
                 <option value="Village">Village</option>
             </select>
             <input type="text" id="citLoc" placeholder="Localisation précise (ex: Face Cinéma Abbia)">
+            <textarea id="citDesc" placeholder="Description du problème (ex: Odeurs fortes, accès bloqué...)" style="padding: 8px; border-radius: 5px; border: 1px solid #334155; background: #1e293b; color: white; font-family: 'Rajdhani'; resize: vertical; min-height: 60px;"></textarea>
             <select id="citLvl">
                 <option value="Critique">Poubelle qui déborde</option>
                 <option value="Urgent">Dépôt sauvage d'ordures</option>
@@ -477,15 +496,17 @@ function closeCitizenInbox() { document.getElementById("citizenInboxModal").styl
 
 function submitCitizenReport() {
     const name = document.getElementById("citName").value;
+    const phone = document.getElementById("citPhone").value;
     const loc = document.getElementById("citLoc").value;
+    const desc = document.getElementById("citDesc").value;
     const q = document.getElementById("citQuartier").value;
     const type = document.getElementById("citLvl").value;
 
-    if(!name || !loc) return alert("Veuillez remplir les informations.");
+    if(!name || !loc || !phone) return alert("Veuillez remplir le nom, le téléphone et la localisation.");
 
     const report = {
         id: Date.now(),
-        name, loc, q, type,
+        name, phone, loc, desc, q, type,
         time: new Date().toLocaleTimeString(),
         status: "En attente"
     };
@@ -494,6 +515,10 @@ function submitCitizenReport() {
     .then(() => {
         closeCitizenPortal();
         notify(`🔔 Signalement envoyé au cloud pour ${q}`);
+        document.getElementById("citName").value = "";
+        document.getElementById("citPhone").value = "";
+        document.getElementById("citLoc").value = "";
+        document.getElementById("citDesc").value = "";
     });
 }
 
@@ -508,20 +533,37 @@ function updateCitizenInboxUI() {
     }
 
     body.innerHTML = citizenReports.map(r => `
-        <div class="msg-item" style="opacity: ${r.status === 'Traité' ? 0.5 : 1}">
-            <div>
-                <b style="color:var(--citizen-purple)">${r.name}</b> (${r.time})<br>
-                <small>📍 ${r.loc} [${r.q}]</small><br>
-                <span style="font-size:0.7rem; color:var(--orange)">PROBLÈME: ${r.type}</span>
+        <div class="msg-item" style="opacity: ${r.status === 'Traité' ? 0.6 : 1}; display: flex; justify-content: space-between; align-items: flex-start; background: rgba(188, 19, 254, 0.05); padding: 15px; border-left: 4px solid var(--citizen-purple); margin-bottom: 10px;">
+            <div style="flex-grow: 1;">
+                <b style="color:var(--citizen-purple); font-size:1.1rem;">${r.name}</b> 
+                <span style="color:var(--green); margin-left:10px; font-weight:bold;">📞 ${r.phone || 'N/A'}</span>
+                <br>
+                <small>📍 ${r.loc} [${r.q}]</small> <small style="color:#64748b; margin-left:5px;">(${r.time})</small><br>
+                <span style="font-size:0.7rem; color:var(--orange); font-weight:bold;">${r.type ? r.type.toUpperCase() : 'SIGNALEMENT'}</span>
+                
+                ${r.desc ? `<div style="margin-top:8px; font-style:italic; font-size:0.85rem; color:#cbd5e1; background:rgba(0,0,0,0.2); padding:8px; border-radius:4px; border-left: 2px solid var(--citizen-purple);">"${r.desc}"</div>` : ''}
             </div>
-            <div style="display:flex; gap:10px; align-items:center;">
+            <div style="display:flex; flex-direction: column; gap:10px; align-items:flex-end; min-width:100px;">
+                
+                ${(r.photos && r.photos[0]) ? `<button onclick="viewPhoto('${r.photos[0]}', '${r.name}')" style="font-size:0.6rem; border-color:var(--blue); color:var(--blue); width: 100%;">🖼️ PHOTO</button>` : (r.photo ? `<button onclick="viewPhoto('${r.photo}', '${r.name}')" style="font-size:0.6rem; border-color:var(--blue); color:var(--blue); width: 100%;">🖼️ PHOTO</button>` : '')}
+                
                 ${r.status === 'En attente' ? 
-                `<button onclick="processCitizenReport('${r.firebaseId}')" style="font-size:0.6rem; border-color:var(--green); color:var(--green);">DEPLOYER UNE  EQUIPE</button>` : 
+                `<button onclick="processCitizenReport('${r.firebaseId}')" style="font-size:0.6rem; border-color:var(--green); color:var(--green); width: 100%;">TRAITER</button>` : 
                 `<span style="color:var(--green); font-size:0.7rem; font-weight:bold;">TRAITÉ ✓</span>`}
+                
                 <button onclick="deleteCitizenReport('${r.firebaseId}')" style="background:none; border:none; color:var(--red); cursor:pointer; font-size:1.1rem;">🗑️</button>
             </div>
         </div>
     `).join("");
+}
+
+function viewPhoto(base64Data, name) {
+    const modal = document.getElementById("photoViewModal");
+    const img = document.getElementById("imgFullView");
+    const legend = document.getElementById("photoLegend");
+    img.src = base64Data;
+    legend.innerText = "Signalement envoyé par : " + name;
+    modal.style.display = "flex";
 }
 
 function processCitizenReport(id) {
@@ -673,53 +715,74 @@ function saveNewBin() {
 
 let chart = new Chart(document.getElementById("chart"), {
     type: "bar",
-    data: { labels: db.map(q => q.nom), datasets: [{ label: "Niveau moyen (%)", data: db.map(q => 0), backgroundColor: 'rgba(0, 210, 255, 0.4)', borderColor: '#00d2ff', borderWidth: 1 }] },
-    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 }, x: { ticks: { color: "#fff", font: { size: 9 } } } } }
+    data: { 
+        labels: db.map(q => q.nom), 
+        datasets: [{ 
+            label: 'Niveau Remplissage (%)', 
+            data: db.map(q => q.units.reduce((a,b)=>a+b.lvl,0)/q.units.length), 
+            backgroundColor: '#00d2ff' 
+        }] 
+    },
+    options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
 });
 
 function updateGraph() {
-    chart.data.labels = db.map(q => q.nom);
     chart.data.datasets[0].data = db.map(q => {
-        const on = q.units.filter(u => u.online);
-        return on.length > 0 ? (on.reduce((a,b)=>a+b.lvl,0)/on.length).toFixed(1) : 0;
+        const online = q.units.filter(u => u.online);
+        return online.length > 0 ? online.reduce((a,b)=>a+b.lvl,0)/online.length : 0;
     });
     chart.update();
 }
 
-function manualRefresh() { simulate(); notify("🔄 Rafraîchissement des flux IoT..."); }
 function notify(msg) {
-    const t = document.createElement("div"); t.className = "toast"; t.innerText = msg;
-    document.getElementById("notifContainer").appendChild(t);
-    setTimeout(() => t.remove(), 4000);
+    const container = document.getElementById("notifContainer");
+    const toast = document.createElement("div");
+    toast.className = "toast";
+    toast.innerText = msg;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
 }
-function closeModal() { document.getElementById("detailsModal").style.display = "none"; }
-function closeEnrollModal() { document.getElementById("enrollModal").style.display = "none"; }
+
 function setFilter(f) { filter = f; render(); }
+function manualRefresh() { simulate(); notify("Actualisation forcée des serveurs..."); }
+
 function openEnrollModal() {
-    document.getElementById("selArr").innerHTML = Object.keys(doualaGeo).map(a => `<option value="${a}">${a}</option>`).join("");
-    updateSelMairie(); document.getElementById("enrollModal").style.display = "flex";
+    const selArr = document.getElementById("selArr");
+    selArr.innerHTML = Object.keys(doualaGeo).map(a => `<option value="${a}">${a}</option>`).join("");
+    updateSelMairie();
+    document.getElementById("enrollModal").style.display = "flex";
 }
+function closeEnrollModal() { document.getElementById("enrollModal").style.display = "none"; }
+
 function updateSelMairie() {
     const arr = document.getElementById("selArr").value;
-    document.getElementById("selMairie").innerHTML = doualaGeo[arr].mairies.map(m => `<option value="${m}">${m}</option>`).join("");
+    const selMairie = document.getElementById("selMairie");
+    selMairie.innerHTML = doualaGeo[arr].mairies.map(m => `<option value="${m}">${m}</option>`).join("");
     updateSelQuartier();
 }
+
 function updateSelQuartier() {
     const arr = document.getElementById("selArr").value;
-    document.getElementById("newBinQuartier").innerHTML = doualaGeo[arr].quartiers.map(q => `<option value="${q}">${q}</option>`).join("");
+    const selQ = document.getElementById("newBinQuartier");
+    selQ.innerHTML = doualaGeo[arr].quartiers.map(q => `<option value="${q}">${q}</option>`).join("");
 }
-function deleteBin(qNom, id) {
-    if (confirm(`Confirmer la suppression ?`)) {
-        let q = db.find(x => x.nom === qNom);
-        q.units = q.units.filter(u => u.id !== id);
-        persist(); 
-        openModal(qNom); render();
+
+function deleteBin(qNom, bId) {
+    if(confirm(`Supprimer le capteur ${bId} ?`)) {
+        let q = db.find(x => x.nom == qNom);
+        q.units = q.units.filter(u => u.id !== bId);
+        persist(); closeModal(); render(); notify("Capteur retiré du réseau");
     }
 }
 
-setInterval(() => { document.getElementById("clock").innerText = new Date().toLocaleString('fr-FR'); }, 1000);
-setInterval(simulate, 6000);
-render(); updateGraph();
+function closeModal() { document.getElementById("detailsModal").style.display = "none"; }
+
+setInterval(() => {
+    document.getElementById("clock").innerText = new Date().toLocaleTimeString('fr-FR');
+}, 1000);
+
+setInterval(simulate, 15000);
+render();
 </script>
 </body>
 </html>
