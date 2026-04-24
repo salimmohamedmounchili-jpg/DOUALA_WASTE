@@ -532,20 +532,39 @@ function updateCitizenInboxUI() {
         return;
     }
 
-    body.innerHTML = citizenReports.map(r => `
+    body.innerHTML = citizenReports.map(r => {
+        // CORRECTION : Gestion de l'affichage de plusieurs photos
+        let photoDisplayHtml = "";
+        if (r.photos && Array.isArray(r.photos)) {
+            // Si c'est un tableau de photos, on boucle dessus
+            photoDisplayHtml = r.photos.map(photoUrl => `
+                <img src="${photoUrl}" onclick="viewPhoto('${photoUrl}', '${r.name}')" 
+                style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid var(--citizen-purple); margin-right: 5px;">
+            `).join("");
+        } else if (r.photo) {
+            // Si c'est une seule photo (ancien format)
+            photoDisplayHtml = `
+                <img src="${r.photo}" onclick="viewPhoto('${r.photo}', '${r.name}')" 
+                style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid var(--citizen-purple);">
+            `;
+        }
+
+        return `
         <div class="msg-item" style="opacity: ${r.status === 'Traité' ? 0.6 : 1}; display: flex; justify-content: space-between; align-items: flex-start; background: rgba(188, 19, 254, 0.05); padding: 15px; border-left: 4px solid var(--citizen-purple); margin-bottom: 10px;">
             <div style="flex-grow: 1;">
                 <b style="color:var(--citizen-purple); font-size:1.1rem;">${r.name}</b> 
                 <span style="color:var(--green); margin-left:10px; font-weight:bold;">📞 ${r.phone || 'N/A'}</span>
                 <br>
                 <small>📍 ${r.loc} [${r.q}]</small> <small style="color:#64748b; margin-left:5px;">(${r.time})</small><br>
-                <span style="font-size:0.7rem; color:var(--orange); font-weight:bold;">${r.type ? r.type.toUpperCase() : 'SIGNALEMENT'}</span>
+                <span style="font-size:0.7rem; color:var(--orange); font-weight:bold;">${(r.type || 'SIGNALEMENT').toUpperCase()}</span>
                 
-                ${r.desc ? `<div style="margin-top:8px; font-style:italic; font-size:0.85rem; color:#cbd5e1; background:rgba(0,0,0,0.2); padding:8px; border-radius:4px; border-left: 2px solid var(--citizen-purple);">"${r.desc}"</div>` : ''}
+                ${(r.description || r.desc) ? `<div style="margin-top:8px; font-style:italic; font-size:0.85rem; color:#cbd5e1; background:rgba(0,0,0,0.2); padding:8px; border-radius:4px; border-left: 2px solid var(--citizen-purple);">"${r.description || r.desc}"</div>` : ''}
+                
+                <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px;">
+                    ${photoDisplayHtml}
+                </div>
             </div>
             <div style="display:flex; flex-direction: column; gap:10px; align-items:flex-end; min-width:100px;">
-                
-                ${(r.photos && r.photos[0]) ? `<button onclick="viewPhoto('${r.photos[0]}', '${r.name}')" style="font-size:0.6rem; border-color:var(--blue); color:var(--blue); width: 100%;">🖼️ PHOTO</button>` : (r.photo ? `<button onclick="viewPhoto('${r.photo}', '${r.name}')" style="font-size:0.6rem; border-color:var(--blue); color:var(--blue); width: 100%;">🖼️ PHOTO</button>` : '')}
                 
                 ${r.status === 'En attente' ? 
                 `<button onclick="processCitizenReport('${r.firebaseId}')" style="font-size:0.6rem; border-color:var(--green); color:var(--green); width: 100%;">TRAITER</button>` : 
@@ -554,7 +573,7 @@ function updateCitizenInboxUI() {
                 <button onclick="deleteCitizenReport('${r.firebaseId}')" style="background:none; border:none; color:var(--red); cursor:pointer; font-size:1.1rem;">🗑️</button>
             </div>
         </div>
-    `).join("");
+    `}).join("");
 }
 
 function viewPhoto(base64Data, name) {
@@ -702,87 +721,74 @@ function openModal(nomQuartier) {
 }
 
 function saveNewBin() {
-    const id = document.getElementById("newBinId").value.trim().toUpperCase();
-    const detailLoc = document.getElementById("newBinLoc").value.trim();
+    const id = document.getElementById("newBinId").value;
+    const detailLoc = document.getElementById("newBinLoc").value;
     const qPoint = document.getElementById("newBinQuartier").value;
-    if(!id || !detailLoc) return alert("Veuillez remplir les informations.");
     let quartierRacine = qPoint.split(" - ")[0];
     let qObj = db.find(x => x.nom === quartierRacine);
-    qObj.units.push({ id, loc: qPoint + " (" + detailLoc + ")", lvl: 0, bat: 100, online: true, lidOpen: false, lastUpdate: new Date().toLocaleString('fr-FR') });
-    persist(); 
-    notify(`✅ Capteur ${id} installé`); closeEnrollModal(); render();
+    if(qObj && id){
+        qObj.units.push({
+            id: id, loc: qPoint + " - " + detailLoc, lvl: 0, bat: 100, online: true, lidOpen: false, lastUpdate: new Date().toLocaleString()
+        });
+        persist(); render(); closeEnrollModal();
+    }
 }
 
-let chart = new Chart(document.getElementById("chart"), {
-    type: "bar",
-    data: { 
-        labels: db.map(q => q.nom), 
-        datasets: [{ 
-            label: 'Niveau Remplissage (%)', 
-            data: db.map(q => q.units.reduce((a,b)=>a+b.lvl,0)/q.units.length), 
-            backgroundColor: '#00d2ff' 
-        }] 
-    },
-    options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
-});
-
-function updateGraph() {
-    chart.data.datasets[0].data = db.map(q => {
-        const online = q.units.filter(u => u.online);
-        return online.length > 0 ? online.reduce((a,b)=>a+b.lvl,0)/online.length : 0;
-    });
-    chart.update();
+function deleteBin(q, id) {
+    let qObj = db.find(x => x.nom === q);
+    qObj.units = qObj.units.filter(u => u.id !== id);
+    persist(); openModal(q); render();
 }
-
-function notify(msg) {
-    const container = document.getElementById("notifContainer");
-    const toast = document.createElement("div");
-    toast.className = "toast";
-    toast.innerText = msg;
-    container.appendChild(toast);
-    setTimeout(() => toast.remove(), 4000);
-}
-
-function setFilter(f) { filter = f; render(); }
-function manualRefresh() { simulate(); notify("Actualisation forcée des serveurs..."); }
-
-function openEnrollModal() {
-    const selArr = document.getElementById("selArr");
-    selArr.innerHTML = Object.keys(doualaGeo).map(a => `<option value="${a}">${a}</option>`).join("");
-    updateSelMairie();
-    document.getElementById("enrollModal").style.display = "flex";
-}
-function closeEnrollModal() { document.getElementById("enrollModal").style.display = "none"; }
 
 function updateSelMairie() {
     const arr = document.getElementById("selArr").value;
-    const selMairie = document.getElementById("selMairie");
-    selMairie.innerHTML = doualaGeo[arr].mairies.map(m => `<option value="${m}">${m}</option>`).join("");
+    document.getElementById("selMairie").innerHTML = doualaGeo[arr].mairies.map(m => `<option value="${m}">${m}</option>`).join("");
     updateSelQuartier();
 }
 
 function updateSelQuartier() {
     const arr = document.getElementById("selArr").value;
-    const selQ = document.getElementById("newBinQuartier");
-    selQ.innerHTML = doualaGeo[arr].quartiers.map(q => `<option value="${q}">${q}</option>`).join("");
+    document.getElementById("newBinQuartier").innerHTML = doualaGeo[arr].quartiers.map(q => `<option value="${q}">${q}</option>`).join("");
 }
 
-function deleteBin(qNom, bId) {
-    if(confirm(`Supprimer le capteur ${bId} ?`)) {
-        let q = db.find(x => x.nom == qNom);
-        q.units = q.units.filter(u => u.id !== bId);
-        persist(); closeModal(); render(); notify("Capteur retiré du réseau");
+function openEnrollModal() {
+    document.getElementById("selArr").innerHTML = Object.keys(doualaGeo).map(a => `<option value="${a}">${a}</option>`).join("");
+    updateSelMairie();
+    document.getElementById("enrollModal").style.display = "flex";
+}
+function closeEnrollModal() { document.getElementById("enrollModal").style.display = "none"; }
+function closeModal() { document.getElementById("detailsModal").style.display = "none"; }
+
+function setFilter(f) { filter = f; render(); }
+function manualRefresh() { simulate(); notify("Actualisation forcée effectuée"); }
+function notify(m) {
+    const n = document.createElement("div"); n.className = "toast"; n.innerText = m;
+    document.getElementById("notifContainer").appendChild(n);
+    setTimeout(() => n.remove(), 3000);
+}
+
+let myChart;
+function updateGraph() {
+    const ctx = document.getElementById('chart').getContext('2d');
+    const labels = db.map(q => q.nom);
+    const data = db.map(q => {
+        const active = q.units.filter(u => u.online);
+        return active.length > 0 ? active.reduce((a, b) => a + b.lvl, 0) / active.length : 0;
+    });
+    if (myChart) { myChart.data.datasets[0].data = data; myChart.update(); }
+    else {
+        myChart = new Chart(ctx, {
+            type: 'bar',
+            data: { labels: labels, datasets: [{ label: '% Remplissage', data: data, backgroundColor: '#00d2ff' }] },
+            options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
+        });
     }
 }
 
-function closeModal() { document.getElementById("detailsModal").style.display = "none"; }
-
-setInterval(() => {
-    document.getElementById("clock").innerText = new Date().toLocaleTimeString('fr-FR');
-}, 1000);
-
+setInterval(() => { document.getElementById("clock").innerText = new Date().toLocaleTimeString(); }, 1000);
 setInterval(simulate, 15000);
-render();
+render(); updateGraph();
+
 </script>
 </body>
 </html>
