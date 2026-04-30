@@ -10,12 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: linear-gradient(135deg, #05070a 0%, #0a0f1a 100%);
             color: white;
@@ -23,12 +18,7 @@
             padding: 20px;
             min-height: 100vh;
         }
-
-        .container {
-            max-width: 550px;
-            margin: 0 auto;
-        }
-
+        .container { max-width: 550px; margin: 0 auto; }
         .header {
             text-align: center;
             margin-bottom: 20px;
@@ -37,12 +27,7 @@
             border-radius: 20px;
             border: 1px solid rgba(0, 210, 255, 0.3);
         }
-
-        .logo {
-            font-size: 3rem;
-            margin-bottom: 5px;
-        }
-
+        .logo { font-size: 3rem; margin-bottom: 5px; }
         h1 {
             font-family: 'Orbitron', monospace;
             font-size: 1.3rem;
@@ -50,13 +35,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-
-        .subtitle {
-            color: #94a3b8;
-            font-size: 0.7rem;
-            margin-top: 5px;
-        }
-
+        .subtitle { color: #94a3b8; font-size: 0.7rem; margin-top: 5px; }
         .tabs {
             display: flex;
             gap: 10px;
@@ -66,7 +45,6 @@
             border-radius: 60px;
             backdrop-filter: blur(10px);
         }
-
         .tab {
             flex: 1;
             text-align: center;
@@ -79,27 +57,14 @@
             transition: all 0.3s ease;
             border-radius: 50px;
         }
-
         .tab.active {
             background: linear-gradient(135deg, rgba(0, 210, 255, 0.2), rgba(57, 255, 20, 0.1));
             color: #00d2ff;
             box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
         }
-
-        .tab-content {
-            display: none;
-            animation: fadeSlideIn 0.4s ease;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        @keyframes fadeSlideIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
+        .tab-content { display: none; animation: fadeSlideIn 0.4s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         .card {
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(10px);
@@ -108,7 +73,6 @@
             border: 1px solid rgba(0, 210, 255, 0.2);
             margin-bottom: 20px;
         }
-
         .card h2 {
             font-family: 'Orbitron', monospace;
             font-size: 1rem;
@@ -116,11 +80,7 @@
             margin-bottom: 15px;
             text-align: center;
         }
-
-        .input-group {
-            margin-bottom: 15px;
-        }
-
+        .input-group { margin-bottom: 15px; }
         .input-group label {
             display: block;
             margin-bottom: 6px;
@@ -129,7 +89,6 @@
             font-size: 0.75rem;
             letter-spacing: 1px;
         }
-
         input, select, textarea {
             width: 100%;
             padding: 10px 12px;
@@ -141,13 +100,11 @@
             font-size: 0.9rem;
             transition: all 0.3s ease;
         }
-
         input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: #00d2ff;
             box-shadow: 0 0 0 3px rgba(0, 210, 255, 0.2);
         }
-
         .photo-btn-wrapper {
             background: rgba(188, 19, 254, 0.1);
             border: 1px dashed #bc13fe;
@@ -157,18 +114,13 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-
-        .photo-btn-wrapper:hover {
-            background: rgba(188, 19, 254, 0.2);
-        }
-
+        .photo-btn-wrapper:hover { background: rgba(188, 19, 254, 0.2); }
         #galleryPreview {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 6px;
             margin-top: 8px;
         }
-
         .img-thumb {
             width: 100%;
             height: 70px;
@@ -176,11 +128,7 @@
             border-radius: 6px;
             border: 1px solid #bc13fe;
         }
-
-        .thumb-container {
-            position: relative;
-        }
-
+        .thumb-container { position: relative; }
         .remove-badge {
             position: absolute;
             top: -6px;
@@ -197,7 +145,6 @@
             cursor: pointer;
             font-weight: bold;
         }
-
         .location-status {
             font-size: 0.7rem;
             padding: 8px;
@@ -205,25 +152,21 @@
             margin-bottom: 12px;
             background: rgba(0, 0, 0, 0.3);
         }
-
         .location-success {
             color: #39ff14;
             background: rgba(57, 255, 20, 0.1);
             border-left: 3px solid #39ff14;
         }
-
         .location-error {
             color: #ff3131;
             background: rgba(255, 49, 49, 0.1);
             border-left: 3px solid #ff3131;
         }
-
         .location-pending {
             color: #ff9100;
             background: rgba(255, 145, 0, 0.1);
             border-left: 3px solid #ff9100;
         }
-
         .location-address-card {
             background: rgba(0, 210, 255, 0.1);
             border-radius: 12px;
@@ -231,35 +174,23 @@
             margin-bottom: 15px;
             border-left: 3px solid #00d2ff;
         }
-
         .address-label {
             font-size: 0.65rem;
             color: #00d2ff;
             margin-bottom: 5px;
         }
-
         .address-value {
             font-size: 0.8rem;
             font-weight: bold;
             color: #39ff14;
             word-break: break-word;
         }
-
-        .hierarchy-info {
-            font-size: 0.7rem;
-            color: #bc13fe;
-            margin-top: 8px;
-            padding-top: 5px;
-            border-top: 1px solid rgba(0, 210, 255, 0.2);
-        }
-
         .coords-value {
             font-size: 0.6rem;
             color: #94a3b8;
             margin-top: 5px;
             font-family: monospace;
         }
-
         .btn-send {
             width: 100%;
             padding: 12px;
@@ -274,17 +205,8 @@
             margin-top: 10px;
             transition: all 0.3s ease;
         }
-
-        .btn-send:hover {
-            transform: scale(1.02);
-            box-shadow: 0 0 20px rgba(188, 19, 254, 0.5);
-        }
-
-        .btn-send:disabled {
-            opacity: 0.6;
-            transform: none;
-        }
-
+        .btn-send:hover { transform: scale(1.02); box-shadow: 0 0 20px rgba(188, 19, 254, 0.5); }
+        .btn-send:disabled { opacity: 0.6; transform: none; }
         .success-message {
             display: none;
             background: rgba(57, 255, 20, 0.15);
@@ -297,21 +219,18 @@
             font-size: 0.85rem;
             animation: fadeIn 0.5s ease;
         }
-
         .info-text {
             font-size: 0.65rem;
             color: #94a3b8;
             margin-top: 4px;
             text-align: center;
         }
-
         .photo-count {
             font-size: 0.65rem;
             color: #bc13fe;
             margin-top: 4px;
             text-align: center;
         }
-
         .report-item {
             background: rgba(0, 0, 0, 0.3);
             border-radius: 12px;
@@ -320,12 +239,6 @@
             border-left: 3px solid #bc13fe;
             transition: all 0.3s ease;
         }
-
-        .report-item:hover {
-            transform: translateX(5px);
-            background: rgba(0, 0, 0, 0.5);
-        }
-
         .report-header {
             display: flex;
             justify-content: space-between;
@@ -334,58 +247,30 @@
             flex-wrap: wrap;
             gap: 8px;
         }
-
-        .report-date {
-            font-size: 0.7rem;
-            color: #94a3b8;
-        }
-
+        .report-date { font-size: 0.7rem; color: #94a3b8; }
         .report-status {
             font-size: 0.65rem;
             padding: 3px 8px;
             border-radius: 20px;
             font-weight: bold;
         }
-
         .status-en-attente {
             background: rgba(255, 145, 0, 0.2);
             color: #ff9100;
             border: 1px solid rgba(255, 145, 0, 0.3);
         }
-
         .status-vu {
             background: rgba(0, 210, 255, 0.2);
             color: #00d2ff;
             border: 1px solid rgba(0, 210, 255, 0.3);
         }
-
         .status-traite {
             background: rgba(57, 255, 20, 0.2);
             color: #39ff14;
             border: 1px solid rgba(57, 255, 20, 0.3);
         }
-
-        .report-type {
-            font-size: 0.75rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .report-location {
-            font-size: 0.7rem;
-            color: #00d2ff;
-            margin-bottom: 5px;
-        }
-
-        .report-exact-address {
-            font-size: 0.65rem;
-            color: #39ff14;
-            background: rgba(57, 255, 20, 0.05);
-            padding: 4px 8px;
-            border-radius: 8px;
-            margin-bottom: 5px;
-        }
-
+        .report-type { font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; }
+        .report-location { font-size: 0.7rem; color: #00d2ff; margin-bottom: 5px; }
         .report-desc {
             font-size: 0.7rem;
             color: #cbd5e1;
@@ -393,14 +278,12 @@
             padding-top: 5px;
             border-top: 1px solid rgba(255,255,255,0.1);
         }
-
         .report-photos {
             display: flex;
             gap: 5px;
             margin-top: 8px;
             flex-wrap: wrap;
         }
-
         .report-photo {
             width: 50px;
             height: 50px;
@@ -409,57 +292,12 @@
             cursor: pointer;
             border: 1px solid #bc13fe;
         }
-
-        .btn-delete-report {
-            background: rgba(255, 49, 49, 0.2);
-            border: 1px solid rgba(255, 49, 49, 0.4);
-            color: #ff6b6b;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.65rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 8px;
-        }
-
-        .btn-delete-report:hover {
-            background: rgba(255, 49, 49, 0.4);
-        }
-
-        .empty-reports {
-            text-align: center;
-            padding: 30px;
-            color: #64748b;
-        }
-
-        .saved-phone-info {
-            background: rgba(0, 210, 255, 0.1);
-            border-radius: 10px;
-            padding: 8px 12px;
-            margin-bottom: 15px;
-            font-size: 0.7rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .clear-phone-btn {
-            background: none;
-            border: 1px solid rgba(255, 49, 49, 0.4);
-            color: #ff6b6b;
-            padding: 4px 10px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.65rem;
-        }
-
         .filter-buttons {
             display: flex;
             gap: 8px;
             margin-bottom: 15px;
             flex-wrap: wrap;
         }
-
         .filter-btn {
             padding: 5px 12px;
             background: rgba(0, 210, 255, 0.1);
@@ -469,44 +307,46 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-
         .filter-btn.active {
             background: rgba(0, 210, 255, 0.3);
             color: #00d2ff;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .saved-phone-info {
+            background: rgba(0, 210, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-bottom: 15px;
+            font-size: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        .clear-phone-btn {
+            background: none;
+            border: 1px solid rgba(255, 49, 49, 0.4);
+            color: #ff6b6b;
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.7rem;
         }
-
-        .loading {
-            animation: pulse 1s infinite;
+        .manual-btn {
+            background: #bc13fe;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            width: 100%;
+            margin-top: 8px;
         }
-
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         footer {
             text-align: center;
             padding: 15px;
             color: #64748b;
             font-size: 0.65rem;
-        }
-
-        .thanks-message {
-            background: linear-gradient(135deg, rgba(57, 255, 20, 0.15), rgba(0, 210, 255, 0.05));
-            border-radius: 12px;
-            padding: 12px;
-            margin-top: 15px;
-            text-align: center;
-            border: 1px solid rgba(57, 255, 20, 0.3);
-        }
-
-        .thanks-message strong {
-            color: #39ff14;
         }
     </style>
 </head>
@@ -527,40 +367,41 @@
             <div class="card">
                 <h2>📝 NOUVEAU SIGNALEMENT</h2>
                 
-                <div id="locationStatus" class="location-status location-pending">📍 Récupération de votre position...</div>
+                <div id="locationStatus" class="location-status location-pending">
+                    📍 Récupération de votre position...
+                </div>
                 
-                <div class="location-address-card" id="locationAddressCard" style="display:none;">
+                <div id="locationAddressCard" style="display:none;" class="location-address-card">
                     <div class="address-label">📍 VOTRE POSITION GPS</div>
                     <div class="address-value" id="exactAddress">Chargement...</div>
-                    <div class="hierarchy-info" id="hierarchyInfo"></div>
                     <div class="coords-value" id="coordsDisplay"></div>
                 </div>
                 
                 <div class="input-group">
                     <label>👤 VOTRE NOM COMPLET</label>
-                    <input type="text" id="citName" placeholder="Ex: Jean Paul">
+                    <input type="text" id="citizenName" placeholder="Ex: Jean Paul">
                 </div>
                 
                 <div class="input-group">
-                    <label>📞 VOTRE TÉLÉPHONE (9 chiffres)</label>
-                    <input type="tel" id="citPhone" placeholder="6XXXXXXXX" maxlength="9" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                    <div class="info-text">Le numéro permet de suivre votre signalement</div>
+                    <label>📞 VOTRE NUMÉRO (9 chiffres)</label>
+                    <input type="tel" id="citizenPhone" placeholder="6XXXXXXXX" maxlength="9" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    <div class="info-text">Ce numéro permet de suivre votre signalement</div>
                 </div>
                 
                 <div class="input-group">
                     <label>📍 QUARTIER</label>
-                    <input list="quartiers-list" id="citQuartier" placeholder="Sélectionnez votre quartier">
-                    <datalist id="quartiers-list"></datalist>
+                    <input list="quartiersList" id="citizenQuartier" placeholder="Sélectionnez votre quartier">
+                    <datalist id="quartiersList"></datalist>
                 </div>
                 
                 <div class="input-group">
                     <label>🏠 LOCALISATION PRÉCISE</label>
-                    <input type="text" id="citLoc" placeholder="Ex: Face Cinéma Abbia, Carrefour...">
+                    <input type="text" id="citizenLocation" placeholder="Ex: Face Cinéma Abbia, Carrefour...">
                 </div>
                 
                 <div class="input-group">
                     <label>⚠️ TYPE DE PROBLÈME</label>
-                    <select id="citLvl">
+                    <select id="citizenType">
                         <option value="Poubelle qui déborde">🗑️ Poubelle qui déborde</option>
                         <option value="Dépôt sauvage">🚮 Dépôt sauvage</option>
                         <option value="Caniveau bouché">🌊 Caniveau bouché</option>
@@ -570,17 +411,16 @@
                 
                 <div class="input-group">
                     <label>📝 DESCRIPTION</label>
-                    <textarea id="citDesc" rows="3" placeholder="Décrivez le problème..."></textarea>
+                    <textarea id="citizenDescription" rows="3" placeholder="Décrivez le problème..."></textarea>
                 </div>
                 
-                <div class="photo-btn-wrapper" onclick="document.getElementById('citPhoto').click()">
-                    <span id="photoStatusText">📷 PRENDRE UNE PHOTO (AVEC HEURE ET LIEU)</span>
-                    <input type="file" id="citPhoto" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFiles(this)">
+                <div class="photo-btn-wrapper" onclick="document.getElementById('photoInput').click()">
+                    <span id="photoStatus">📷 AJOUTER UNE PHOTO</span>
+                    <input type="file" id="photoInput" accept="image/*" capture="environment" multiple style="display:none" onchange="handlePhotos(this)">
                     <div id="galleryPreview"></div>
-                    <div class="photo-count" id="photoCount"></div>
                 </div>
                 
-                <button class="btn-send" id="sendBtn" onclick="sendToDashboard()">📨 ENVOYER LE SIGNALEMENT</button>
+                <button class="btn-send" id="sendBtn" onclick="sendReport()">📨 ENVOYER LE SIGNALEMENT</button>
                 <div id="successMessage" class="success-message"></div>
             </div>
         </div>
@@ -589,12 +429,18 @@
             <div class="card">
                 <h2>📍 MES SIGNALEMENTS</h2>
                 
-                <div id="savedPhoneInfo" class="saved-phone-info" style="display:none;">
-                    <span>📱 Suivi automatique pour le <strong id="displayPhone"></strong></span>
-                    <button class="clear-phone-btn" onclick="clearSavedPhone()">Changer de numéro</button>
+                <div class="input-group">
+                    <label>📞 ENTRER VOTRE NUMÉRO</label>
+                    <input type="tel" id="searchPhone" placeholder="6XXXXXXXX" maxlength="9" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    <button class="btn-send" style="margin-top:8px; padding:8px;" onclick="searchReports()">🔍 VOIR MES SIGNALEMENTS</button>
                 </div>
                 
-                <div class="filter-buttons" id="filterButtons">
+                <div id="phoneInfo" class="saved-phone-info" style="display:none;">
+                    <span>📱 Signalements pour <strong id="displayPhone"></strong></span>
+                    <button class="clear-phone-btn" onclick="clearSearch()">Autre numéro</button>
+                </div>
+                
+                <div class="filter-buttons" id="filterButtons" style="display:none;">
                     <button class="filter-btn active" onclick="setFilter('ALL')">📋 Tous</button>
                     <button class="filter-btn" onclick="setFilter('En attente')">⏳ En attente</button>
                     <button class="filter-btn" onclick="setFilter('Vu')">👁️ Vu</button>
@@ -602,8 +448,8 @@
                 </div>
                 
                 <div id="reportsList">
-                    <div class="empty-reports" id="emptyReportsMsg">
-                        📱 Aucun signalement pour le moment
+                    <div class="empty-reports" style="text-align:center; padding:30px; color:#64748b;">
+                        📱 Entrez votre numéro pour voir vos signalements
                     </div>
                 </div>
             </div>
@@ -611,7 +457,7 @@
         
         <footer>
             SWMS Douala - Unité de Coordination Urbaine<br>
-            📸 Photo obligatoire | Suivi en temps réel
+            📸 Photo facultative | Suivi par numéro
         </footer>
     </div>
 
@@ -622,58 +468,41 @@
 
     <script>
         // Configuration Firebase
-        const firebaseConfig = { databaseURL: "https://douala-clean-default-rtdb.firebaseio.com" };
+        const firebaseConfig = {
+            databaseURL: "https://douala-clean-default-rtdb.firebaseio.com"
+        };
         firebase.initializeApp(firebaseConfig);
-        const db_online = firebase.database();
+        const database = firebase.database();
 
         // Variables
         let photosArray = [];
-        let currentUserLocation = null;
-        let currentAddressName = null;
-        let currentHierarchy = null;
+        let userLat = null;
+        let userLng = null;
+        let userAddress = null;
         let allReports = [];
         let currentFilter = "ALL";
-        let currentPhone = "";
+        let currentSearchPhone = "";
         let reportsListener = null;
+        let geoRetryCount = 0;
 
-        // Récupérer le numéro sauvegardé
-        function getSavedPhone() {
-            return localStorage.getItem('swms_citizen_phone');
-        }
-
-        function savePhone(phone) {
-            localStorage.setItem('swms_citizen_phone', phone);
-            currentPhone = phone;
-        }
-
-        function clearSavedPhone() {
-            localStorage.removeItem('swms_citizen_phone');
-            currentPhone = "";
-            document.getElementById('savedPhoneInfo').style.display = 'none';
-            if (reportsListener) {
-                db_online.ref('reports').off('value', reportsListener);
-                reportsListener = null;
-            }
-            document.getElementById('reportsList').innerHTML = '<div class="empty-reports">📱 Aucun signalement pour le moment</div>';
-        }
-
-        // Liste des quartiers de Douala
-        const quartiersDouala = [
+        // Quartiers de Douala
+        const quartiersList = [
             "Akwa", "New Bell", "Deido", "Bonabéri", "Ndokoti", 
             "Logpom", "Village", "Logbaba", "Bonanjo", "Bonamoussadi", 
-            "Kotto", "Makepe", "Bali", "Nylon", "Bonassama", 
-            "Mabanda", "Sodiko", "Boquette", "Nyalla", "Nkololoun"
+            "Kotto", "Makepe", "Bali", "Nylon", "Bonassama"
         ];
 
-        const datalist = document.getElementById('quartiers-list');
+        // Remplir la liste des quartiers
+        const datalist = document.getElementById('quartiersList');
         if (datalist) {
-            quartiersDouala.sort().forEach(q => {
+            quartiersList.sort().forEach(q => {
                 let option = document.createElement('option');
                 option.value = q;
                 datalist.appendChild(option);
             });
         }
 
+        // Navigation entre onglets
         function switchTab(tab) {
             const reportTab = document.getElementById('reportTab');
             const followTab = document.getElementById('followTab');
@@ -689,41 +518,48 @@
                 followTab.classList.add('active');
                 tabs[0].classList.remove('active');
                 tabs[1].classList.add('active');
-                
-                // Charger automatiquement les signalements du numéro sauvegardé
-                const saved = getSavedPhone();
-                if (saved && saved.length === 9) {
-                    currentPhone = saved;
-                    document.getElementById('displayPhone').innerText = saved;
-                    document.getElementById('savedPhoneInfo').style.display = 'flex';
-                    loadReportsAuto();
-                } else {
-                    document.getElementById('savedPhoneInfo').style.display = 'none';
-                    document.getElementById('reportsList').innerHTML = '<div class="empty-reports">📱 Envoyez un signalement pour commencer le suivi</div>';
-                }
             }
         }
 
-        // Chargement automatique des signalements
-        function loadReportsAuto() {
-            if (!currentPhone || currentPhone.length !== 9) return;
-            
-            const fullPhone = "+237" + currentPhone;
-            
-            if (reportsListener) {
-                db_online.ref('reports').off('value', reportsListener);
+        // Recherche des signalements par numéro
+        function searchReports() {
+            const phoneInput = document.getElementById('searchPhone').value.trim();
+            if (!phoneInput || phoneInput.length !== 9 || !phoneInput.startsWith('6')) {
+                alert("❌ Numéro invalide (9 chiffres commençant par 6)");
+                return;
             }
             
-            reportsListener = db_online.ref('reports').orderByChild('phone').equalTo(fullPhone).on('value', (snapshot) => {
+            currentSearchPhone = "+237" + phoneInput;
+            document.getElementById('displayPhone').innerText = phoneInput;
+            document.getElementById('phoneInfo').style.display = 'flex';
+            document.getElementById('filterButtons').style.display = 'flex';
+            
+            if (reportsListener) {
+                database.ref('citizen_reports').off('value', reportsListener);
+            }
+            
+            reportsListener = database.ref('citizen_reports').orderByChild('phone').equalTo(currentSearchPhone).on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
                     allReports = Object.entries(data).map(([key, val]) => ({...val, firebaseId: key})).reverse();
-                    renderReportsList();
+                    renderReports();
                 } else {
                     allReports = [];
-                    document.getElementById('reportsList').innerHTML = '<div class="empty-reports">📭 Aucun signalement trouvé</div>';
+                    document.getElementById('reportsList').innerHTML = '<div class="empty-reports" style="text-align:center; padding:30px; color:#64748b;">📭 Aucun signalement trouvé</div>';
                 }
             });
+        }
+
+        function clearSearch() {
+            currentSearchPhone = "";
+            document.getElementById('phoneInfo').style.display = 'none';
+            document.getElementById('filterButtons').style.display = 'none';
+            document.getElementById('searchPhone').value = "";
+            document.getElementById('reportsList').innerHTML = '<div class="empty-reports" style="text-align:center; padding:30px; color:#64748b;">📱 Entrez votre numéro pour voir vos signalements</div>';
+            if (reportsListener) {
+                database.ref('citizen_reports').off('value', reportsListener);
+                reportsListener = null;
+            }
         }
 
         function setFilter(filter) {
@@ -734,70 +570,53 @@
                     btn.classList.add('active');
                 }
             });
-            renderReportsList();
+            renderReports();
         }
 
         function getStatusClass(status) {
             if (status === 'En attente') return 'status-en-attente';
             if (status === 'Vu') return 'status-vu';
-            if (status === 'Traité') return 'status-traite';
-            return 'status-en-attente';
+            return 'status-traite';
         }
 
         function getStatusText(status) {
             if (status === 'En attente') return '⏳ EN ATTENTE';
-            if (status === 'Vu') return '👁️ VU PAR L\'ÉQUIPE';
-            if (status === 'Traité') return '✅ TRAITÉ - ÉQUIPE ENVOYÉE';
-            return '⏳ EN ATTENTE';
+            if (status === 'Vu') return '👁️ VU';
+            return '✅ TRAITÉ';
         }
 
-        function renderReportsList() {
+        function renderReports() {
             const container = document.getElementById('reportsList');
-            let filteredReports = allReports;
+            let filtered = allReports;
             
             if (currentFilter !== 'ALL') {
-                filteredReports = allReports.filter(r => r.status === currentFilter);
+                filtered = allReports.filter(r => r.status === currentFilter);
             }
             
-            if (filteredReports.length === 0) {
-                container.innerHTML = '<div class="empty-reports">📭 Aucun signalement ' + (currentFilter !== 'ALL' ? currentFilter.toLowerCase() : '') + '</div>';
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="empty-reports" style="text-align:center; padding:30px; color:#64748b;">📭 Aucun signalement</div>';
                 return;
             }
             
-            container.innerHTML = filteredReports.map(report => `
+            container.innerHTML = filtered.map(report => `
                 <div class="report-item">
                     <div class="report-header">
-                        <span class="report-date">📅 ${report.date || new Date(report.timestamp).toLocaleDateString()} à ${report.time || ''}</span>
+                        <span class="report-date">📅 ${report.date || ''} à ${report.time || ''}</span>
                         <span class="report-status ${getStatusClass(report.status)}">
                             ${getStatusText(report.status)}
                         </span>
                     </div>
-                    <div class="report-type">
-                        ${getTypeIcon(report.type)} ${report.type || 'Non spécifié'}
-                    </div>
-                    <div class="report-location">
-                        📍 ${report.loc} (${report.q})
-                    </div>
-                    ${report.userAddress ? `<div class="report-exact-address">🎯 ${report.userAddress.substring(0, 80)}</div>` : ''}
-                    ${report.gpsArrondissement ? `<div class="report-location">🏛️ ${report.gpsArrondissement} | ${report.gpsMairie || ''}</div>` : ''}
-                    ${report.description ? `<div class="report-desc">📝 "${escapeHtml(report.description.substring(0, 100))}${report.description.length > 100 ? '...' : ''}"</div>` : ''}
+                    <div class="report-type">${getTypeIcon(report.type)} ${report.type}</div>
+                    <div class="report-location">📍 ${report.location} (${report.quartier})</div>
+                    ${report.address ? `<div class="report-desc">📍 GPS: ${report.address.substring(0, 60)}</div>` : ''}
+                    ${report.description ? `<div class="report-desc">📝 ${escapeHtml(report.description)}</div>` : ''}
                     <div class="report-photos">
-                        ${report.photos && report.photos.length > 0 ? report.photos.map(photo => `<img src="${photo}" class="report-photo" onclick="viewPhoto('${photo}')">`).join('') : '<span style="font-size:0.65rem; color:#64748b;">📷 Aucune photo</span>'}
+                        ${report.photos && report.photos.length > 0 ? 
+                            report.photos.map(photo => `<img src="${photo}" class="report-photo" onclick="viewPhoto('${photo}')">`).join('') : 
+                            '<span style="font-size:0.65rem; color:#64748b;">📷 Aucune photo</span>'}
                     </div>
-                    <button class="btn-delete-report" onclick="deleteReport('${report.firebaseId}')">🗑️ Supprimer ce signalement</button>
                 </div>
             `).join('');
-        }
-
-        async function deleteReport(reportId) {
-            if (confirm("⚠️ Êtes-vous sûr de vouloir supprimer ce signalement ? Cette action est irréversible.")) {
-                try {
-                    await db_online.ref('reports/' + reportId).remove();
-                    alert("✅ Signalement supprimé avec succès !");
-                } catch (error) {
-                    alert("❌ Erreur lors de la suppression");
-                }
-            }
         }
 
         function getTypeIcon(type) {
@@ -808,227 +627,93 @@
         }
 
         function viewPhoto(photoUrl) {
-            const modal = document.getElementById('photoModal');
-            const modalImg = document.getElementById('modalPhoto');
-            modalImg.src = photoUrl;
-            modal.style.display = 'flex';
+            document.getElementById('modalPhoto').src = photoUrl;
+            document.getElementById('photoModal').style.display = 'flex';
         }
 
         function closePhotoModal() {
             document.getElementById('photoModal').style.display = 'none';
         }
 
-        // FONCTION DE GÉOLOCALISATION AVEC HIÉRARCHIE COMPLÈTE
-        async function getLocationHierarchy(lat, lng) {
-            try {
-                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&namedetails=1`);
-                const data = await response.json();
-                
-                if (data && data.address) {
-                    let lieu = data.name || data.address.road || data.address.pedestrian || data.address.footway || "";
-                    let quartier = data.address.suburb || data.address.neighbourhood || data.address.city_district || "";
-                    let commune = data.address.city || data.address.town || data.address.village || "Douala";
-                    
-                    let arrondissement = "";
-                    let mairie = "";
-                    
-                    const quartierLower = (quartier + " " + lieu + " " + commune).toLowerCase();
-                    
-                    if (quartierLower.includes("bonanjo") || quartierLower.includes("akwa") || quartierLower.includes("bali") || quartierLower.includes("deido")) {
-                        arrondissement = "Douala 1er";
-                        mairie = "Mairie de Bonanjo";
-                    }
-                    else if (quartierLower.includes("new bell") || quartierLower.includes("nkololoun") || quartierLower.includes("babylone") || quartierLower.includes("nylon")) {
-                        arrondissement = "Douala 2e";
-                        mairie = "Mairie de New Bell";
-                    }
-                    else if (quartierLower.includes("ndokoti") || quartierLower.includes("logbaba") || quartierLower.includes("village") || quartierLower.includes("nyalla")) {
-                        arrondissement = "Douala 3e";
-                        mairie = "Mairie de Logbaba";
-                    }
-                    else if (quartierLower.includes("bonabéri") || quartierLower.includes("bonassama") || quartierLower.includes("mabanda") || quartierLower.includes("sodiko") || quartierLower.includes("boquette")) {
-                        arrondissement = "Douala 4e";
-                        mairie = "Mairie de Bonabéri";
-                    }
-                    else if (quartierLower.includes("bonamoussadi") || quartierLower.includes("logpom") || quartierLower.includes("kotto") || quartierLower.includes("makepe")) {
-                        arrondissement = "Douala 5e";
-                        mairie = "Mairie de Kotto";
-                    }
-                    else {
-                        arrondissement = "Douala";
-                        mairie = "Communauté Urbaine de Douala (CUD)";
-                    }
-                    
-                    let fullAddress = "";
-                    if (lieu) fullAddress += lieu;
-                    if (quartier) fullAddress += (fullAddress ? ", " : "") + quartier;
-                    if (arrondissement && arrondissement !== "Douala") fullAddress += (fullAddress ? ", " : "") + arrondissement;
-                    if (commune && !fullAddress.includes(commune)) fullAddress += (fullAddress ? ", " : "") + commune;
-                    
-                    return {
-                        lieu: lieu || "Position GPS",
-                        quartier: quartier || "Quartier non détecté",
-                        arrondissement: arrondissement,
-                        mairie: mairie,
-                        commune: commune,
-                        fullAddress: fullAddress || data.display_name
-                    };
-                }
-                return null;
-            } catch (error) {
-                console.error("Erreur géocodage:", error);
-                return null;
-            }
-        }
-
+        // GÉOLOCALISATION SIMPLIFIÉE
         function initGeolocation() {
             const locationDiv = document.getElementById('locationStatus');
-            const addressCard = document.getElementById('locationAddressCard');
             
             if (!navigator.geolocation) {
-                locationDiv.innerHTML = '❌ La géolocalisation n\'est pas supportée par votre navigateur';
+                locationDiv.innerHTML = '❌ Géolocalisation non supportée';
                 locationDiv.className = 'location-status location-error';
                 return;
             }
             
-            locationDiv.innerHTML = '📍 Récupération de votre position GPS...';
+            geoRetryCount++;
+            locationDiv.innerHTML = `📍 Recherche de votre position (${geoRetryCount}/3)...`;
             locationDiv.className = 'location-status location-pending';
+            
+            // Timeout après 10 secondes
+            const timeoutId = setTimeout(() => {
+                if (!userLat) {
+                    locationDiv.innerHTML = '⏰ Délai dépassé. Cliquez ci-dessous pour entrer manuellement.';
+                    locationDiv.className = 'location-status location-error';
+                    addManualButton();
+                }
+            }, 10000);
             
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
-                    const { latitude, longitude, accuracy } = position.coords;
-                    currentUserLocation = { lat: latitude, lng: longitude, accuracy };
+                    clearTimeout(timeoutId);
+                    userLat = position.coords.latitude;
+                    userLng = position.coords.longitude;
+                    const accuracy = position.coords.accuracy;
                     
-                    locationDiv.innerHTML = '📍 Position GPS obtenue. Recherche de l\'adresse...';
+                    locationDiv.innerHTML = `✅ Position trouvée (précision ${Math.round(accuracy)}m)`;
+                    locationDiv.className = 'location-status location-success';
                     
-                    const hierarchy = await getLocationHierarchy(latitude, longitude);
-                    
-                    if (hierarchy) {
-                        currentHierarchy = hierarchy;
-                        currentAddressName = hierarchy.fullAddress;
-                        
-                        locationDiv.innerHTML = `✅ Position vérifiée avec une précision de ${Math.round(accuracy)} mètres`;
-                        locationDiv.className = 'location-status location-success';
-                        
-                        document.getElementById('exactAddress').innerHTML = `📍 ${hierarchy.lieu}`;
-                        document.getElementById('hierarchyInfo').innerHTML = `🏘️ Quartier: ${hierarchy.quartier} | 🏛️ Mairie: ${hierarchy.mairie} | 🗺️ ${hierarchy.arrondissement}`;
-                        document.getElementById('coordsDisplay').innerHTML = `📐 Lat: ${latitude.toFixed(6)} | Lng: ${longitude.toFixed(6)} | Précision: ${Math.round(accuracy)}m`;
-                        addressCard.style.display = 'block';
-                    } else {
-                        currentAddressName = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
-                        currentHierarchy = { 
-                            lieu: "Position GPS", 
-                            quartier: "Non détecté", 
-                            arrondissement: "Douala", 
-                            mairie: "Communauté Urbaine de Douala (CUD)", 
-                            fullAddress: currentAddressName 
-                        };
-                        
-                        locationDiv.innerHTML = `✅ Position vérifiée (adresse approximative)`;
-                        locationDiv.className = 'location-status location-success';
-                        document.getElementById('exactAddress').innerHTML = `📍 ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
-                        document.getElementById('hierarchyInfo').innerHTML = `🏘️ Quartier: Non détecté | 🏛️ Mairie: CUD | 🗺️ Douala`;
-                        document.getElementById('coordsDisplay').innerHTML = `📐 Lat: ${latitude.toFixed(6)} | Lng: ${longitude.toFixed(6)}`;
-                        addressCard.style.display = 'block';
+                    // Obtenir l'adresse approximative
+                    try {
+                        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${userLat}&lon=${userLng}&zoom=18`);
+                        const data = await response.json();
+                        userAddress = data.display_name || `${userLat.toFixed(5)}, ${userLng.toFixed(5)}`;
+                    } catch(e) {
+                        userAddress = `${userLat.toFixed(5)}, ${userLng.toFixed(5)}`;
                     }
+                    
+                    document.getElementById('exactAddress').innerHTML = userAddress.substring(0, 100);
+                    document.getElementById('coordsDisplay').innerHTML = `📐 ${userLat.toFixed(6)}, ${userLng.toFixed(6)}`;
+                    document.getElementById('locationAddressCard').style.display = 'block';
                 },
                 (error) => {
-                    let errorMessage = "";
-                    switch(error.code) {
-                        case error.PERMISSION_DENIED:
-                            errorMessage = "⚠️ Permission de géolocalisation refusée. Veuillez activer la localisation.";
-                            break;
-                        case error.POSITION_UNAVAILABLE:
-                            errorMessage = "⚠️ Position non disponible";
-                            break;
-                        case error.TIMEOUT:
-                            errorMessage = "⚠️ Délai d'attente dépassé";
-                            break;
-                        default:
-                            errorMessage = "⚠️ Erreur de géolocalisation";
+                    clearTimeout(timeoutId);
+                    let errorMsg = "";
+                    if (error.code === 1) errorMsg = "⚠️ Autorisation refusée";
+                    else if (error.code === 2) errorMsg = "⚠️ Position non disponible";
+                    else errorMsg = "⏰ Délai dépassé";
+                    
+                    if (geoRetryCount < 3) {
+                        locationDiv.innerHTML = `${errorMsg} - Nouvelle tentative...`;
+                        setTimeout(() => initGeolocation(), 2000);
+                    } else {
+                        locationDiv.innerHTML = `${errorMsg}<br>❌ Position automatique impossible`;
+                        locationDiv.className = 'location-status location-error';
+                        addManualButton();
                     }
-                    locationDiv.innerHTML = errorMessage;
-                    locationDiv.className = 'location-status location-error';
                 },
                 { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
             );
         }
 
-        async function capturePhotoWithTimestamp() {
-            return new Promise(async (resolve, reject) => {
-                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    reject(new Error("Appareil photo non disponible"));
-                    return;
-                }
-                
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                    const video = document.createElement('video');
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    
-                    video.srcObject = stream;
-                    video.play();
-                    
-                    await new Promise((resolve) => {
-                        video.onloadedmetadata = () => {
-                            canvas.width = video.videoWidth;
-                            canvas.height = video.videoHeight;
-                            resolve();
-                        };
-                    });
-                    
-                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    
-                    const now = new Date();
-                    const dateStr = now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                    const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                    
-                    ctx.font = 'bold 18px "Courier New", monospace';
-                    ctx.fillStyle = 'white';
-                    ctx.shadowColor = 'black';
-                    ctx.shadowBlur = 3;
-                    ctx.shadowOffsetX = 2;
-                    ctx.shadowOffsetY = 2;
-                    
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                    ctx.fillRect(0, canvas.height - 130, canvas.width, 130);
-                    
-                    ctx.fillStyle = '#39ff14';
-                    ctx.fillText(`📅 ${dateStr} | ⏰ ${timeStr}`, 10, canvas.height - 105);
-                    
-                    const locationText = currentHierarchy ? currentHierarchy.lieu : (currentAddressName ? currentAddressName.substring(0, 50) : "Localisation");
-                    ctx.fillStyle = '#00d2ff';
-                    ctx.font = 'bold 12px "Courier New", monospace';
-                    ctx.fillText(`📍 ${locationText}`, 10, canvas.height - 85);
-                    
-                    if (currentHierarchy) {
-                        ctx.fillStyle = '#bc13fe';
-                        ctx.fillText(`🏘️ Quartier: ${currentHierarchy.quartier}`, 10, canvas.height - 65);
-                        
-                        ctx.fillStyle = '#ff9100';
-                        ctx.fillText(`🏛️ Mairie: ${currentHierarchy.mairie}`, 10, canvas.height - 45);
-                        
-                        ctx.fillStyle = '#39ff14';
-                        ctx.fillText(`🗺️ ${currentHierarchy.arrondissement}`, 10, canvas.height - 25);
-                    }
-                    
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = 'bold 10px "Courier New", monospace';
-                    ctx.fillText(`🌍 GPS: ${currentUserLocation.lat.toFixed(5)}, ${currentUserLocation.lng.toFixed(5)}`, 10, canvas.height - 8);
-                    
-                    ctx.shadowColor = 'transparent';
-                    
-                    const photoData = canvas.toDataURL('image/jpeg', 0.85);
-                    stream.getTracks().forEach(track => track.stop());
-                    
-                    resolve(photoData);
-                } catch (error) {
-                    reject(error);
-                }
-            });
+        function addManualButton() {
+            const locationDiv = document.getElementById('locationStatus');
+            const btn = document.createElement('button');
+            btn.innerHTML = '📍 Entrer ma position manuellement';
+            btn.className = 'manual-btn';
+            btn.onclick = () => {
+                locationDiv.innerHTML = '📍 Mode manuel - Remplissez le quartier et la localisation précise';
+                locationDiv.className = 'location-status location-pending';
+            };
+            locationDiv.appendChild(btn);
         }
 
+        // Gestion des photos simplifiée
         function compressImage(file) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -1038,55 +723,62 @@
                     img.src = e.target.result;
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 600;
-                        canvas.width = MAX_WIDTH;
-                        canvas.height = img.height * (MAX_WIDTH / img.width);
+                        const MAX_WIDTH = 800;
+                        const MAX_HEIGHT = 800;
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        if (width > height) {
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width *= MAX_HEIGHT / height;
+                                height = MAX_HEIGHT;
+                            }
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
                         const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.7));
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.8));
                     };
                 };
             });
         }
 
-        async function handleFiles(input) {
+        async function handlePhotos(input) {
             const files = Array.from(input.files);
             if (files.length === 0) return;
             
-            const photoStatus = document.getElementById("photoStatusText");
-            photoStatus.innerText = "⌛ Traitement de la photo...";
+            const photoStatus = document.getElementById('photoStatus');
+            photoStatus.innerHTML = "⌛ Traitement...";
             
             for (let file of files) {
                 if (photosArray.length >= 5) {
-                    alert("Maximum 5 photos autorisées.");
+                    alert("Maximum 5 photos");
                     break;
                 }
-                
                 if (file.type.startsWith('image/')) {
-                    try {
-                        const photoWithStamp = await capturePhotoWithTimestamp();
-                        photosArray.push(photoWithStamp);
-                    } catch (error) {
-                        console.error("Erreur capture:", error);
-                        const base64 = await compressImage(file);
-                        photosArray.push(base64);
-                    }
+                    const compressed = await compressImage(file);
+                    photosArray.push(compressed);
                 }
             }
             
             renderGallery();
-            const count = photosArray.length;
-            document.getElementById('photoCount').innerText = count > 0 ? `${count} photo(s) prise(s)` : '';
-            photoStatus.innerText = count > 0 ? `✅ ${count} photo(s) avec horodatage` : "📷 PRENDRE UNE PHOTO (AVEC HEURE ET LIEU)";
+            photoStatus.innerHTML = photosArray.length > 0 ? `✅ ${photosArray.length} photo(s)` : "📷 AJOUTER UNE PHOTO";
         }
 
         function renderGallery() {
-            const preview = document.getElementById("galleryPreview");
+            const preview = document.getElementById('galleryPreview');
             if (!preview) return;
             preview.innerHTML = "";
             photosArray.forEach((src, index) => {
-                const container = document.createElement("div");
-                container.className = "thumb-container";
+                const container = document.createElement('div');
+                container.className = 'thumb-container';
                 container.innerHTML = `
                     <img src="${src}" class="img-thumb">
                     <div class="remove-badge" onclick="removePhoto(${index}, event)">×</div>
@@ -1099,131 +791,85 @@
             event.stopPropagation();
             photosArray.splice(index, 1);
             renderGallery();
-            const count = photosArray.length;
-            document.getElementById('photoCount').innerText = count > 0 ? `${count} photo(s) prise(s)` : '';
-            const photoStatus = document.getElementById("photoStatusText");
-            photoStatus.innerText = count > 0 ? `✅ ${count} photo(s) avec horodatage` : "📷 PRENDRE UNE PHOTO (AVEC HEURE ET LIEU)";
+            document.getElementById('photoStatus').innerHTML = photosArray.length > 0 ? `✅ ${photosArray.length} photo(s)` : "📷 AJOUTER UNE PHOTO";
         }
 
-        async function sendToDashboard() {
-            const name = document.getElementById("citName").value.trim();
-            const rawPhone = document.getElementById("citPhone").value.trim();
-            const q = document.getElementById("citQuartier").value.trim();
-            const loc = document.getElementById("citLoc").value.trim();
-            const type = document.getElementById("citLvl").value;
-            const desc = document.getElementById("citDesc").value.trim();
-            const btn = document.getElementById("sendBtn");
-            const successDiv = document.getElementById("successMessage");
+        // Envoi du signalement
+        async function sendReport() {
+            const name = document.getElementById('citizenName').value.trim();
+            const rawPhone = document.getElementById('citizenPhone').value.trim();
+            const quartier = document.getElementById('citizenQuartier').value.trim();
+            const location = document.getElementById('citizenLocation').value.trim();
+            const type = document.getElementById('citizenType').value;
+            const description = document.getElementById('citizenDescription').value.trim();
+            const btn = document.getElementById('sendBtn');
+            const successDiv = document.getElementById('successMessage');
             
+            // Validation
             if (!rawPhone || rawPhone.length !== 9 || !rawPhone.startsWith('6')) {
-                alert("❌ Veuillez entrer un numéro de téléphone valide (9 chiffres commençant par 6)");
+                alert("❌ Numéro invalide (9 chiffres commençant par 6)");
                 return;
             }
             
-            if (!name || !q || !loc || !type) {
-                alert("❌ Veuillez remplir tous les champs obligatoires");
+            if (!name || !quartier || !location) {
+                alert("❌ Veuillez remplir tous les champs");
                 return;
-            }
-            
-            if (photosArray.length === 0) {
-                const confirmNoPhoto = confirm("⚠️ Aucune photo. Voulez-vous continuer ?");
-                if (!confirmNoPhoto) return;
             }
             
             const phone = "+237" + rawPhone;
             btn.disabled = true;
-            btn.innerText = "⏳ ENVOI EN COURS...";
-            btn.classList.add('loading');
+            btn.innerHTML = "⏳ ENVOI...";
             
-            // Sauvegarder le numéro pour le suivi automatique
-            savePhone(rawPhone);
-            
-            let finalAddress = currentAddressName || (currentHierarchy ? currentHierarchy.fullAddress : "Localisation non disponible");
-            let finalLat = currentUserLocation?.lat;
-            let finalLng = currentUserLocation?.lng;
-            let finalQuartier = currentHierarchy?.quartier || "";
-            let finalArrondissement = currentHierarchy?.arrondissement || "";
-            let finalMairie = currentHierarchy?.mairie || "";
-            let finalLieu = currentHierarchy?.lieu || "";
-            
-            if (!finalAddress) {
-                try {
-                    const location = await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 5000 });
-                    });
-                    finalLat = location.coords.latitude;
-                    finalLng = location.coords.longitude;
-                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${finalLat}&lon=${finalLng}&zoom=18`);
-                    const data = await response.json();
-                    finalAddress = data.display_name || `${finalLat.toFixed(5)}, ${finalLng.toFixed(5)}`;
-                } catch (error) {
-                    finalAddress = "Localisation non disponible";
-                }
-            }
-            
-            const id = Date.now();
+            const reportId = Date.now();
             const report = {
-                id: id,
+                id: reportId,
                 name: name,
                 phone: phone,
-                q: q,
-                loc: loc,
+                quartier: quartier,
+                location: location,
                 type: type,
-                description: desc,
+                description: description,
                 photos: photosArray,
                 status: "En attente",
                 time: new Date().toLocaleTimeString('fr-FR'),
                 date: new Date().toLocaleDateString('fr-FR'),
                 timestamp: new Date().toISOString(),
-                userLat: finalLat,
-                userLng: finalLng,
-                userAddress: finalAddress,
-                gpsQuartier: finalQuartier,
-                gpsArrondissement: finalArrondissement,
-                gpsMairie: finalMairie,
-                gpsLieu: finalLieu
+                latitude: userLat,
+                longitude: userLng,
+                address: userAddress
             };
             
             try {
-                await db_online.ref('reports/' + id).set(report);
+                await database.ref('citizen_reports/' + reportId).set(report);
                 
-                // Message de remerciement personnalisé
-                successDiv.innerHTML = `
-                    ✓ Signalement envoyé avec succès !<br><br>
-                    🎉 <strong>Salim MOHAMED</strong> vous remercie pour votre civisme !<br>
-                    📍 Une équipe sera dépêchée dans les plus brefs délais.<br>
-                    🔔 Vous pouvez suivre l'évolution dans l'onglet "MES SIGNALEMENTS"
-                `;
+                successDiv.innerHTML = `✓ Signalement envoyé !<br><br>Merci !<br>Suivez l'évolution dans "MES SIGNALEMENTS"`;
                 successDiv.style.display = "block";
-                btn.innerText = "✓ ENVOYÉ !";
+                btn.innerHTML = "✓ ENVOYÉ !";
                 
+                // Sauvegarder le numéro
+                localStorage.setItem('swms_phone', rawPhone);
+                
+                // Réinitialiser
                 setTimeout(() => {
-                    resetForm();
+                    document.getElementById('citizenName').value = "";
+                    document.getElementById('citizenPhone').value = "";
+                    document.getElementById('citizenQuartier').value = "";
+                    document.getElementById('citizenLocation').value = "";
+                    document.getElementById('citizenDescription').value = "";
+                    photosArray = [];
+                    renderGallery();
+                    document.getElementById('photoStatus').innerHTML = "📷 AJOUTER UNE PHOTO";
                     successDiv.style.display = "none";
                     btn.disabled = false;
-                    btn.innerText = "📨 ENVOYER LE SIGNALEMENT";
-                    btn.classList.remove('loading');
-                }, 5000);
+                    btn.innerHTML = "📨 ENVOYER";
+                }, 4000);
+                
             } catch (error) {
-                alert("❌ Erreur réseau : Impossible d'envoyer l'alerte. Vérifiez votre connexion.");
+                console.error("Erreur:", error);
+                alert("❌ Erreur réseau - Vérifiez votre connexion");
                 btn.disabled = false;
-                btn.innerText = "📨 ENVOYER LE SIGNALEMENT";
-                btn.classList.remove('loading');
+                btn.innerHTML = "📨 RÉESSAYER";
             }
-        }
-
-        function resetForm() {
-            document.getElementById("citName").value = "";
-            document.getElementById("citPhone").value = "";
-            document.getElementById("citQuartier").value = "";
-            document.getElementById("citLoc").value = "";
-            document.getElementById("citDesc").value = "";
-            document.getElementById("citLvl").value = "Poubelle qui déborde";
-            photosArray = [];
-            renderGallery();
-            document.getElementById('photoCount').innerText = '';
-            const photoStatus = document.getElementById("photoStatusText");
-            if (photoStatus) photoStatus.innerText = "📷 PRENDRE UNE PHOTO (AVEC HEURE ET LIEU)";
         }
 
         function escapeHtml(str) {
@@ -1236,14 +882,15 @@
             });
         }
 
+        // Charger le numéro sauvegardé
+        const savedPhone = localStorage.getItem('swms_phone');
+        if (savedPhone) {
+            document.getElementById('citizenPhone').value = savedPhone;
+        }
+
+        // Démarrer la géolocalisation
         document.addEventListener('DOMContentLoaded', function() {
             initGeolocation();
-            
-            // Vérifier si un numéro est déjà sauvegardé
-            const saved = getSavedPhone();
-            if (saved && saved.length === 9) {
-                document.getElementById('citPhone').value = saved;
-            }
         });
     </script>
 </body>
