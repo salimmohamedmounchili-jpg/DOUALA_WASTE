@@ -21,7 +21,15 @@
             --orange: #ff9100;
             --bg: #05070a;
             --card-bg: #0f172a;
-            --citizen-purple: #bc13fe; 
+            --citizen-purple: #bc13fe;
+            --gold: #ffd700;
+            --silver: #c0c0c0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
@@ -258,178 +266,1850 @@
             border: 2px solid var(--citizen-purple);
             margin: 15px 0;
         }
+
+        .auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, #0a0f1a 0%, #05070a 100%);
+            z-index: 20000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(12px);
+        }
+
+        .auth-card {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 210, 255, 0.3);
+            border-radius: 24px;
+            padding: 45px;
+            max-width: 480px;
+            width: 90%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 210, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .auth-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 210, 255, 0.2);
+        }
+
+        .auth-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 35px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px;
+            border-radius: 60px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            cursor: pointer;
+            font-family: 'Orbitron', monospace;
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: #64748b;
+            transition: all 0.3s ease;
+            border-radius: 50px;
+        }
+
+        .auth-tab.active {
+            background: linear-gradient(135deg, rgba(0, 210, 255, 0.2), rgba(57, 255, 20, 0.1));
+            color: var(--blue);
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
+        }
+
+        .auth-form {
+            display: none;
+            animation: fadeSlideIn 0.4s ease;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-form h2 {
+            font-family: 'Orbitron', monospace;
+            text-align: center;
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--blue), var(--green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .auth-form p {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 30px;
+            font-size: 0.85rem;
+        }
+
+        .auth-input-group {
+            margin-bottom: 22px;
+        }
+
+        .auth-input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--green);
+            font-weight: 600;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        .auth-input-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .auth-input-group input:focus {
+            outline: none;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(0, 210, 255, 0.2);
+            background: #1e293b;
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--blue), var(--green));
+            color: #000;
+            font-weight: bold;
+            font-family: 'Orbitron', monospace;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        .auth-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 25px rgba(0, 210, 255, 0.5);
+        }
+
+        .auth-message {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 0.85rem;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .auth-message.error {
+            background: rgba(255, 49, 49, 0.15);
+            border: 1px solid rgba(255, 49, 49, 0.5);
+            color: #ff6b6b;
+            display: block;
+        }
+
+        .auth-message.success {
+            background: rgba(57, 255, 20, 0.1);
+            border: 1px solid rgba(57, 255, 20, 0.4);
+            color: var(--green);
+            display: block;
+        }
+
+        .forgot-password {
+            text-align: right;
+            margin-top: 8px;
+            font-size: 0.75rem;
+        }
+        
+        .forgot-password a {
+            color: var(--blue);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+        .menu-container {
+            position: fixed;
+            top: 25px;
+            left: 25px;
+            z-index: 10000;
+        }
+
+        .menu-icon {
+            cursor: pointer;
+            padding: 12px 16px;
+            font-size: 24px;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 210, 255, 0.3);
+            transition: all 0.3s ease;
+            color: var(--blue);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .menu-icon span {
+            font-size: 0.8rem;
+            font-family: 'Orbitron';
+            display: none;
+        }
+
+        .menu-icon:hover {
+            background: var(--blue);
+            color: black;
+            border-color: var(--blue);
+            transform: scale(1.02);
+        }
+
+        .menu-icon:hover span {
+            display: inline;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            background: rgba(15, 23, 42, 0.98);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 210, 255, 0.3);
+            border-radius: 16px;
+            min-width: 260px;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+            font-size: 0.9rem;
+        }
+
+        .dropdown-menu a:hover {
+            background: rgba(0, 210, 255, 0.15);
+            border-left-color: var(--blue);
+            padding-left: 24px;
+        }
+
+        .admin-badge {
+            position: fixed;
+            bottom: 25px;
+            left: 25px;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.9), rgba(255, 215, 0, 0.7));
+            backdrop-filter: blur(10px);
+            color: #000;
+            padding: 10px 18px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            z-index: 9999;
+            cursor: pointer;
+            font-family: 'Orbitron', monospace;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .admin-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(255, 215, 0, 0.5);
+        }
+
+        .auth-user-info {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 6px 18px 6px 12px;
+            border-radius: 60px;
+            z-index: 999;
+            border: 1px solid rgba(0, 210, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .auth-user-info:hover {
+            border-color: rgba(0, 210, 255, 0.5);
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.1);
+        }
+
+        .auth-user-avatar {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--blue), var(--green));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+            color: #000;
+        }
+
+        .auth-user-details {
+            font-size: 0.8rem;
+            line-height: 1.3;
+        }
+
+        .auth-user-name {
+            font-weight: bold;
+        }
+
+        .auth-user-role {
+            color: var(--green);
+            font-size: 0.7rem;
+        }
+
+        .auth-logout-btn {
+            background: rgba(255, 49, 49, 0.15);
+            border: 1px solid rgba(255, 49, 49, 0.4);
+            color: #ff6b6b;
+            padding: 6px 14px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .auth-logout-btn:hover {
+            background: var(--red);
+            color: white;
+            border-color: var(--red);
+        }
+
+        .admin-panel-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.97);
+            backdrop-filter: blur(12px);
+            z-index: 20001;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .admin-panel-card {
+            background: rgba(15, 23, 42, 0.98);
+            border: 1px solid var(--gold);
+            border-radius: 24px;
+            padding: 25px;
+            width: 92%;
+            max-width: 1200px;
+            max-height: 88vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            animation: fadeScale 0.3s ease;
+        }
+
+        @keyframes fadeScale {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .admin-panel-card h2 {
+            font-family: 'Orbitron', monospace;
+            color: var(--gold);
+            font-size: 1.5rem;
+        }
+
+        .admin-panel-card h3 {
+            font-family: 'Orbitron', monospace;
+            color: var(--green);
+            font-size: 1.2rem;
+            margin-top: 20px;
+        }
+
+        .admin-users-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.8rem;
+        }
+
+        .admin-users-table th {
+            background: rgba(0, 210, 255, 0.1);
+            color: var(--blue);
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .admin-users-table td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+        }
+
+        .btn-admin {
+            padding: 5px 12px;
+            font-size: 0.7rem;
+            margin: 2px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-admin:hover {
+            transform: scale(1.02);
+        }
+
+        .btn-validate { background: rgba(57, 255, 20, 0.15); color: var(--green); border: 1px solid rgba(57, 255, 20, 0.4); }
+        .btn-block { background: rgba(255, 49, 49, 0.15); color: #ff6b6b; border: 1px solid rgba(255, 49, 49, 0.4); }
+        .btn-delete-user { background: rgba(255, 49, 49, 0.15); color: #ff6b6b; border: 1px solid rgba(255, 49, 49, 0.4); }
+        .btn-reset { background: rgba(255, 145, 0, 0.15); color: var(--orange); border: 1px solid rgba(255, 145, 0, 0.4); }
+        .btn-assign { background: rgba(0, 210, 255, 0.15); color: var(--blue); border: 1px solid rgba(0, 210, 255, 0.4); }
+        .btn-edit { background: rgba(255, 215, 0, 0.15); color: var(--gold); border: 1px solid rgba(255, 215, 0, 0.4); }
+
+        .add-user-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+        }
+
+        .add-user-form input, .add-user-form select {
+            padding: 10px 12px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            color: white;
+            font-size: 0.85rem;
+        }
+
+        .btn-add-user {
+            background: linear-gradient(135deg, var(--green), #2ecc71);
+            color: black;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            padding: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-add-user:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.4);
+        }
+
+        .change-pwd-modal {
+            max-width: 450px !important;
+        }
+
+        .change-pwd-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .change-pwd-form input {
+            padding: 12px 16px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            color: white;
+            font-size: 0.9rem;
+        }
+        
+        .edit-profile-modal {
+            max-width: 500px !important;
+        }
+        
+        .edit-profile-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .edit-profile-form input {
+            padding: 12px 16px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            color: white;
+            font-size: 0.9rem;
+        }
+        
+        .forgot-password-modal {
+            max-width: 450px !important;
+        }
+        
+        .forgot-password-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .forgot-password-form input {
+            padding: 12px 16px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            color: white;
+            font-size: 0.9rem;
+        }
+        
+        .forgot-password-request {
+            background: rgba(0, 210, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .assign-modal {
+            max-width: 450px !important;
+        }
+
+        .assign-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .assign-form input {
+            padding: 12px 16px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            color: white;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .status-active { background: rgba(57, 255, 20, 0.15); color: var(--green); border: 1px solid rgba(57, 255, 20, 0.3); }
+        .status-pending { background: rgba(255, 145, 0, 0.15); color: var(--orange); border: 1px solid rgba(255, 145, 0, 0.3); }
+        .status-blocked { background: rgba(255, 49, 49, 0.15); color: #ff6b6b; border: 1px solid rgba(255, 49, 49, 0.3); }
+        
+        .history-modal-content { max-width: 1300px; }
+        .history-filters { display: flex; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; align-items: center; }
+        .history-filters select, .history-filters input { padding: 10px 15px; border-radius: 10px; background: #1e293b; border: 1px solid #334155; color: white; min-width: 150px; }
+        .history-stats { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
+        .history-stat-card { background: rgba(0,210,255,0.08); padding: 12px 25px; border-radius: 12px; text-align: center; border-left: 3px solid var(--blue); cursor: pointer; transition: all 0.3s ease; }
+        .history-stat-card:hover { transform: translateY(-2px); background: rgba(0,210,255,0.15); }
+        .history-stat-card h3 { font-size: 1.8rem; margin-top: 5px; }
+        .history-stat-card.active-filter { background: rgba(0,210,255,0.25); border-left-color: var(--green); box-shadow: 0 0 15px rgba(0,210,255,0.3); }
+        .btn-history-export { background: #39ff14; color: black; border: none; border-radius: 8px; padding: 10px 20px; cursor: pointer; font-weight: bold; transition: all 0.3s ease; }
+        .type-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; }
+        .type-critique { background: rgba(255,49,49,0.2); color: #ff6b6b; border: 1px solid rgba(255,49,49,0.4); }
+        .type-urgent { background: rgba(255,145,0,0.2); color: #ffa500; border: 1px solid rgba(255,145,0,0.4); }
+        .type-caniveau { background: rgba(0,210,255,0.2); color: #00d2ff; border: 1px solid rgba(0,210,255,0.4); }
+        .type-autre { background: rgba(188,19,254,0.2); color: #bc13fe; border: 1px solid rgba(188,19,254,0.4); }
+        .coord-badge { background: rgba(0,210,255,0.2); padding: 3px 10px; border-radius: 20px; font-family: monospace; font-size: 0.7rem; display: inline-block; margin-top: 4px; }
+        .enroll-form-improved { display: flex; flex-direction: column; gap: 15px; }
+        .enroll-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .quartier-id-group { background: rgba(57,255,20,0.05); padding: 12px; border-radius: 10px; margin-top: 10px; }
+        .info-text { font-size: 0.7rem; color: #94a3b8; margin-top: 4px; display: block; }
+        @media (max-width: 600px) { .enroll-row { grid-template-columns: 1fr; } }
+        
+        .photo-btn-wrapper {
+            background: rgba(188, 19, 254, 0.1);
+            border: 1px dashed var(--citizen-purple);
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        #galleryPreview {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .img-thumb {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 1px solid var(--citizen-purple);
+        }
+        .thumb-container { position: relative; }
+        .remove-badge {
+            position: absolute; top: -5px; right: -5px; background: red; color: white;
+            border-radius: 50%; width: 18px; height: 18px; font-size: 12px;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+        }
+        .location-status {
+            font-size: 0.7rem;
+            padding: 8px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            background: rgba(0,0,0,0.3);
+        }
+        .location-success { color: var(--green); background: rgba(57,255,20,0.1); border-left: 3px solid var(--green); }
+        .location-error { color: var(--red); background: rgba(255,49,49,0.1); border-left: 3px solid var(--red); }
+        .location-pending { color: var(--orange); background: rgba(255,145,0,0.1); border-left: 3px solid var(--orange); }
+        
+        .pwd-request-badge {
+            background: rgba(255, 145, 0, 0.2);
+            border: 1px solid var(--orange);
+            border-radius: 8px;
+            padding: 5px 10px;
+            margin-top: 10px;
+            font-size: 0.7rem;
+        }
     </style>
 </head>
 <body>
 
-<div id="alert-popup-container"></div>
-
-<header>
-    <div class="title-wrapper">
-        <h1>DOUALA WASTE COMMAND CENTER <small>UNITÉ DE RÉPONSE RAPIDE ET COORDINATION URBAINE</small></h1>
-    </div>
-    <div id="clock">--:--:--</div>
-</header>
-
-<div class="stats">
-    <div class="card">Moyenne Remplissage (Unités Actives)<h2 id="avg">0%</h2></div>
-    <div class="card">Alertes Critiques (Online)<h2 id="alerts" style="color: var(--red);">0</h2></div>
-    <div class="card" style="border-left-color: var(--citizen-purple); position: relative;">
-        Signalements Citoyens
-        <h2 id="citCount" style="color: var(--citizen-purple);">0</h2>
-    </div>
-</div>
-
-<div class="controls-bar">
-    <div class="control-group">
-        <div class="search-container">
-            <span class="search-icon">🔍</span>
-            <input type="text" placeholder="Rechercher un quartier..." oninput="search=this.value;render()">
+<!-- AUTHENTIFICATION -->
+<div id="authOverlay" class="auth-overlay">
+    <div class="auth-card">
+        <div class="auth-tabs">
+            <div class="auth-tab active" onclick="switchAuthTab('login')">🔐 CONNEXION</div>
+            <div class="auth-tab" onclick="switchAuthTab('register')">📝 INSCRIPTION</div>
         </div>
-        <button class="btn-refresh" onclick="manualRefresh()">🔄 ACTUALISER</button>
-    </div>
-    <div class="control-group">
-        <button onclick="setFilter('ALL')">TOUS</button>
-        <button onclick="setFilter('URGENT')" style="border-color: var(--red);">URGENT</button>
-        <button onclick="openEnrollModal()" style="border-color: var(--green); color: var(--green);">＋ ENRÔLER POUBELLE</button>
-        <button onclick="if(confirm('Reset total?')){localStorage.clear();location.reload();}" style="border-color:#555; font-size:0.7rem; color:#aaa;">RESET DB</button>
-    </div>
-    <div class="control-group">
-        <button onclick="openMap()">🗺️ CARTE</button>
-        <button onclick="openCitizenInbox()" style="border-color: var(--citizen-purple); color: var(--citizen-purple); position: relative;">
-            📩 MESSAGES <span id="msgNew" class="msg-badge" style="display:none;">!</span>
-        </button>
-        <button onclick="openCitizenPortal()" style="background: var(--citizen-purple); color: white; border: none;">📢 PORTAIL CITOYEN</button>
-    </div>
-</div>
-
-<table>
-    <thead>
-        <tr>
-            <th>ID Quartier</th>
-            <th>Quartier</th>
-            <th>Remplissage (%)</th>
-            <th>Unités (Online/Total)</th>
-            <th>Bacs Pleins</th>
-            <th>État Global</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody id="mainBody"></tbody>
-</table>
-
-<h2 style="font-family: Orbitron; margin-top:30px; color: var(--blue); font-size: 1.2rem;">📊 ANALYSE PAR SECTEUR (Bâtons)</h2>
-<canvas id="chart" style="max-height: 250px;"></canvas>
-
-<div class="modal" id="citizenInboxModal">
-    <div class="modal-content" style="max-width: 700px;">
-        <h2 style="font-family: Orbitron; color: var(--citizen-purple);">INBOX : SIGNALEMENTS PUBLICS</h2>
-        <div id="citizenInboxBody" style="margin-top:20px;">
-            <p style="color: #64748b; text-align: center;">Aucun message en attente.</p>
+        <div id="authLoginForm" class="auth-form active">
+            <h2>COMMAND CENTER</h2>
+            <p>Accédez à votre espace de travail sécurisé</p>
+            <div class="auth-input-group">
+                <label>📧 EMAIL ou MATRICULE</label>
+                <input type="text" id="authEmail" placeholder="exemple@swms.cm ou matricule">
+            </div>
+            <div class="auth-input-group">
+                <label>🔒 MOT DE PASSE</label>
+                <input type="password" id="authPassword" placeholder="Votre mot de passe">
+            </div>
+            <div class="forgot-password">
+                <a onclick="openForgotPasswordModal()">🔑 Mot de passe oublié ?</a>
+            </div>
+            <button class="auth-btn" onclick="authLogin()">🚪 SE CONNECTER</button>
+            <div id="authLoginMsg" class="auth-message"></div>
         </div>
-        <br>
-        <button onclick="closeCitizenInbox()">FERMER L'INBOX</button>
+        <div id="authRegisterForm" class="auth-form">
+            <h2>REJOINDRE L'ÉQUIPE</h2>
+            <p>Créez votre compte - Validation par l'administrateur</p>
+            <div class="auth-input-group">
+                <label>👤 NOM COMPLET</label>
+                <input type="text" id="regFullname" placeholder="Votre nom et prénom">
+            </div>
+            <div class="auth-input-group">
+                <label>📧 EMAIL</label>
+                <input type="email" id="regEmail" placeholder="exemple@swms.cm">
+            </div>
+            <div class="auth-input-group">
+                <label>📞 TÉLÉPHONE</label>
+                <input type="tel" id="regPhone" placeholder="+237 XXXXXXXX">
+            </div>
+            <div class="auth-input-group">
+                <label>🏢 FONCTION / POSTE</label>
+                <input type="text" id="regPoste" placeholder="Technicien, Superviseur...">
+            </div>
+            <button class="auth-btn" onclick="authRegister()">📨 SOUMETTRE LA DEMANDE</button>
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="switchAuthTab('login')" style="background:none; border:1px solid rgba(0,210,255,0.5); color:var(--blue); padding:10px 25px; border-radius:30px; cursor:pointer;">◀ RETOUR À LA CONNEXION</button>
+            </div>
+            <div id="authRegisterMsg" class="auth-message"></div>
+        </div>
     </div>
 </div>
 
-<div id="photoViewModal" class="modal" onclick="this.style.display='none'">
-    <div class="modal-content" style="max-width: 500px; text-align: center; position: relative;" onclick="event.stopPropagation()">
-        <h3 id="photoTitle" style="font-family: Orbitron; color: var(--citizen-purple); margin-bottom:15px;">PREUVE VISUELLE</h3>
-        <img id="imgFullView" src="">
-        <p id="photoLegend" style="margin-top:10px; font-style:italic; color:#94a3b8;"></p>
-        <br>
-        <button onclick="document.getElementById('photoViewModal').style.display='none'">FERMER</button>
+<!-- MENU HAMBURGER PREMIUM -->
+<div class="menu-container" id="menuContainer" style="display: none;">
+    <div class="menu-icon" onclick="toggleMenu()">
+        ☰ <span>MENU</span>
+    </div>
+    <div id="dropdownMenu" class="dropdown-menu">
+        <a onclick="openAdminPanel(); toggleMenu()">👑 GESTION DES UTILISATEURS</a>
+        <a onclick="openEditProfileModal(); toggleMenu()">✏️ MODIFIER MON PROFIL</a>
+        <a onclick="openChangePasswordModal(); toggleMenu()">🔑 CHANGER MON MOT DE PASSE</a>
+        <a onclick="openMap(); toggleMenu()">🗺️ VISUALISER LA CARTE</a>
+        <a onclick="openCitizenInbox(); toggleMenu()">📩 MESSAGES CITOYENS</a>
+        <a onclick="openCitizenPortal(); toggleMenu()">📢 PORTAIL CITOYEN</a>
+        <a onclick="openHistoryModal(); toggleMenu()">📜 HISTORIQUE SIGNALEMENTS</a>
+        <a onclick="manualRefresh(); toggleMenu()">🔄 ACTUALISER</a>
     </div>
 </div>
 
-<div class="modal" id="citizenPortalModal">
-    <div class="modal-content" style="max-width: 500px; border-color: var(--citizen-purple);">
-        <h2 style="font-family: Orbitron; color: var(--citizen-purple);">SIGNALER UN DÉBORDEMENT</h2>
-        <p style="font-size: 0.9rem; color: #94a3b8;">Aidez-nous à identifier les zones critiques non équipées de capteurs.</p>
-        <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
-            <input type="text" id="citName" placeholder="Votre nom">
-            <input type="text" id="citPhone" placeholder="N° de téléphone (WhatsApp)">
-            <select id="citQuartier">
-                <option value="Akwa">Akwa</option>
-                <option value="New Bell">New Bell</option>
-                <option value="Deido">Deido</option>
-                <option value="Bonabéri">Bonabéri</option>
-                <option value="Ndokoti">Ndokoti</option>
-                <option value="Logpom">Logpom</option>
-                <option value="Village">Village</option>
+<!-- BADGE ADMIN PREMIUM -->
+<div id="adminBadge" class="admin-badge" style="display: none;" onclick="openAdminPanel()">
+    👑 PANEL ADMIN
+</div>
+
+<!-- USER INFO PREMIUM -->
+<div id="authUserInfo" class="auth-user-info" style="display: none;"></div>
+
+<!-- PANEL ADMIN PREMIUM -->
+<div id="adminPanelOverlay" class="admin-panel-overlay">
+    <div class="admin-panel-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h2>👑 GESTION DES UTILISATEURS</h2>
+            <button onclick="closeAdminPanel()" style="background:rgba(255,49,49,0.15); border:1px solid rgba(255,49,49,0.4); color:#ff6b6b; padding:8px 20px; border-radius:10px; cursor:pointer; font-size:0.85rem;">✖ FERMER</button>
+        </div>
+        <div id="adminUsersList"></div>
+        
+        <div id="addEmployeeSection" style="display: none;">
+            <h3>➕ AJOUTER UN EMPLOYÉ</h3>
+            <div class="add-user-form">
+                <input type="text" id="empFullname" placeholder="Nom complet">
+                <input type="email" id="empEmail" placeholder="Email">
+                <input type="tel" id="empPhone" placeholder="Téléphone">
+                <input type="text" id="empMatricule" placeholder="Matricule">
+                <input type="password" id="empPassword" placeholder="Mot de passe">
+                <select id="empRole">
+                    <option value="EMPLOYE">EMPLOYÉ</option>
+                    <option value="ADMIN">ADMINISTRATEUR</option>
+                </select>
+                <button class="btn-add-user" onclick="addEmployee()">✅ CRÉER L'UTILISATEUR</button>
+            </div>
+        </div>
+        
+        <div id="passwordRequestsSection" style="margin-top: 30px;">
+            <h3>🔐 DEMANDES DE RÉINITIALISATION DE MOT DE PASSE</h3>
+            <div id="passwordRequestsList"></div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CHANGEMENT MOT DE PASSE -->
+<div id="changePwdModal" class="modal">
+    <div class="modal-content change-pwd-modal">
+        <h2 style="font-family:Orbitron; color:var(--blue); margin-bottom:20px;">🔑 CHANGER MON MOT DE PASSE</h2>
+        <div class="change-pwd-form">
+            <input type="password" id="oldPassword" placeholder="Ancien mot de passe">
+            <input type="password" id="newPassword" placeholder="Nouveau mot de passe (min 6 caractères)">
+            <input type="password" id="confirmNewPassword" placeholder="Confirmer le nouveau mot de passe">
+            <button onclick="changePassword()" style="background:var(--blue); color:black;">VALIDER</button>
+            <button onclick="closeChangePasswordModal()" style="background:rgba(255,49,49,0.15); border-color:rgba(255,49,49,0.4); color:#ff6b6b;">ANNULER</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL MODIFICATION PROFIL -->
+<div id="editProfileModal" class="modal">
+    <div class="modal-content edit-profile-modal">
+        <h2 style="font-family:Orbitron; color:var(--gold); margin-bottom:20px;">✏️ MODIFIER MON PROFIL</h2>
+        <div class="edit-profile-form">
+            <input type="text" id="editFullname" placeholder="Nom complet">
+            <input type="email" id="editEmail" placeholder="Email">
+            <input type="tel" id="editPhone" placeholder="Téléphone">
+            <button onclick="updateProfile()" style="background:var(--gold); color:black;">💾 ENREGISTRER LES MODIFICATIONS</button>
+            <button onclick="closeEditProfileModal()" style="background:rgba(255,49,49,0.15); border-color:rgba(255,49,49,0.4); color:#ff6b6b;">ANNULER</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL MOT DE PASSE OUBLIÉ -->
+<div id="forgotPasswordModal" class="modal">
+    <div class="modal-content forgot-password-modal">
+        <h2 style="font-family:Orbitron; color:var(--blue); margin-bottom:20px;">🔑 RÉCUPÉRATION DE MOT DE PASSE</h2>
+        <div class="forgot-password-form">
+            <div class="forgot-password-request">
+                <label>📧 EMAIL ou MATRICULE</label>
+                <input type="text" id="forgotIdentifier" placeholder="Votre email ou matricule">
+            </div>
+            <button onclick="requestPasswordReset()" style="background:var(--blue); color:black;">📨 ENVOYER LA DEMANDE</button>
+            <button onclick="closeForgotPasswordModal()" style="background:rgba(255,49,49,0.15); border-color:rgba(255,49,49,0.4); color:#ff6b6b;">ANNULER</button>
+            <div id="forgotPasswordMsg" class="auth-message"></div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL ASSIGNATION MOT DE PASSE -->
+<div id="assignModal" class="modal">
+    <div class="modal-content assign-modal">
+        <h2 style="font-family:Orbitron; color:var(--gold);">🔑 ATTRIBUER LES IDENTIFIANTS</h2>
+        <div id="assignUserInfo" style="margin: 15px 0; padding: 12px; background:rgba(0,210,255,0.1); border-radius:10px;"></div>
+        <div class="assign-form">
+            <input type="text" id="assignMatricule" placeholder="Matricule unique (ex: SWMS-001)">
+            <input type="password" id="assignPassword" placeholder="Mot de passe">
+            <input type="password" id="assignConfirmPwd" placeholder="Confirmer le mot de passe">
+            <button onclick="confirmAssignPassword()" style="background:linear-gradient(135deg,var(--green),#2ecc71); color:black;">✅ VALIDER ET ACTIVER</button>
+            <button onclick="closeAssignModal()" style="background:rgba(255,49,49,0.15); color:#ff6b6b;">ANNULER</button>
+        </div>
+    </div>
+</div>
+
+<!-- DASHBOARD PRINCIPAL -->
+<div id="dashboard" style="display: none;">
+    <div id="alert-popup-container"></div>
+
+    <header>
+        <div class="title-wrapper">
+            <h1>DOUALA WASTE COMMAND CENTER <small>UNITÉ DE RÉPONSE RAPIDE ET COORDINATION URBAINE</small></h1>
+        </div>
+        <div id="clock">--:--:--</div>
+    </header>
+
+    <div class="stats">
+        <div class="card">Moyenne Remplissage (Unités Actives)<h2 id="avg">0%</h2></div>
+        <div class="card">Alertes Critiques (Online)<h2 id="alerts" style="color: var(--red);">0</h2></div>
+        <div class="card" style="border-left-color: var(--citizen-purple); position: relative;">
+            Signalements Citoyens
+            <h2 id="citCount" style="color: var(--citizen-purple);">0</h2>
+        </div>
+    </div>
+
+    <div class="controls-bar">
+        <div class="control-group">
+            <div class="search-container">
+                <span class="search-icon">🔍</span>
+                <input type="text" placeholder="Rechercher un quartier..." oninput="search=this.value;render()">
+            </div>
+            <button class="btn-refresh" onclick="manualRefresh()">🔄 ACTUALISER</button>
+        </div>
+        <div class="control-group">
+            <button onclick="setFilter('ALL')">TOUS</button>
+            <button onclick="setFilter('URGENT')" style="border-color: var(--red);">URGENT</button>
+            <button onclick="openEnrollModalImproved()" style="border-color: var(--green); color: var(--green);">＋ ENRÔLER POUBELLE</button>
+            <button onclick="if(confirm('Reset total?')){localStorage.clear();location.reload();}" style="border-color:#555; font-size:0.7rem; color:#aaa;">RESET DB</button>
+        </div>
+        <div class="control-group">
+            <button onclick="openMap()">🗺️ CARTE</button>
+            <button onclick="openCitizenInbox()" style="border-color: var(--citizen-purple); color: var(--citizen-purple); position: relative;">
+                📩 MESSAGES <span id="msgNew" class="msg-badge" style="display:none;">!</span>
+            </button>
+            <button onclick="openCitizenPortal()" style="background: var(--citizen-purple); color: white; border: none;">📢 PORTAIL CITOYEN</button>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID Quartier</th>
+                <th>Quartier</th>
+                <th>Remplissage (%)</th>
+                <th>Unités (Online/Total)</th>
+                <th>Bacs Pleins</th>
+                <th>État Global</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="mainBody"></tbody>
+    </table>
+
+    <h2 style="font-family: Orbitron; margin-top:30px; color: var(--blue); font-size: 1.2rem;">📊 ANALYSE PAR SECTEUR (Bâtons)</h2>
+    <canvas id="chart" style="max-height: 250px;"></canvas>
+
+    <!-- MODAL INBOX CITOYEN -->
+    <div class="modal" id="citizenInboxModal">
+        <div class="modal-content" style="max-width: 700px;">
+            <h2 style="font-family: Orbitron; color: var(--citizen-purple);">INBOX : SIGNALEMENTS PUBLICS</h2>
+            <div id="citizenInboxBody" style="margin-top:20px;">
+                <p style="color: #64748b; text-align: center;">Aucun message en attente.</p>
+            </div>
+            <br>
+            <button onclick="closeCitizenInbox()">FERMER L'INBOX</button>
+        </div>
+    </div>
+
+    <!-- MODAL PHOTO VIEWER -->
+    <div id="photoViewModal" class="modal" onclick="this.style.display='none'">
+        <div class="modal-content" style="max-width: 500px; text-align: center; position: relative;" onclick="event.stopPropagation()">
+            <h3 id="photoTitle" style="font-family: Orbitron; color: var(--citizen-purple); margin-bottom:15px;">PREUVE VISUELLE</h3>
+            <img id="imgFullView" src="">
+            <p id="photoLegend" style="margin-top:10px; font-style:italic; color:#94a3b8;"></p>
+            <br>
+            <button onclick="document.getElementById('photoViewModal').style.display='none'">FERMER</button>
+        </div>
+    </div>
+
+    <!-- MODAL PORTAIL CITOYEN AVEC GÉOLOCALISATION -->
+    <div class="modal" id="citizenPortalModal">
+        <div class="modal-content" style="max-width: 550px; border-color: var(--citizen-purple);">
+            <h2 style="font-family: Orbitron; color: var(--citizen-purple);">📢 SIGNALEMENT CITOYEN</h2>
+            <p style="font-size: 0.8rem; color: #94a3b8;">Votre aide est précieuse pour une ville plus propre</p>
+            
+            <div id="locationStatus" class="location-status location-pending">📍 Récupération de votre position en cours...</div>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 15px;">
+                <input type="text" id="citName" placeholder="Votre nom complet" style="padding: 10px;">
+                <input type="tel" id="citPhone" placeholder="Votre numéro de téléphone (9 chiffres)" style="padding: 10px;" maxlength="9" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                <input list="quartiers-list-cit" id="citQuartier" placeholder="Quartier de Douala" style="padding: 10px;">
+                <datalist id="quartiers-list-cit"></datalist>
+                <input type="text" id="citLoc" placeholder="Localisation précise (ex: Face Cinéma Abbia)" style="padding: 10px;">
+                
+                <select id="citLvl" style="padding: 10px;">
+                    <option value="Poubelle qui déborde">🗑️ Poubelle qui déborde</option>
+                    <option value="Dépôt sauvage">🚮 Dépôt sauvage</option>
+                    <option value="Caniveau bouché">🌊 Caniveau bouché</option>
+                    <option value="Autre">📌 Autre problème</option>
+                </select>
+                
+                <textarea id="citDesc" placeholder="Description du problème..." style="padding: 10px; min-height: 60px;"></textarea>
+                
+                <div class="photo-btn-wrapper" onclick="document.getElementById('citPhoto').click()">
+                    <span id="photoStatusText">📷 CLIQUEZ POUR PRENDRE UNE PHOTO (AVEC HEURE ET LIEU)</span>
+                    <input type="file" id="citPhoto" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFiles(this)">
+                    <div id="galleryPreview"></div>
+                </div>
+                
+                <button id="sendBtn" onclick="sendToDashboard()" style="background: var(--citizen-purple); color: white; border: none; padding: 12px;">📨 ENVOYER L'ALERTE</button>
+                <div id="success" style="display: none; color: var(--green); text-align: center; padding: 10px;">✓ Alerte transmise avec succès !</div>
+            </div>
+            <br>
+            <button onclick="closeCitizenPortal()" style="border-color: #555; color: #555;">ANNULER</button>
+        </div>
+    </div>
+
+    <div class="modal" id="detailsModal">
+        <div class="modal-content">
+            <h2 id="modalTitle" style="font-family: Orbitron; color: var(--blue);"></h2>
+            <table style="font-size: 0.85rem;">
+                <thead>
+                    <tr>
+                        <th>ID UNITÉ</th>
+                        <th>LOCALISATION </th>
+                        <th>REMPLISSAGE</th>
+                        <th>ÉTAT COUVERCLE</th>
+                        <th>STATUT</th>
+                        <th>RÉSEAU</th>
+                        <th>BATTERIE</th>
+                        <th>DERNIÈRE ACTIVITÉ</th>
+                        <th>ALERTE</th>
+                        <th>ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody id="modalTableBody"></tbody>
+            </table><br>
+            <button onclick="closeModal()">RETOUR AU TABLEAU DE BORD</button>
+        </div>
+    </div>
+
+    <div class="modal" id="mapModal">
+        <div class="modal-content" style="width:90%;">
+            <h2 style="font-family: Orbitron;">PLAN DE RAMASSAGE - DOUALA</h2>
+            <div id="bigMap" style="height: 450px; width: 100%; border-radius: 10px; background: #111; border: 1px solid var(--blue);"></div><br>
+            <button onclick="closeMap()">FERMER LA CARTE</button>
+        </div>
+    </div>
+
+    <div class="notif" id="notifContainer"></div>
+</div>
+
+<!-- MODAL HISTORIQUE AMÉLIORÉ -->
+<div id="historyModal" class="modal">
+    <div class="modal-content history-modal-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+            <h2 style="font-family: Orbitron; color: #bc13fe;">📜 HISTORIQUE DES SIGNALEMENTS</h2>
+            <button onclick="closeHistoryModal()" style="background:#ff3131; color:white; border:none; padding:10px 20px; border-radius:10px; cursor:pointer;">✖ FERMER</button>
+        </div>
+        
+        <div class="history-filters">
+            <select id="historyTypeFilter" onchange="refreshHistoryList()">
+                <option value="ALL">📋 Tous les types</option>
+                <option value="Poubelle qui déborde">🗑️ Poubelle qui déborde</option>
+                <option value="Dépôt sauvage">🚮 Dépôt sauvage</option>
+                <option value="Caniveau bouché">🌊 Caniveau bouché</option>
+                <option value="Autre">📌 Autre</option>
             </select>
-            <input type="text" id="citLoc" placeholder="Localisation précise (ex: Face Cinéma Abbia)">
-            <textarea id="citDesc" placeholder="Description du problème (ex: Odeurs fortes, accès bloqué...)" style="padding: 8px; border-radius: 5px; border: 1px solid #334155; background: #1e293b; color: white; font-family: 'Rajdhani'; resize: vertical; min-height: 60px;"></textarea>
-            <select id="citLvl">
-                <option value="Critique">Poubelle qui déborde</option>
-                <option value="Urgent">Dépôt sauvage d'ordures</option>
+            <select id="historyQuartierFilter" onchange="refreshHistoryList()" style="min-width: 180px;">
+                <option value="ALL">📍 Tous les quartiers</option>
             </select>
-            <button onclick="submitCitizenReport()" style="background: var(--citizen-purple); color: white; border: none; padding: 12px;">ENVOYER L'ALERTE</button>
+            <input type="text" id="historySearchFilter" placeholder="🔍 Rechercher par nom..." oninput="refreshHistoryList()">
+            <button onclick="exportHistoryToCSV()" class="btn-history-export">📎 EXPORTER CSV</button>
+            <button onclick="resetHistoryFilters()" style="background:rgba(0,210,255,0.15); border:1px solid rgba(0,210,255,0.3);">🔄 Réinitialiser</button>
         </div>
-        <br>
-        <button onclick="closeCitizenPortal()" style="border-color: #555; color: #555;">ANNULER</button>
-    </div>
-</div>
-
-<div class="modal" id="detailsModal">
-    <div class="modal-content">
-        <h2 id="modalTitle" style="font-family: Orbitron; color: var(--blue);"></h2>
-        <table style="font-size: 0.85rem;">
-            <thead>
-                <tr>
-                    <th>ID UNITÉ</th>
-                    <th>LOCALISATION </th>
-                    <th>REMPLISSAGE</th>
-                    <th>ÉTAT COUVERCLE</th>
-                    <th>STATUT</th>
-                    <th>RÉSEAU</th>
-                    <th>BATTERIE</th>
-                    <th>DERNIÈRE ACTIVITÉ</th>
-                    <th>ALERTE</th>
-                    <th>ACTIONS</th>
-                </tr>
-            </thead>
-            <tbody id="modalTableBody"></tbody>
-        </table><br>
-        <button onclick="closeModal()">RETOUR AU TABLEAU DE BORD</button>
-    </div>
-</div>
-
-<div class="modal" id="enrollModal">
-    <div class="modal-content" style="max-width: 500px;">
-        <h2 style="font-family: Orbitron; color: var(--green);">ENRÔLEMENT CAPTEUR</h2>
-        <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
-            <label>1. Arrondissement</label>
-            <select id="selArr" onchange="updateSelMairie()"></select>
-            <label>2. Mairie de Secteur</label>
-            <select id="selMairie" onchange="updateSelQuartier()"></select>
-            <label>3. Quartier & Points</label>
-            <select id="newBinQuartier"></select>
-            <input type="text" id="newBinId" placeholder="ID du Capteur (Ex: DOU-105)">
-            <input type="text" id="newBinLoc" placeholder="Détail Localisation (Ex: Face Boulangerie)">
+        
+        <div class="history-stats" id="historyStatsContainer"></div>
+        
+        <div style="overflow-x: auto; max-height: 500px; overflow-y: auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:0.8rem;">
+                <thead style="position: sticky; top: 0; background: #0f172a;">
+                    <tr style="background:#1e293b;">
+                        <th>Date</th><th>Citoyen</th><th>Téléphone</th><th>Type</th><th>Quartier</th><th>Localisation</th><th>Description</th><th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody"></tbody>
+            </table>
         </div>
-        <br>
-        <div style="display: flex; gap: 10px;">
-            <button onclick="saveNewBin()" style="flex:1; background: var(--green); color: black;">VALIDER</button>
-            <button onclick="closeEnrollModal()" style="flex:1; border-color: #555; color: #555;">ANNULER</button>
-        </div>
+        <div id="historyPagination" style="margin-top:20px; display:flex; justify-content:center; gap:5px; flex-wrap:wrap;"></div>
     </div>
 </div>
 
-<div class="modal" id="mapModal">
-    <div class="modal-content" style="width:90%;">
-        <h2 style="font-family: Orbitron;">PLAN DE RAMASSAGE - DOUALA</h2>
-        <div id="bigMap" style="height: 450px; width: 100%; border-radius: 10px; background: #111; border: 1px solid var(--blue);"></div><br>
-        <button onclick="closeMap()">FERMER LA CARTE</button>
+<!-- MODAL ENRÔLEMENT AMÉLIORÉ -->
+<div id="enrollModalImproved" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 600px;">
+        <h2 style="font-family: Orbitron; color: var(--green); margin-bottom: 20px;">🔧 ENRÔLEMENT D'UN CAPTEUR</h2>
+        <form class="enroll-form-improved" id="enrollFormImproved" onsubmit="event.preventDefault(); saveNewBinImproved();">
+            <div class="enroll-row">
+                <div>
+                    <label>🏛️ 1. Arrondissement</label>
+                    <select id="selArrImproved" required style="width:100%; padding:10px; border-radius:8px;">
+                        <option value="">Sélectionner...</option>
+                        <option value="Douala 1er">Douala 1er</option>
+                        <option value="Douala 2e">Douala 2e</option>
+                        <option value="Douala 3e">Douala 3e</option>
+                        <option value="Douala 4e">Douala 4e</option>
+                        <option value="Douala 5e">Douala 5e</option>
+                    </select>
+                </div>
+                <div>
+                    <label>🏢 2. Mairie de secteur</label>
+                    <select id="selMairieImproved" required style="width:100%; padding:10px; border-radius:8px;">
+                        <option value="">Sélectionner d'abord l'arrondissement</option>
+                    </select>
+                </div>
+            </div>
+            <div class="enroll-row">
+                <div>
+                    <label>🏘️ 3. Quartier</label>
+                    <select id="newBinQuartierImproved" required style="width:100%; padding:10px; border-radius:8px;">
+                        <option value="">Sélectionner un quartier</option>
+                    </select>
+                </div>
+                <div>
+                    <label>🆔 4. Identifiant du quartier</label>
+                    <input type="text" id="newBinQuartierId" placeholder="Ex: Q-101, AKW-001, etc." style="width:100%; padding:10px; border-radius:8px;">
+                    <small class="info-text">Identifiant unique pour ce quartier</small>
+                </div>
+            </div>
+            <div class="quartier-id-group">
+                <label>📝 OU AJOUTER UN NOUVEAU QUARTIER</label>
+                <div class="enroll-row">
+                    <div>
+                        <input type="text" id="newBinManualQuartier" placeholder="Nom du nouveau quartier" style="width:100%; padding:10px; border-radius:8px;">
+                        <small class="info-text">Saisissez un quartier qui n'existe pas</small>
+                    </div>
+                    <div>
+                        <input type="text" id="newBinManualQuartierId" placeholder="ID du nouveau quartier (Ex: Q-999)" style="width:100%; padding:10px; border-radius:8px;">
+                        <small class="info-text">Identifiant unique obligatoire</small>
+                    </div>
+                </div>
+            </div>
+            <div class="enroll-row">
+                <div>
+                    <label>🆔 5. ID du capteur</label>
+                    <input type="text" id="newBinIdImproved" placeholder="Ex: DOU-105, SENS-001" required style="width:100%; padding:10px; border-radius:8px;">
+                    <small class="info-text">Identifiant unique du capteur</small>
+                </div>
+                <div>
+                    <label>📍 6. Localisation détaillée</label>
+                    <input type="text" id="newBinLocImproved" placeholder="Ex: Face Boulangerie, Carrefour..." required style="width:100%; padding:10px; border-radius:8px;">
+                    <small class="info-text">Point de référence précis</small>
+                </div>
+            </div>
+            <div style="display: flex; gap: 15px; margin-top: 10px;">
+                <button type="submit" style="flex:1; background: var(--green); color: black; padding: 12px; border-radius: 10px; font-weight: bold; border: none; cursor: pointer;">✅ VALIDER L'ENRÔLEMENT</button>
+                <button type="button" onclick="closeEnrollModalImproved()" style="flex:1; border: 1px solid #555; color: #555; background: transparent; padding: 12px; border-radius: 10px; cursor: pointer;">❌ ANNULER</button>
+            </div>
+        </form>
     </div>
 </div>
-
-<div class="notif" id="notifContainer"></div>
 
 <script>
-const firebaseConfig = {
-    databaseURL: "https://douala-clean-default-rtdb.firebaseio.com"
-};
+// ===================== SYSTÈME D'AUTHENTIFICATION =====================
+let authUsers = [];
+let authCurrentUser = null;
+let pendingAssignUserId = null;
+let passwordResetRequests = [];
+
+function authInitUsers() {
+    const saved = localStorage.getItem('AUTH_USERS');
+    const requestsSaved = localStorage.getItem('PASSWORD_RESET_REQUESTS');
+    if (requestsSaved) {
+        passwordResetRequests = JSON.parse(requestsSaved);
+    }
+    
+    const superAdminAccount = {
+        id: "super_admin_1",
+        fullname: "SALIM MOHAMED",
+        email: "salimmohamedmounchili@gmail.com",
+        phone: "+237 693056216",
+        matricule: "26SA001",
+        role: "SUPER_ADMIN",
+        status: "ACTIVE",
+        password: "sa06d08!",
+        position: "Directeur Général",
+        createdAt: new Date().toISOString()
+    };
+    
+    if (saved) {
+        authUsers = JSON.parse(saved);
+        const adminExists = authUsers.some(u => u.email === superAdminAccount.email);
+        if (!adminExists) {
+            authUsers.unshift(superAdminAccount);
+            authSaveUsers();
+        } else {
+            const admin = authUsers.find(u => u.email === superAdminAccount.email);
+            if (admin) {
+                if (admin.status !== 'ACTIVE') admin.status = 'ACTIVE';
+                if (admin.password !== superAdminAccount.password) admin.password = superAdminAccount.password;
+                if (admin.role !== 'SUPER_ADMIN') admin.role = 'SUPER_ADMIN';
+                if (!admin.position) admin.position = "Directeur Général";
+                authSaveUsers();
+            }
+        }
+    } else {
+        authUsers = [superAdminAccount];
+        authSaveUsers();
+    }
+}
+
+function authSaveUsers() {
+    localStorage.setItem('AUTH_USERS', JSON.stringify(authUsers));
+    if (document.getElementById('adminPanelOverlay') && document.getElementById('adminPanelOverlay').style.display === 'flex') {
+        renderAdminPanel();
+    }
+}
+
+function savePasswordRequests() {
+    localStorage.setItem('PASSWORD_RESET_REQUESTS', JSON.stringify(passwordResetRequests));
+}
+
+function switchAuthTab(tab) {
+    const loginForm = document.getElementById('authLoginForm');
+    const registerForm = document.getElementById('authRegisterForm');
+    const tabs = document.querySelectorAll('.auth-tab');
+    if (tab === 'login') {
+        loginForm.classList.add('active');
+        registerForm.classList.remove('active');
+        tabs[0].classList.add('active');
+        tabs[1].classList.remove('active');
+    } else {
+        loginForm.classList.remove('active');
+        registerForm.classList.add('active');
+        tabs[0].classList.remove('active');
+        tabs[1].classList.add('active');
+    }
+}
+
+function authShowMessage(containerId, message, type) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    el.textContent = message;
+    el.className = `auth-message ${type}`;
+    setTimeout(() => { el.className = 'auth-message'; }, 5000);
+}
+
+function authLogin() {
+    const identifier = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value;
+    
+    if (!identifier || !password) {
+        authShowMessage('authLoginMsg', '❌ Tous les champs sont obligatoires', 'error');
+        return;
+    }
+    
+    authInitUsers();
+    const user = authUsers.find(u => (u.email === identifier || u.matricule === identifier) && u.password === password && u.status === 'ACTIVE');
+    
+    if (!user) {
+        authShowMessage('authLoginMsg', '❌ Email/Matricule ou mot de passe incorrect', 'error');
+        return;
+    }
+    
+    authCurrentUser = user;
+    localStorage.setItem('AUTH_CURRENT_USER', JSON.stringify({
+        id: user.id,
+        fullname: user.fullname,
+        email: user.email,
+        role: user.role,
+        matricule: user.matricule,
+        phone: user.phone,
+        position: user.position
+    }));
+    
+    document.getElementById('authOverlay').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('menuContainer').style.display = 'block';
+    document.getElementById('authUserInfo').style.display = 'flex';
+    
+    if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') {
+        document.getElementById('adminBadge').style.display = 'flex';
+    }
+    
+    updateUserInfo();
+    authShowToast(`✅ Bienvenue ${user.fullname}`);
+    render();
+    updateGraph();
+}
+
+function authRegister() {
+    const fullname = document.getElementById('regFullname').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const phone = document.getElementById('regPhone').value.trim();
+    const position = document.getElementById('regPoste').value.trim();
+    
+    if (!fullname || !email || !phone || !position) {
+        authShowMessage('authRegisterMsg', '❌ Tous les champs sont obligatoires', 'error');
+        return;
+    }
+    
+    if (authUsers.find(u => u.email === email)) {
+        authShowMessage('authRegisterMsg', '❌ Cet email existe déjà', 'error');
+        return;
+    }
+    
+    const newUser = {
+        id: 'user_' + Date.now(),
+        fullname: fullname,
+        email: email,
+        phone: phone,
+        position: position,
+        matricule: 'EN_ATTENTE',
+        role: 'EMPLOYE',
+        status: 'PENDING',
+        password: null,
+        createdAt: new Date().toISOString()
+    };
+    
+    authUsers.push(newUser);
+    authSaveUsers();
+    
+    authShowMessage('authRegisterMsg', '✅ Demande envoyée ! Un administrateur vous attribuera un mot de passe et un matricule.', 'success');
+    
+    document.getElementById('regFullname').value = '';
+    document.getElementById('regEmail').value = '';
+    document.getElementById('regPhone').value = '';
+    document.getElementById('regPoste').value = '';
+    
+    setTimeout(() => switchAuthTab('login'), 2000);
+}
+
+function authLogout() {
+    authCurrentUser = null;
+    localStorage.removeItem('AUTH_CURRENT_USER');
+    document.getElementById('authOverlay').style.display = 'flex';
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('menuContainer').style.display = 'none';
+    document.getElementById('authUserInfo').style.display = 'none';
+    document.getElementById('adminBadge').style.display = 'none';
+    authShowToast('🔒 Déconnexion effectuée');
+}
+
+function updateUserInfo() {
+    const container = document.getElementById('authUserInfo');
+    if (!container) return;
+    
+    let roleDisplay = authCurrentUser.role === 'SUPER_ADMIN' ? '⭐ SUPER ADMIN' : (authCurrentUser.role === 'ADMIN' ? '👑 ADMIN' : '👷 EMPLOYÉ');
+    
+    container.innerHTML = `
+        <div class="auth-user-avatar">${authCurrentUser.fullname.charAt(0)}</div>
+        <div class="auth-user-details">
+            <div class="auth-user-name">${escapeHtml(authCurrentUser.fullname)}</div>
+            <div class="auth-user-role">${roleDisplay}</div>
+        </div>
+        <button class="auth-logout-btn" onclick="authLogout()">🔒</button>
+    `;
+}
+
+function toggleMenu() {
+    const menu = document.getElementById('dropdownMenu');
+    if (menu) menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+}
+
+document.addEventListener('click', function(event) {
+    const menu = document.getElementById('dropdownMenu');
+    const menuIcon = document.querySelector('.menu-icon');
+    if (menu && menuIcon && !menuIcon.contains(event.target) && !menu.contains(event.target)) {
+        menu.style.display = 'none';
+    }
+});
+
+// ========== MODIFICATION PROFIL ==========
+function openEditProfileModal() {
+    document.getElementById('editFullname').value = authCurrentUser.fullname || '';
+    document.getElementById('editEmail').value = authCurrentUser.email || '';
+    document.getElementById('editPhone').value = authCurrentUser.phone || '';
+    document.getElementById('editProfileModal').style.display = 'flex';
+}
+
+function closeEditProfileModal() {
+    document.getElementById('editProfileModal').style.display = 'none';
+}
+
+function updateProfile() {
+    const newFullname = document.getElementById('editFullname').value.trim();
+    const newEmail = document.getElementById('editEmail').value.trim();
+    const newPhone = document.getElementById('editPhone').value.trim();
+    
+    if (!newFullname || !newEmail || !newPhone) {
+        authShowToast('❌ Tous les champs sont obligatoires');
+        return;
+    }
+    
+    if (newEmail !== authCurrentUser.email && authUsers.find(u => u.email === newEmail && u.id !== authCurrentUser.id)) {
+        authShowToast('❌ Cet email est déjà utilisé par un autre compte');
+        return;
+    }
+    
+    const user = authUsers.find(u => u.id === authCurrentUser.id);
+    if (user) {
+        user.fullname = newFullname;
+        user.email = newEmail;
+        user.phone = newPhone;
+        authSaveUsers();
+        
+        authCurrentUser.fullname = newFullname;
+        authCurrentUser.email = newEmail;
+        authCurrentUser.phone = newPhone;
+        
+        localStorage.setItem('AUTH_CURRENT_USER', JSON.stringify({
+            id: authCurrentUser.id,
+            fullname: authCurrentUser.fullname,
+            email: authCurrentUser.email,
+            role: authCurrentUser.role,
+            matricule: authCurrentUser.matricule,
+            phone: authCurrentUser.phone,
+            position: authCurrentUser.position
+        }));
+        
+        updateUserInfo();
+        authShowToast('✅ Profil mis à jour avec succès');
+        closeEditProfileModal();
+    }
+}
+
+// ========== MOT DE PASSE OUBLIÉ ==========
+function openForgotPasswordModal() {
+    document.getElementById('forgotIdentifier').value = '';
+    document.getElementById('forgotPasswordMsg').className = 'auth-message';
+    document.getElementById('forgotPasswordMsg').style.display = 'none';
+    document.getElementById('forgotPasswordModal').style.display = 'flex';
+}
+
+function closeForgotPasswordModal() {
+    document.getElementById('forgotPasswordModal').style.display = 'none';
+}
+
+function requestPasswordReset() {
+    const identifier = document.getElementById('forgotIdentifier').value.trim();
+    const msgDiv = document.getElementById('forgotPasswordMsg');
+    
+    if (!identifier) {
+        msgDiv.textContent = '❌ Veuillez entrer votre email ou matricule';
+        msgDiv.className = 'auth-message error';
+        msgDiv.style.display = 'block';
+        return;
+    }
+    
+    const user = authUsers.find(u => u.email === identifier || u.matricule === identifier);
+    
+    if (!user) {
+        msgDiv.textContent = '❌ Aucun compte trouvé avec ces informations';
+        msgDiv.className = 'auth-message error';
+        msgDiv.style.display = 'block';
+        return;
+    }
+    
+    if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') {
+        // Pour Super Admin et Admin : processus de récupération avec code
+        const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const resetRequest = {
+            id: Date.now(),
+            userId: user.id,
+            email: user.email,
+            code: resetCode,
+            createdAt: new Date().toISOString(),
+            status: 'PENDING'
+        };
+        
+        if (!passwordResetRequests) passwordResetRequests = [];
+        passwordResetRequests.push(resetRequest);
+        savePasswordRequests();
+        
+        const message = `DEMANDE DE RÉINITIALISATION SWMS DOUALA\n\nBonjour ${user.fullname},\n\nVotre code de réinitialisation est : ${resetCode}\n\nCe code est valable 15 minutes.\n\n--\nSWMS Douala - Command Center`;
+        
+        if (user.email && user.email !== 'EN_ATTENTE') {
+            window.open(`mailto:${user.email}?subject=SWMS Douala - Code de réinitialisation&body=${encodeURIComponent(message)}`, '_blank');
+        }
+        if (user.phone && user.phone !== '+237 XXXXXXXX') {
+            const phoneNumber = user.phone.replace(/[^0-9]/g, '');
+            if (phoneNumber.length >= 9) {
+                window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+            }
+        }
+        
+        msgDiv.textContent = `✅ Un code de réinitialisation a été envoyé à ${user.email}. Vérifiez vos emails/WhatsApp.`;
+        msgDiv.className = 'auth-message success';
+        msgDiv.style.display = 'block';
+        
+        setTimeout(() => {
+            const code = prompt("Entrez le code de réinitialisation reçu :");
+            if (code === resetCode) {
+                const newPassword = prompt("Nouveau mot de passe (min 6 caractères) :");
+                if (newPassword && newPassword.length >= 6) {
+                    user.password = newPassword;
+                    authSaveUsers();
+                    authShowToast('✅ Mot de passe réinitialisé avec succès');
+                    closeForgotPasswordModal();
+                } else if (newPassword) {
+                    alert("Mot de passe trop court (min 6 caractères)");
+                }
+            } else if (code) {
+                alert("Code invalide");
+            }
+        }, 500);
+        
+    } else {
+        // Pour les employés : envoyer une demande à l'administrateur
+        const existingRequest = passwordResetRequests.find(r => r.userId === user.id && r.status === 'PENDING');
+        if (!existingRequest) {
+            const resetRequest = {
+                id: Date.now(),
+                userId: user.id,
+                userFullname: user.fullname,
+                userEmail: user.email,
+                userMatricule: user.matricule,
+                status: 'PENDING',
+                createdAt: new Date().toISOString()
+            };
+            
+            passwordResetRequests.push(resetRequest);
+            savePasswordRequests();
+            
+            // Notifier l'administrateur (via notification dans le système)
+            if (renderAdminPanel) renderAdminPanel();
+            authShowToast(`📢 Demande de réinitialisation envoyée à l'administrateur`);
+        } else {
+            authShowToast(`⏳ Une demande est déjà en attente pour ce compte`);
+        }
+        
+        msgDiv.textContent = '✅ Votre demande a été transmise à un administrateur. Vous serez notifié une fois votre mot de passe réinitialisé.';
+        msgDiv.className = 'auth-message success';
+        msgDiv.style.display = 'block';
+        
+        setTimeout(() => closeForgotPasswordModal(), 3000);
+    }
+}
+
+function renderPasswordRequests() {
+    const container = document.getElementById('passwordRequestsList');
+    if (!container) return;
+    
+    const pendingRequests = passwordResetRequests.filter(r => r.status === 'PENDING');
+    
+    if (pendingRequests.length === 0) {
+        container.innerHTML = '<p style="color:#64748b; text-align:center;">Aucune demande en attente</p>';
+        return;
+    }
+    
+    container.innerHTML = '<div style="background:rgba(255,145,0,0.1); padding:10px; border-radius:10px;">' +
+        pendingRequests.map(req => {
+            const user = authUsers.find(u => u.id === req.userId);
+            return `
+                <div class="pwd-request-badge" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <div>
+                        <strong>${escapeHtml(user?.fullname || req.userFullname)}</strong><br>
+                        <small>📧 ${escapeHtml(user?.email || req.userEmail)}</small><br>
+                        <small>🔑 Matricule: ${escapeHtml(user?.matricule || req.userMatricule || 'N/A')}</small>
+                    </div>
+                    <div>
+                        <button onclick="resetEmployeePassword('${req.userId}')" style="background:var(--orange); color:black; border:none; padding:5px 12px; border-radius:5px; cursor:pointer; margin-right:5px;">🔑 RÉINITIALISER</button>
+                        <button onclick="rejectPasswordRequest('${req.id}')" style="background:rgba(255,49,49,0.3); color:#ff6b6b; border:none; padding:5px 12px; border-radius:5px; cursor:pointer;">❌ IGNORER</button>
+                    </div>
+                </div>
+            `;
+        }).join('') + '</div>';
+}
+
+function resetEmployeePassword(userId) {
+    const newPassword = prompt("Nouveau mot de passe (min 6 caractères) :");
+    if (newPassword && newPassword.length >= 6) {
+        const user = authUsers.find(u => u.id === userId);
+        if (user) {
+            user.password = newPassword;
+            authSaveUsers();
+            
+            const message = `VOTRE MOT DE PASSE A ÉTÉ RÉINITIALISÉ\n\nBonjour ${user.fullname},\n\nVotre nouveau mot de passe : ${newPassword}\n\nVeuillez vous connecter et changer votre mot de passe dès que possible.\n\n--\nSWMS Douala - Command Center`;
+            
+            if (user.email && user.email !== 'EN_ATTENTE') {
+                window.open(`mailto:${user.email}?subject=SWMS Douala - Réinitialisation mot de passe&body=${encodeURIComponent(message)}`, '_blank');
+            }
+            if (user.phone && user.phone !== '+237 XXXXXXXX') {
+                const phoneNumber = user.phone.replace(/[^0-9]/g, '');
+                if (phoneNumber.length >= 9) {
+                    window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+                }
+            }
+            
+            // Supprimer les demandes en attente pour cet utilisateur
+            passwordResetRequests = passwordResetRequests.filter(r => r.userId !== userId);
+            savePasswordRequests();
+            
+            authShowToast(`✅ Mot de passe réinitialisé pour ${user.fullname}`);
+            renderAdminPanel();
+        }
+    } else if (newPassword) {
+        authShowToast('❌ 6 caractères minimum');
+    }
+}
+
+function rejectPasswordRequest(requestId) {
+    passwordResetRequests = passwordResetRequests.filter(r => r.id !== requestId);
+    savePasswordRequests();
+    renderAdminPanel();
+    authShowToast('✅ Demande ignorée');
+}
+
+// ========== PANEL ADMIN ==========
+function openAdminPanel() {
+    if (!authCurrentUser || (authCurrentUser.role !== 'SUPER_ADMIN' && authCurrentUser.role !== 'ADMIN')) {
+        authShowToast('⛔ Accès réservé aux administrateurs');
+        return;
+    }
+    renderAdminPanel();
+    document.getElementById('adminPanelOverlay').style.display = 'flex';
+}
+
+function closeAdminPanel() {
+    document.getElementById('adminPanelOverlay').style.display = 'none';
+}
+
+function renderAdminPanel() {
+    const container = document.getElementById('adminUsersList');
+    if (!container) return;
+    
+    const showAddSection = (authCurrentUser.role === 'SUPER_ADMIN' || authCurrentUser.role === 'ADMIN');
+    document.getElementById('addEmployeeSection').style.display = showAddSection ? 'block' : 'none';
+    
+    let html = '<table class="admin-users-table"><thead><tr><th>Nom</th><th>Email</th><th>Téléphone</th><th>Poste</th><th>Matricule</th><th>Rôle</th><th>Statut</th><th>Actions</th></tr></thead><tbody>';
+    
+    let usersToShow = authUsers;
+    if (authCurrentUser.role === 'ADMIN') {
+        usersToShow = authUsers.filter(u => u.role === 'EMPLOYE');
+    }
+    
+    usersToShow.forEach(user => {
+        let statusClass = user.status === 'ACTIVE' ? 'status-active' : (user.status === 'PENDING' ? 'status-pending' : 'status-blocked');
+        let statusText = user.status === 'ACTIVE' ? 'ACTIF' : (user.status === 'PENDING' ? 'EN ATTENTE' : 'BLOQUÉ');
+        let roleDisplay = user.role === 'SUPER_ADMIN' ? '⭐ SUPER ADMIN' : (user.role === 'ADMIN' ? '👑 ADMIN' : '👷 EMPLOYÉ');
+        let actions = '';
+        
+        if (authCurrentUser.role === 'SUPER_ADMIN') {
+            if (user.status === 'PENDING') {
+                actions += `<button class="btn-admin btn-assign" onclick="openAssignModal('${user.id}')">🔑 ATTRIBUER</button>`;
+            }
+            if (user.status === 'ACTIVE' && user.id !== authCurrentUser.id) {
+                actions += `<button class="btn-admin btn-reset" onclick="resetUserPassword('${user.id}')">🔑 RESET</button>`;
+                actions += `<button class="btn-admin btn-block" onclick="blockUser('${user.id}')">🚫 BLOQUER</button>`;
+                actions += `<button class="btn-admin btn-delete-user" onclick="deleteUser('${user.id}')">🗑️</button>`;
+            }
+            if (user.status === 'BLOCKED') {
+                actions += `<button class="btn-admin btn-validate" onclick="activateUser('${user.id}')">✅ ACTIVER</button>`;
+                actions += `<button class="btn-admin btn-delete-user" onclick="deleteUser('${user.id}')">🗑️</button>`;
+            }
+            if (user.role === 'EMPLOYE' && user.status === 'ACTIVE') {
+                actions += `<button class="btn-admin btn-edit" onclick="openEditUserModal('${user.id}')">✏️</button>`;
+            }
+        } else if (authCurrentUser.role === 'ADMIN') {
+            if (user.status === 'PENDING') {
+                actions += `<button class="btn-admin btn-assign" onclick="openAssignModal('${user.id}')">🔑 ATTRIBUER</button>`;
+            }
+            if (user.status === 'ACTIVE') {
+                actions += `<button class="btn-admin btn-reset" onclick="resetUserPassword('${user.id}')">🔑 RESET</button>`;
+                actions += `<button class="btn-admin btn-block" onclick="blockUser('${user.id}')">🚫 BLOQUER</button>`;
+            }
+            if (user.status === 'BLOCKED') {
+                actions += `<button class="btn-admin btn-validate" onclick="activateUser('${user.id}')">✅ ACTIVER</button>`;
+            }
+            if (user.id !== authCurrentUser.id && user.status !== 'PENDING') {
+                actions += `<button class="btn-admin btn-delete-user" onclick="deleteUser('${user.id}')">🗑️</button>`;
+            }
+            if (user.role === 'EMPLOYE' && user.status === 'ACTIVE') {
+                actions += `<button class="btn-admin btn-edit" onclick="openEditUserModal('${user.id}')">✏️</button>`;
+            }
+        }
+        
+        html += `<tr>
+            <td>${escapeHtml(user.fullname)}</td>
+            <td>${escapeHtml(user.email)}</td>
+            <td>${escapeHtml(user.phone)}</td>
+            <td>${escapeHtml(user.position || '-')}</td>
+            <td>${escapeHtml(user.matricule)}</td>
+            <td>${roleDisplay}</td>
+            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+            <td>${actions}</td>
+        </tr>`;
+    });
+    
+    html += '</tbody></table>';
+    container.innerHTML = html;
+    
+    renderPasswordRequests();
+}
+
+function openEditUserModal(userId) {
+    const user = authUsers.find(u => u.id === userId);
+    if (user) {
+        const newPosition = prompt("Modifier le poste/fonction :", user.position || "");
+        if (newPosition !== null) {
+            user.position = newPosition;
+            authSaveUsers();
+            renderAdminPanel();
+            authShowToast(`✅ Poste modifié pour ${user.fullname}`);
+        }
+    }
+}
+
+function openAssignModal(userId) {
+    const user = authUsers.find(u => u.id === userId);
+    if (user) {
+        pendingAssignUserId = userId;
+        document.getElementById('assignUserInfo').innerHTML = `<strong>${escapeHtml(user.fullname)}</strong><br><small>${escapeHtml(user.email)}</small><br><small>📞 ${escapeHtml(user.phone)}</small><br><small>🏢 ${escapeHtml(user.position || 'Non spécifié')}</small>`;
+        document.getElementById('assignMatricule').value = '';
+        document.getElementById('assignPassword').value = '';
+        document.getElementById('assignConfirmPwd').value = '';
+        document.getElementById('assignModal').style.display = 'flex';
+    }
+}
+
+function closeAssignModal() {
+    document.getElementById('assignModal').style.display = 'none';
+    pendingAssignUserId = null;
+}
+
+function confirmAssignPassword() {
+    if (!pendingAssignUserId) return;
+    
+    const matricule = document.getElementById('assignMatricule').value.trim();
+    const password = document.getElementById('assignPassword').value;
+    const confirm = document.getElementById('assignConfirmPwd').value;
+    
+    if (!matricule || !password) {
+        authShowToast('❌ Matricule et mot de passe obligatoires');
+        return;
+    }
+    
+    if (password.length < 6) {
+        authShowToast('❌ Le mot de passe doit contenir au moins 6 caractères');
+        return;
+    }
+    
+    if (password !== confirm) {
+        authShowToast('❌ Les mots de passe ne correspondent pas');
+        return;
+    }
+    
+    const user = authUsers.find(u => u.id === pendingAssignUserId);
+    if (user) {
+        user.matricule = matricule;
+        user.password = password;
+        user.status = 'ACTIVE';
+        authSaveUsers();
+        
+        const message = `BIENVENUE DANS SWMS DOUALA COMMAND CENTER\n\nBonjour ${user.fullname},\n\nVos identifiants de connexion :\n\n🔑 MATRICULE : ${matricule}\n🔒 MOT DE PASSE : ${password}\n\n📍 LIEN : ${window.location.href}\n\n--\nSWMS Douala - Command Center`;
+        
+        if (user.email && user.email !== 'EN_ATTENTE') {
+            window.open(`mailto:${user.email}?subject=SWMS Douala - Vos identifiants&body=${encodeURIComponent(message)}`, '_blank');
+        }
+        if (user.phone && user.phone !== '+237 XXXXXXXX') {
+            const phoneNumber = user.phone.replace(/[^0-9]/g, '');
+            if (phoneNumber.length >= 9) {
+                window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+            }
+        }
+        
+        authShowToast(`✅ ${user.fullname} a été activé ! Un email et un WhatsApp ont été envoyés.`);
+        
+        closeAssignModal();
+        renderAdminPanel();
+    }
+}
+
+function addEmployee() {
+    const fullname = document.getElementById('empFullname').value.trim();
+    const email = document.getElementById('empEmail').value.trim();
+    const phone = document.getElementById('empPhone').value.trim();
+    const matricule = document.getElementById('empMatricule').value.trim();
+    const password = document.getElementById('empPassword').value;
+    const role = document.getElementById('empRole').value;
+    
+    if (!fullname || !email || !phone || !matricule || !password) {
+        authShowToast('❌ Tous les champs sont obligatoires');
+        return;
+    }
+    
+    if (authUsers.find(u => u.email === email)) {
+        authShowToast('❌ Cet email existe déjà');
+        return;
+    }
+    
+    if (password.length < 6) {
+        authShowToast('❌ Le mot de passe doit contenir au moins 6 caractères');
+        return;
+    }
+    
+    const newUser = {
+        id: 'emp_' + Date.now(),
+        fullname: fullname,
+        email: email,
+        phone: phone,
+        matricule: matricule,
+        role: role,
+        status: 'ACTIVE',
+        password: password,
+        position: role === 'ADMIN' ? 'Administrateur' : 'Employé',
+        createdAt: new Date().toISOString()
+    };
+    
+    authUsers.push(newUser);
+    authSaveUsers();
+    renderAdminPanel();
+    authShowToast(`✅ ${fullname} (${role === 'ADMIN' ? 'ADMIN' : 'EMPLOYÉ'}) ajouté avec succès`);
+    
+    document.getElementById('empFullname').value = '';
+    document.getElementById('empEmail').value = '';
+    document.getElementById('empPhone').value = '';
+    document.getElementById('empMatricule').value = '';
+    document.getElementById('empPassword').value = '';
+    document.getElementById('empRole').value = 'EMPLOYE';
+}
+
+function resetUserPassword(userId) {
+    if (authCurrentUser.role !== 'SUPER_ADMIN' && authCurrentUser.role !== 'ADMIN') {
+        authShowToast('⛔ Vous n\'avez pas les droits pour réinitialiser un mot de passe');
+        return;
+    }
+    
+    const newPwd = prompt("Nouveau mot de passe (min 6 caractères) :");
+    if (newPwd && newPwd.length >= 6) {
+        const user = authUsers.find(u => u.id === userId);
+        if (user) {
+            user.password = newPwd;
+            authSaveUsers();
+            authShowToast(`🔑 Mot de passe modifié pour ${user.fullname}`);
+        }
+    } else if (newPwd) {
+        authShowToast('❌ 6 caractères minimum');
+    }
+}
+
+function blockUser(userId) {
+    const user = authUsers.find(u => u.id === userId);
+    if (user && confirm(`Bloquer ${user.fullname} ?`)) {
+        user.status = 'BLOCKED';
+        authSaveUsers();
+        renderAdminPanel();
+        authShowToast(`🚫 ${user.fullname} a été bloqué`);
+    }
+}
+
+function activateUser(userId) {
+    const user = authUsers.find(u => u.id === userId);
+    if (user) {
+        user.status = 'ACTIVE';
+        authSaveUsers();
+        renderAdminPanel();
+        authShowToast(`✅ ${user.fullname} a été réactivé`);
+    }
+}
+
+function deleteUser(userId) {
+    const user = authUsers.find(u => u.id === userId);
+    if (user && confirm(`Supprimer définitivement ${user.fullname} ?`)) {
+        authUsers = authUsers.filter(u => u.id !== userId);
+        authSaveUsers();
+        renderAdminPanel();
+        authShowToast(`🗑️ ${user.fullname} a été supprimé`);
+    }
+}
+
+// ========== CHANGEMENT MOT DE PASSE ==========
+function openChangePasswordModal() {
+    document.getElementById('changePwdModal').style.display = 'flex';
+}
+
+function closeChangePasswordModal() {
+    document.getElementById('changePwdModal').style.display = 'none';
+    document.getElementById('oldPassword').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmNewPassword').value = '';
+}
+
+function changePassword() {
+    const oldPwd = document.getElementById('oldPassword').value;
+    const newPwd = document.getElementById('newPassword').value;
+    const confirmPwd = document.getElementById('confirmNewPassword').value;
+    
+    if (!oldPwd || !newPwd || !confirmPwd) {
+        authShowToast('❌ Tous les champs sont obligatoires');
+        return;
+    }
+    
+    if (authCurrentUser.password !== oldPwd) {
+        authShowToast('❌ Ancien mot de passe incorrect');
+        return;
+    }
+    
+    if (newPwd.length < 6) {
+        authShowToast('❌ Le nouveau mot de passe doit contenir au moins 6 caractères');
+        return;
+    }
+    
+    if (newPwd !== confirmPwd) {
+        authShowToast('❌ Les nouveaux mots de passe ne correspondent pas');
+        return;
+    }
+    
+    const user = authUsers.find(u => u.id === authCurrentUser.id);
+    if (user) {
+        user.password = newPwd;
+        authCurrentUser.password = newPwd;
+        authSaveUsers();
+        localStorage.setItem('AUTH_CURRENT_USER', JSON.stringify({
+            id: authCurrentUser.id,
+            fullname: authCurrentUser.fullname,
+            email: authCurrentUser.email,
+            role: authCurrentUser.role,
+            matricule: authCurrentUser.matricule,
+            phone: authCurrentUser.phone,
+            position: authCurrentUser.position
+        }));
+        authShowToast('✅ Mot de passe changé avec succès');
+        closeChangePasswordModal();
+    }
+}
+
+// ========== CORE APP ==========
+const firebaseConfig = { databaseURL: "https://douala-clean-default-rtdb.firebaseio.com" };
 firebase.initializeApp(firebaseConfig);
 const db_online = firebase.database();
 
@@ -458,7 +2138,378 @@ const configurationDouala = [
 
 let filter = "ALL", search = "";
 let map, markers = [];
-let citizenReports = []; 
+let citizenReports = [];
+
+// Liste des quartiers pour le datalist
+const quartiersDouala = ["Akwa", "New Bell", "Deido", "Bonabéri", "Ndokoti", "Logpom", "Village", "Logbaba", "Bonanjo", "Bonamoussadi", "Kotto", "Makepe", "Bali", "Nylon"];
+const dataListCit = document.getElementById('quartiers-list-cit');
+if (dataListCit) {
+    quartiersDouala.sort().forEach(q => {
+        let option = document.createElement('option');
+        option.value = q;
+        dataListCit.appendChild(option);
+    });
+}
+
+// Variables pour la prise de photo
+let photosArray = [];
+let currentUserLocation = null;
+let currentAddressName = null;
+
+// Géolocalisation
+function initGeolocation() {
+    const locationDiv = document.getElementById('locationStatus');
+    if (!locationDiv) return;
+    
+    if (!navigator.geolocation) {
+        locationDiv.innerHTML = '❌ La géolocalisation n\'est pas supportée par votre navigateur';
+        locationDiv.className = 'location-status location-error';
+        return;
+    }
+    
+    locationDiv.innerHTML = '📍 Récupération de votre position GPS...';
+    locationDiv.className = 'location-status location-pending';
+    
+    navigator.geolocation.getCurrentPosition(
+        async (position) => {
+            const { latitude, longitude, accuracy } = position.coords;
+            currentUserLocation = { lat: latitude, lng: longitude, accuracy };
+            
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`);
+                const data = await response.json();
+                
+                if (data && data.display_name) {
+                    currentAddressName = data.display_name;
+                    locationDiv.innerHTML = `✅ Position détectée : ${currentAddressName.substring(0, 60)}...`;
+                    locationDiv.className = 'location-status location-success';
+                } else {
+                    currentAddressName = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+                    locationDiv.innerHTML = `✅ Coordonnées : ${currentAddressName}`;
+                    locationDiv.className = 'location-status location-success';
+                }
+            } catch (error) {
+                currentAddressName = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+                locationDiv.innerHTML = `✅ Coordonnées : ${currentAddressName}`;
+                locationDiv.className = 'location-status location-success';
+            }
+        },
+        (error) => {
+            let errorMessage = "";
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage = "⚠️ Permission de géolocalisation refusée. Veuillez activer la localisation.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage = "⚠️ Position non disponible";
+                    break;
+                case error.TIMEOUT:
+                    errorMessage = "⚠️ Délai d'attente dépassé";
+                    break;
+                default:
+                    errorMessage = "⚠️ Erreur de géolocalisation";
+            }
+            locationDiv.innerHTML = errorMessage;
+            locationDiv.className = 'location-status location-error';
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+}
+
+// Capture photo avec horodatage
+async function capturePhotoWithTimestamp() {
+    return new Promise(async (resolve, reject) => {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            reject(new Error("Appareil photo non disponible"));
+            return;
+        }
+        
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            const video = document.createElement('video');
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            video.srcObject = stream;
+            video.play();
+            
+            await new Promise((resolve) => {
+                video.onloadedmetadata = () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    resolve();
+                };
+            });
+            
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            
+            ctx.font = 'bold 18px "Courier New", monospace';
+            ctx.fillStyle = 'white';
+            ctx.shadowColor = 'black';
+            ctx.shadowBlur = 3;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+            
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+            ctx.fillRect(0, canvas.height - 70, canvas.width, 70);
+            
+            ctx.fillStyle = '#39ff14';
+            ctx.fillText(`📅 ${dateStr} | ⏰ ${timeStr}`, 10, canvas.height - 45);
+            
+            const locationText = currentAddressName ? currentAddressName.substring(0, 60) : "Localisation inconnue";
+            ctx.fillStyle = '#00d2ff';
+            ctx.font = 'bold 12px "Courier New", monospace';
+            ctx.fillText(`📍 ${locationText}`, 10, canvas.height - 20);
+            
+            ctx.shadowColor = 'transparent';
+            
+            const photoData = canvas.toDataURL('image/jpeg', 0.85);
+            stream.getTracks().forEach(track => track.stop());
+            
+            resolve(photoData);
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+// Gestion des fichiers photo
+async function handleFiles(input) {
+    const files = Array.from(input.files);
+    if (files.length === 0) return;
+    
+    const photoStatus = document.getElementById("photoStatusText");
+    photoStatus.innerText = "⌛ Traitement de la photo...";
+    
+    for (let file of files) {
+        if (photosArray.length >= 5) {
+            alert("Maximum 5 photos autorisées.");
+            break;
+        }
+        
+        if (file.type.startsWith('image/')) {
+            try {
+                const photoWithStamp = await capturePhotoWithTimestamp();
+                photosArray.push(photoWithStamp);
+            } catch (error) {
+                console.error("Erreur capture:", error);
+                const base64 = await compressImage(file);
+                photosArray.push(base64);
+            }
+        }
+    }
+    
+    renderGallery();
+    photoStatus.innerText = `✅ ${photosArray.length} photo(s) avec horodatage`;
+}
+
+function compressImage(file) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (e) => {
+            const img = new Image();
+            img.src = e.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 600;
+                canvas.width = MAX_WIDTH;
+                canvas.height = img.height * (MAX_WIDTH / img.width);
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                resolve(canvas.toDataURL('image/jpeg', 0.7));
+            };
+        };
+    });
+}
+
+function renderGallery() {
+    const preview = document.getElementById("galleryPreview");
+    if (!preview) return;
+    preview.innerHTML = "";
+    photosArray.forEach((src, index) => {
+        const container = document.createElement("div");
+        container.className = "thumb-container";
+        container.innerHTML = `
+            <img src="${src}" class="img-thumb">
+            <div class="remove-badge" onclick="removePhoto(${index}, event)">×</div>
+        `;
+        preview.appendChild(container);
+    });
+}
+
+function removePhoto(index, event) {
+    event.stopPropagation();
+    photosArray.splice(index, 1);
+    renderGallery();
+    const photoStatus = document.getElementById("photoStatusText");
+    photoStatus.innerText = photosArray.length > 0 ? `✅ ${photosArray.length} photo(s) avec horodatage` : "📷 CLIQUEZ POUR PRENDRE UNE PHOTO (AVEC HEURE ET LIEU)";
+}
+
+// Envoi du signalement
+async function sendToDashboard() {
+    const name = document.getElementById("citName").value.trim();
+    const rawPhone = document.getElementById("citPhone").value.trim();
+    const q = document.getElementById("citQuartier").value.trim();
+    const loc = document.getElementById("citLoc").value.trim();
+    const type = document.getElementById("citLvl").value;
+    const desc = document.getElementById("citDesc").value.trim();
+    const btn = document.getElementById("sendBtn");
+    
+    if (!rawPhone || rawPhone.length !== 9 || !rawPhone.startsWith('6')) {
+        alert("Veuillez entrer un numéro de téléphone valide (9 chiffres commençant par 6)");
+        return;
+    }
+    
+    if (!name || !q || !loc || !type) {
+        alert("Veuillez remplir tous les champs obligatoires");
+        return;
+    }
+    
+    if (photosArray.length === 0) {
+        const confirmNoPhoto = confirm("⚠️ Aucune photo. Voulez-vous continuer ?");
+        if (!confirmNoPhoto) return;
+    }
+    
+    const phone = "+237" + rawPhone;
+    btn.disabled = true;
+    btn.innerText = "ENVOI EN COURS...";
+    
+    let finalAddress = currentAddressName;
+    let finalLat = currentUserLocation?.lat;
+    let finalLng = currentUserLocation?.lng;
+    
+    if (!finalAddress) {
+        try {
+            const location = await new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 5000 });
+            });
+            finalLat = location.coords.latitude;
+            finalLng = location.coords.longitude;
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${finalLat}&lon=${finalLng}&zoom=18`);
+            const data = await response.json();
+            finalAddress = data.display_name || `${finalLat.toFixed(5)}, ${finalLng.toFixed(5)}`;
+        } catch (error) {
+            finalAddress = "Localisation non disponible";
+        }
+    }
+    
+    const id = Date.now();
+    const report = {
+        id: id,
+        name: name,
+        phone: phone,
+        q: q,
+        loc: loc,
+        type: type,
+        description: desc,
+        photos: photosArray,
+        status: "En attente",
+        time: new Date().toLocaleTimeString('fr-FR'),
+        date: new Date().toLocaleDateString('fr-FR'),
+        timestamp: new Date().toISOString(),
+        userLat: finalLat,
+        userLng: finalLng,
+        userAddress: finalAddress
+    };
+    
+    try {
+        await db_online.ref('reports/' + id).set(report);
+        const successDiv = document.getElementById("success");
+        if (successDiv) successDiv.style.display = "block";
+        btn.innerText = "✓ ENVOYÉ !";
+        setTimeout(() => {
+            closeCitizenPortal();
+            resetCitizenForm();
+        }, 2000);
+    } catch (error) {
+        alert("Erreur réseau : Impossible d'envoyer l'alerte.");
+        btn.disabled = false;
+        btn.innerText = "RÉESSAYER L'ENVOI";
+    }
+}
+
+function resetCitizenForm() {
+    document.getElementById("citName").value = "";
+    document.getElementById("citPhone").value = "";
+    document.getElementById("citQuartier").value = "";
+    document.getElementById("citLoc").value = "";
+    document.getElementById("citDesc").value = "";
+    photosArray = [];
+    renderGallery();
+    const photoStatus = document.getElementById("photoStatusText");
+    if (photoStatus) photoStatus.innerText = "📷 CLIQUEZ POUR PRENDRE UNE PHOTO (AVEC HEURE ET LIEU)";
+}
+
+// ========== FONCTIONS DES MODALS ==========
+function openCitizenPortal() {
+    const modal = document.getElementById("citizenPortalModal");
+    if (modal) {
+        modal.style.display = "flex";
+        setTimeout(() => {
+            initGeolocation();
+        }, 500);
+        resetCitizenForm();
+    }
+}
+
+function closeCitizenPortal() {
+    const modal = document.getElementById("citizenPortalModal");
+    if (modal) modal.style.display = "none";
+}
+
+function openCitizenInbox() {
+    const modal = document.getElementById("citizenInboxModal");
+    if (modal) {
+        modal.style.display = "flex";
+        const msgBadge = document.getElementById("msgNew");
+        if (msgBadge) msgBadge.style.display = "none";
+        updateCitizenInboxUI();
+    } else {
+        console.error("Modal citizenInboxModal introuvable");
+        notify("❌ Erreur d'affichage de la boîte de messages");
+    }
+}
+
+function closeCitizenInbox() {
+    const modal = document.getElementById("citizenInboxModal");
+    if (modal) modal.style.display = "none";
+}
+
+function openHistoryModal() {
+    updateQuartierFilter();
+    refreshHistoryList();
+    document.getElementById('historyModal').style.display = 'flex';
+}
+
+function closeHistoryModal() {
+    document.getElementById('historyModal').style.display = 'none';
+}
+
+function openMap() {
+    document.getElementById("mapModal").style.display = "flex";
+    if (!map) {
+        map = L.map('bigMap').setView([4.0511, 9.7679], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    }
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+    db.forEach(q => {
+        const onlineUnits = q.units.filter(u => u.online);
+        const avg = onlineUnits.length > 0 ? onlineUnits.reduce((a,b)=> a+b.lvl,0)/onlineUnits.length : 0;
+        let color = avg > 90 ? 'red' : (avg > 70 ? 'orange' : 'cyan');
+        const m = L.circleMarker([q.lat, q.lng], { radius: 12, fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.8 }).addTo(map).bindPopup(`<b>${q.nom}</b><br>Remplissage: ${avg.toFixed(1)}%`);
+        markers.push(m);
+    });
+}
+
+function closeMap() {
+    document.getElementById("mapModal").style.display = "none";
+}
 
 function persist() { 
     localStorage.setItem('DOUALA_DB', JSON.stringify(db)); 
@@ -480,52 +2531,19 @@ db_online.ref('reports').on('value', (snapshot) => {
     const data = snapshot.val();
     citizenReports = data ? Object.entries(data).map(([key, val]) => ({...val, firebaseId: key})).reverse() : [];
     updateCitizenInboxUI();
-    
     if(citizenReports.length > 0 && citizenReports[0].status === "En attente") {
-        document.getElementById("msgNew").style.display = "block";
+        const badge = document.getElementById("msgNew");
+        if (badge) badge.style.display = "block";
     }
 });
-
-function openCitizenPortal() { document.getElementById("citizenPortalModal").style.display = "flex"; }
-function closeCitizenPortal() { document.getElementById("citizenPortalModal").style.display = "none"; }
-function openCitizenInbox() { 
-    document.getElementById("citizenInboxModal").style.display = "flex"; 
-    document.getElementById("msgNew").style.display = "none";
-}
-function closeCitizenInbox() { document.getElementById("citizenInboxModal").style.display = "none"; }
-
-function submitCitizenReport() {
-    const name = document.getElementById("citName").value;
-    const phone = document.getElementById("citPhone").value;
-    const loc = document.getElementById("citLoc").value;
-    const desc = document.getElementById("citDesc").value;
-    const q = document.getElementById("citQuartier").value;
-    const type = document.getElementById("citLvl").value;
-
-    if(!name || !loc || !phone) return alert("Veuillez remplir le nom, le téléphone et la localisation.");
-
-    const report = {
-        id: Date.now(),
-        name, phone, loc, desc, q, type,
-        time: new Date().toLocaleTimeString(),
-        status: "En attente"
-    };
-
-    db_online.ref('reports/' + report.id).set(report)
-    .then(() => {
-        closeCitizenPortal();
-        notify(`🔔 Signalement envoyé au cloud pour ${q}`);
-        document.getElementById("citName").value = "";
-        document.getElementById("citPhone").value = "";
-        document.getElementById("citLoc").value = "";
-        document.getElementById("citDesc").value = "";
-    });
-}
 
 function updateCitizenInboxUI() {
     const body = document.getElementById("citizenInboxBody");
     const count = citizenReports.filter(r => r.status === "En attente").length;
-    document.getElementById("citCount").innerText = count;
+    const citCount = document.getElementById("citCount");
+    if (citCount) citCount.innerText = count;
+    
+    if(!body) return;
     
     if(citizenReports.length === 0) {
         body.innerHTML = `<p style="color: #64748b; text-align: center;">Aucun message en attente.</p>`;
@@ -533,56 +2551,53 @@ function updateCitizenInboxUI() {
     }
 
     body.innerHTML = citizenReports.map(r => {
-        // CORRECTION : Gestion de l'affichage de plusieurs photos
         let photoDisplayHtml = "";
         if (r.photos && Array.isArray(r.photos)) {
-            // Si c'est un tableau de photos, on boucle dessus
             photoDisplayHtml = r.photos.map(photoUrl => `
                 <img src="${photoUrl}" onclick="viewPhoto('${photoUrl}', '${r.name}')" 
                 style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid var(--citizen-purple); margin-right: 5px;">
             `).join("");
-        } else if (r.photo) {
-            // Si c'est une seule photo (ancien format)
-            photoDisplayHtml = `
-                <img src="${r.photo}" onclick="viewPhoto('${r.photo}', '${r.name}')" 
-                style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid var(--citizen-purple);">
-            `;
         }
-
+        
+        const deleteButton = (authCurrentUser && authCurrentUser.role !== 'EMPLOYE') ? 
+            `<button onclick="deleteCitizenReport('${r.firebaseId}')" style="background:none; border:none; color:var(--red); cursor:pointer; font-size:1.1rem;">🗑️</button>` : '';
+        
+        const locationInfo = r.userAddress ? `<br><small class="coord-badge">📍 ${r.userAddress.substring(0, 60)}</small>` : '';
+        
         return `
         <div class="msg-item" style="opacity: ${r.status === 'Traité' ? 0.6 : 1}; display: flex; justify-content: space-between; align-items: flex-start; background: rgba(188, 19, 254, 0.05); padding: 15px; border-left: 4px solid var(--citizen-purple); margin-bottom: 10px;">
             <div style="flex-grow: 1;">
-                <b style="color:var(--citizen-purple); font-size:1.1rem;">${r.name}</b> 
+                <b style="color:var(--citizen-purple); font-size:1.1rem;">${escapeHtml(r.name)}</b> 
                 <span style="color:var(--green); margin-left:10px; font-weight:bold;">📞 ${r.phone || 'N/A'}</span>
                 <br>
-                <small>📍 ${r.loc} [${r.q}]</small> <small style="color:#64748b; margin-left:5px;">(${r.time})</small><br>
+                <small>📍 ${escapeHtml(r.loc)} [${escapeHtml(r.q)}]</small> <small style="color:#64748b; margin-left:5px;">(${r.time})</small>
+                ${locationInfo}
+                <br>
                 <span style="font-size:0.7rem; color:var(--orange); font-weight:bold;">${(r.type || 'SIGNALEMENT').toUpperCase()}</span>
                 
-                ${(r.description || r.desc) ? `<div style="margin-top:8px; font-style:italic; font-size:0.85rem; color:#cbd5e1; background:rgba(0,0,0,0.2); padding:8px; border-radius:4px; border-left: 2px solid var(--citizen-purple);">"${r.description || r.desc}"</div>` : ''}
+                ${(r.description || r.desc) ? `<div style="margin-top:8px; font-style:italic; font-size:0.85rem; color:#cbd5e1; background:rgba(0,0,0,0.2); padding:8px; border-radius:4px; border-left: 2px solid var(--citizen-purple);">"${escapeHtml(r.description || r.desc)}"</div>` : ''}
                 
                 <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px;">
                     ${photoDisplayHtml}
                 </div>
             </div>
             <div style="display:flex; flex-direction: column; gap:10px; align-items:flex-end; min-width:100px;">
-                
                 ${r.status === 'En attente' ? 
                 `<button onclick="processCitizenReport('${r.firebaseId}')" style="font-size:0.6rem; border-color:var(--green); color:var(--green); width: 100%;">TRAITER</button>` : 
                 `<span style="color:var(--green); font-size:0.7rem; font-weight:bold;">TRAITÉ ✓</span>`}
-                
-                <button onclick="deleteCitizenReport('${r.firebaseId}')" style="background:none; border:none; color:var(--red); cursor:pointer; font-size:1.1rem;">🗑️</button>
+                ${deleteButton}
             </div>
         </div>
     `}).join("");
 }
 
-function viewPhoto(base64Data, name) {
+function viewPhoto(photoData, name) {
     const modal = document.getElementById("photoViewModal");
     const img = document.getElementById("imgFullView");
     const legend = document.getElementById("photoLegend");
-    img.src = base64Data;
-    legend.innerText = "Signalement envoyé par : " + name;
-    modal.style.display = "flex";
+    if (img) img.src = photoData;
+    if (legend) legend.innerText = "Signalement envoyé par : " + name;
+    if (modal) modal.style.display = "flex";
 }
 
 function processCitizenReport(id) {
@@ -619,8 +2634,9 @@ function getStatusInfo(lvl, online) {
 
 function render() {
     const body = document.getElementById("mainBody");
+    if (!body) return;
     body.innerHTML = "";
-    let totalLvlCity = 0, totalBatCity = 0, activeUnitsCity = 0, globalAlerts = 0;
+    let totalLvlCity = 0, activeUnitsCity = 0, globalAlerts = 0;
     const NOW = Date.now();
 
     db.forEach(q => {
@@ -628,7 +2644,6 @@ function render() {
         const onlineUnits = q.units.filter(u => u.online);
         const offlineUnits = q.units.filter(u => !u.online);
         let avgLvl = onlineUnits.length > 0 ? onlineUnits.reduce((a, b) => a + b.lvl, 0) / onlineUnits.length : 0;
-        let avgBat = q.units.reduce((a, b) => a + b.bat, 0) / q.units.length;
         let fullBins = onlineUnits.filter(u => u.lvl > 90).length; 
         
         if (fullBins >= 3 && (!alertCooldowns[q.nom] || (NOW - alertCooldowns[q.nom] > 300000))) {
@@ -640,7 +2655,6 @@ function render() {
         if (filter !== "ALL" && s.alert !== filter) return;
         globalAlerts += fullBins;
         if (onlineUnits.length > 0) { totalLvlCity += onlineUnits.reduce((a, b) => a + b.lvl, 0); activeUnitsCity += onlineUnits.length; }
-        totalBatCity += avgBat;
 
         const alertBadge = fullBins > 0 ? `<button class="blink-btn" onclick="openModal('${q.nom}')">VIDER</button>` : "";
         const repairBadge = offlineUnits.length > 0 ? `<span class="repair-status">🛠️ PANNE RÉSEAU (${offlineUnits.length})</span>` : "";
@@ -658,8 +2672,10 @@ function render() {
         </tr>`;
     });
 
-    document.getElementById("avg").innerText = activeUnitsCity > 0 ? (totalLvlCity / activeUnitsCity).toFixed(1) + "%" : "---";
-    document.getElementById("alerts").innerText = globalAlerts;
+    const avgEl = document.getElementById("avg");
+    if (avgEl) avgEl.innerText = activeUnitsCity > 0 ? (totalLvlCity / activeUnitsCity).toFixed(1) + "%" : "---";
+    const alertsEl = document.getElementById("alerts");
+    if (alertsEl) alertsEl.innerText = globalAlerts;
 }
 
 function simulate() {
@@ -678,32 +2694,18 @@ function simulate() {
     render(); updateGraph();
 }
 
-function openMap() {
-    document.getElementById("mapModal").style.display = "flex";
-    if (!map) {
-        map = L.map('bigMap').setView([4.0511, 9.7679], 12);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-    }
-    markers.forEach(m => map.removeLayer(m));
-    markers = [];
-    db.forEach(q => {
-        const onlineUnits = q.units.filter(u => u.online);
-        const avg = onlineUnits.length > 0 ? onlineUnits.reduce((a,b)=> a+b.lvl,0)/onlineUnits.length : 0;
-        let color = avg > 90 ? 'red' : (avg > 70 ? 'orange' : 'cyan');
-        const m = L.circleMarker([q.lat, q.lng], { radius: 12, fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.8 }).addTo(map).bindPopup(`<b>${q.nom}</b><br>Remplissage: ${avg.toFixed(1)}%`);
-        markers.push(m);
-    });
-}
-function closeMap() { document.getElementById("mapModal").style.display = "none"; }
-
 function openModal(nomQuartier) {
     let q = db.find(x => x.nom == nomQuartier);
-    document.getElementById("modalTitle").innerText = `LOGS UNITÉS : ${nomQuartier.toUpperCase()}`;
+    const modalTitle = document.getElementById("modalTitle");
+    if (modalTitle) modalTitle.innerText = `LOGS UNITÉS : ${nomQuartier.toUpperCase()}`;
     const tableBody = document.getElementById("modalTableBody");
+    if (!tableBody) return;
     tableBody.innerHTML = "";
     q.units.forEach(u => {
         let s = getStatusInfo(u.lvl, u.online);
         let lidStatus = u.lvl > 90 ? `<span style="color:var(--red); font-weight:bold;">🔒 VERROUILLÉ</span>` : (u.lidOpen ? `<span style="color:var(--green);">OUVERT</span>` : `<span style="color:#aaa;">FERMÉ</span>`);
+        const deleteButton = (authCurrentUser && authCurrentUser.role !== 'EMPLOYE') ? 
+            `<button class="btn-delete" onclick="deleteBin('${nomQuartier}', '${u.id}')">🗑️</button>` : '—';
         tableBody.innerHTML += `<tr>
             <td style="color:var(--blue); font-weight:600;">${u.id}</td>
             <td>📍 ${u.loc}</td>
@@ -714,62 +2716,41 @@ function openModal(nomQuartier) {
             <td>${u.bat.toFixed(0)}%</td>
             <td style="font-size:0.75rem;">${u.lastUpdate}</td>
             <td><span class="status-pill" style="border:1px solid ${s.color}">${s.alert}</span></td>
-            <td><button class="btn-delete" onclick="deleteBin('${nomQuartier}', '${u.id}')">🗑️</button></td>
+            <td>${deleteButton}</td>
         </tr>`;
     });
     document.getElementById("detailsModal").style.display = "flex";
 }
 
-function saveNewBin() {
-    const id = document.getElementById("newBinId").value;
-    const detailLoc = document.getElementById("newBinLoc").value;
-    const qPoint = document.getElementById("newBinQuartier").value;
-    let quartierRacine = qPoint.split(" - ")[0];
-    let qObj = db.find(x => x.nom === quartierRacine);
-    if(qObj && id){
-        qObj.units.push({
-            id: id, loc: qPoint + " - " + detailLoc, lvl: 0, bat: 100, online: true, lidOpen: false, lastUpdate: new Date().toLocaleString()
-        });
-        persist(); render(); closeEnrollModal();
-    }
-}
-
 function deleteBin(q, id) {
+    if (authCurrentUser && authCurrentUser.role === 'EMPLOYE') {
+        authShowToast('⛔ Vous n\'avez pas les droits pour supprimer une poubelle');
+        return;
+    }
     let qObj = db.find(x => x.nom === q);
     qObj.units = qObj.units.filter(u => u.id !== id);
     persist(); openModal(q); render();
 }
 
-function updateSelMairie() {
-    const arr = document.getElementById("selArr").value;
-    document.getElementById("selMairie").innerHTML = doualaGeo[arr].mairies.map(m => `<option value="${m}">${m}</option>`).join("");
-    updateSelQuartier();
+function closeModal() { 
+    document.getElementById("detailsModal").style.display = "none"; 
 }
-
-function updateSelQuartier() {
-    const arr = document.getElementById("selArr").value;
-    document.getElementById("newBinQuartier").innerHTML = doualaGeo[arr].quartiers.map(q => `<option value="${q}">${q}</option>`).join("");
-}
-
-function openEnrollModal() {
-    document.getElementById("selArr").innerHTML = Object.keys(doualaGeo).map(a => `<option value="${a}">${a}</option>`).join("");
-    updateSelMairie();
-    document.getElementById("enrollModal").style.display = "flex";
-}
-function closeEnrollModal() { document.getElementById("enrollModal").style.display = "none"; }
-function closeModal() { document.getElementById("detailsModal").style.display = "none"; }
 
 function setFilter(f) { filter = f; render(); }
 function manualRefresh() { simulate(); notify("Actualisation forcée effectuée"); }
 function notify(m) {
     const n = document.createElement("div"); n.className = "toast"; n.innerText = m;
-    document.getElementById("notifContainer").appendChild(n);
-    setTimeout(() => n.remove(), 3000);
+    const container = document.getElementById("notifContainer");
+    if (container) {
+        container.appendChild(n);
+        setTimeout(() => n.remove(), 3000);
+    }
 }
 
 let myChart;
 function updateGraph() {
-    const ctx = document.getElementById('chart').getContext('2d');
+    const ctx = document.getElementById('chart');
+    if (!ctx) return;
     const labels = db.map(q => q.nom);
     const data = db.map(q => {
         const active = q.units.filter(u => u.online);
@@ -785,10 +2766,359 @@ function updateGraph() {
     }
 }
 
-setInterval(() => { document.getElementById("clock").innerText = new Date().toLocaleTimeString(); }, 1000);
-setInterval(simulate, 15000);
-render(); updateGraph();
+function authShowToast(message) { notify(message); }
 
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+// ========== HISTORIQUE ==========
+let historyCurrentPage = 1;
+let historyFilteredData = [];
+let historyStatusFilter = "ALL";
+let historyTypeFilterValue = "ALL";
+let historyQuartierFilterValue = "ALL";
+const historyItemsPerPage = 15;
+
+function getAllQuartiersFromReports() {
+    if (!citizenReports || citizenReports.length === 0) return [];
+    return [...new Set(citizenReports.map(r => r.q).filter(q => q))].sort();
+}
+
+function updateQuartierFilter() {
+    const quartierSelect = document.getElementById('historyQuartierFilter');
+    if (!quartierSelect) return;
+    const quartiers = getAllQuartiersFromReports();
+    quartierSelect.innerHTML = '<option value="ALL">📍 Tous les quartiers</option>';
+    quartiers.forEach(q => {
+        quartierSelect.innerHTML += `<option value="${q}">${q}</option>`;
+    });
+}
+
+function filterByStatus(status) {
+    historyStatusFilter = status;
+    refreshHistoryList();
+}
+
+function refreshHistoryList() {
+    historyTypeFilterValue = document.getElementById('historyTypeFilter').value;
+    historyQuartierFilterValue = document.getElementById('historyQuartierFilter').value;
+    const searchFilter = document.getElementById('historySearchFilter')?.value.toLowerCase() || '';
+    
+    historyFilteredData = citizenReports.filter(r => {
+        if (historyTypeFilterValue !== 'ALL' && r.type !== historyTypeFilterValue) return false;
+        if (historyQuartierFilterValue !== 'ALL' && r.q !== historyQuartierFilterValue) return false;
+        if (historyStatusFilter !== 'ALL' && r.status !== historyStatusFilter) return false;
+        if (searchFilter && !r.name.toLowerCase().includes(searchFilter)) return false;
+        return true;
+    });
+    
+    updateHistoryStats();
+    historyCurrentPage = 1;
+    renderHistoryTable();
+}
+
+function updateHistoryStats() {
+    const statsContainer = document.getElementById('historyStatsContainer');
+    if (!statsContainer) return;
+    
+    const totalCount = citizenReports.length;
+    const critiqueCount = citizenReports.filter(r => r.type === 'Poubelle qui déborde').length;
+    const urgentCount = citizenReports.filter(r => r.type === 'Dépôt sauvage').length;
+    const caniveauCount = citizenReports.filter(r => r.type === 'Caniveau bouché').length;
+    const autreCount = citizenReports.filter(r => r.type && !['Poubelle qui déborde','Dépôt sauvage','Caniveau bouché'].includes(r.type)).length;
+    const traiteCount = citizenReports.filter(r => r.status === 'Traité').length;
+    const enAttenteCount = citizenReports.filter(r => r.status === 'En attente').length;
+    
+    statsContainer.innerHTML = `
+        <div class="history-stat-card" onclick="historyStatusFilter='ALL'; refreshHistoryList();">
+            <strong>📊 Total</strong><h3>${totalCount}</h3>
+        </div>
+        <div class="history-stat-card" onclick="historyTypeFilterValue='Poubelle qui déborde'; refreshHistoryList();">
+            <strong>🗑️ Poubelle déborde</strong><h3>${critiqueCount}</h3>
+        </div>
+        <div class="history-stat-card" onclick="historyTypeFilterValue='Dépôt sauvage'; refreshHistoryList();">
+            <strong>🚮 Dépôt sauvage</strong><h3>${urgentCount}</h3>
+        </div>
+        <div class="history-stat-card" onclick="historyTypeFilterValue='Caniveau bouché'; refreshHistoryList();">
+            <strong>🌊 Caniveau bouché</strong><h3>${caniveauCount}</h3>
+        </div>
+        <div class="history-stat-card" onclick="historyTypeFilterValue='Autre'; refreshHistoryList();">
+            <strong>📌 Autre</strong><h3>${autreCount}</h3>
+        </div>
+        <div class="history-stat-card" onclick="filterByStatus('Traité');" style="border-left-color: #39ff14;">
+            <strong>✅ Traités</strong><h3>${traiteCount}</h3>
+        </div>
+        <div class="history-stat-card" onclick="filterByStatus('En attente');" style="border-left-color: #ff9100;">
+            <strong>⏳ En attente</strong><h3>${enAttenteCount}</h3>
+        </div>
+    `;
+}
+
+function getTypeClass(type) {
+    if (type === 'Poubelle qui déborde') return 'type-critique';
+    if (type === 'Dépôt sauvage') return 'type-urgent';
+    if (type === 'Caniveau bouché') return 'type-caniveau';
+    return 'type-autre';
+}
+
+function getTypeIcon(type) {
+    if (type === 'Poubelle qui déborde') return '🗑️';
+    if (type === 'Dépôt sauvage') return '🚮';
+    if (type === 'Caniveau bouché') return '🌊';
+    return '📌';
+}
+
+function renderHistoryTable() {
+    const tbody = document.getElementById('historyTableBody');
+    if (!tbody) return;
+    
+    const start = (historyCurrentPage - 1) * historyItemsPerPage;
+    const pageData = historyFilteredData.slice(start, start + historyItemsPerPage);
+    
+    if (pageData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#64748b; padding:40px;">Aucun signalement trouvé</td></tr>';
+        document.getElementById('historyPagination').innerHTML = '';
+        return;
+    }
+    
+    tbody.innerHTML = pageData.map(r => `
+        <tr style="border-bottom:1px solid #334155;">
+            <td><small>${r.time || r.date ? new Date(r.date).toLocaleString() : '-'}</small></td>
+            <td><strong>${escapeHtml(r.name)}</strong></td>
+            <td>${escapeHtml(r.phone || '-')}</td>
+            <td><span class="type-badge ${getTypeClass(r.type)}">${getTypeIcon(r.type)} ${escapeHtml(r.type || 'Non spécifié')}</span></td>
+            <td><strong>${escapeHtml(r.q)}</strong></td>
+            <td>${escapeHtml(r.loc)}${r.userAddress ? `<br><small class="coord-badge">📍 ${r.userAddress.substring(0, 50)}</small>` : ''}</td>
+            <td style="max-width:200px;">${escapeHtml(r.description || r.desc || '-')}</td>
+            <td>${r.status === 'Traité' ? '<span style="color:#39ff14;">✅ Traité</span>' : '<span style="color:#ff9100;">⏳ En attente</span>'}</td>
+        </tr>
+    `).join('');
+    
+    const totalPages = Math.ceil(historyFilteredData.length / historyItemsPerPage);
+    const paginationDiv = document.getElementById('historyPagination');
+    if (paginationDiv) {
+        let html = '';
+        html += `<button onclick="historyCurrentPage=1; renderHistoryTable();" ${historyCurrentPage===1?'disabled style="opacity:0.5;"':''} style="padding:6px 12px; margin:0 3px; border-radius:6px;">⏮</button>`;
+        for (let i = Math.max(1, historyCurrentPage-2); i <= Math.min(totalPages, historyCurrentPage+2); i++) {
+            html += `<button onclick="historyCurrentPage=${i}; renderHistoryTable();" style="padding:6px 12px; margin:0 3px; border-radius:6px; ${i === historyCurrentPage ? 'background:#00d2ff; color:black;' : 'background:rgba(0,210,255,0.15); color:white;'}">${i}</button>`;
+        }
+        html += `<button onclick="historyCurrentPage=${totalPages}; renderHistoryTable();" ${historyCurrentPage===totalPages?'disabled style="opacity:0.5;"':''} style="padding:6px 12px; margin:0 3px; border-radius:6px;">⏭</button>`;
+        paginationDiv.innerHTML = html;
+    }
+}
+
+function resetHistoryFilters() {
+    document.getElementById('historyTypeFilter').value = 'ALL';
+    document.getElementById('historyQuartierFilter').value = 'ALL';
+    document.getElementById('historySearchFilter').value = '';
+    historyStatusFilter = 'ALL';
+    historyTypeFilterValue = 'ALL';
+    refreshHistoryList();
+}
+
+function exportHistoryToCSV() {
+    if (historyFilteredData.length === 0) {
+        notify('Aucune donnée à exporter');
+        return;
+    }
+    
+    const headers = ['Date', 'Citoyen', 'Téléphone', 'Type', 'Quartier', 'Localisation', 'Adresse GPS', 'Description', 'Statut'];
+    const rows = historyFilteredData.map(r => [
+        r.time || new Date(r.date).toLocaleString(), r.name, r.phone || '', r.type || '', r.q, r.loc, r.userAddress || '', (r.description || r.desc || ''), r.status
+    ]);
+    const csvContent = [headers, ...rows].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.setAttribute('download', `signalements_${new Date().toISOString().slice(0,19)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    notify('📎 Export CSV effectué');
+}
+
+// ========== ENRÔLEMENT AMÉLIORÉ ==========
+const mairiesData = {
+    "Douala 1er": ["Mairie de Bonanjo", "CUD (Direction)"],
+    "Douala 2e": ["Mairie de New Bell"],
+    "Douala 3e": ["Mairie de Logbaba"],
+    "Douala 4e": ["Mairie de Bonabéri"],
+    "Douala 5e": ["Mairie de Kotto"]
+};
+
+const quartiersParMairie = {
+    "Mairie de Bonanjo": ["Bonanjo - Poste", "Akwa - Palais Dika"],
+    "CUD (Direction)": ["Bali - Koumassi", "Deido - Rond Point"],
+    "Mairie de New Bell": ["New Bell - Marché", "Nkololoun - Rail", "Babylone", "Nylon - Tergal"],
+    "Mairie de Logbaba": ["Ndokoti - Tunnel", "Logbaba - Magzi", "Village - Jumeaux", "Nyalla - Rail"],
+    "Mairie de Bonabéri": ["Bonassama - Pont", "Mabanda - Grand Marché", "Sodiko", "Boquette"],
+    "Mairie de Kotto": ["Bonamoussadi - Bijou", "Logpom - Bassong", "Kotto - Santa Lucia", "Makepe - Rhône-Poulenc"]
+};
+
+function updateMairiesImproved() {
+    const arr = document.getElementById('selArrImproved').value;
+    const mairieSelect = document.getElementById('selMairieImproved');
+    if (!arr) {
+        mairieSelect.innerHTML = '<option value="">Sélectionner d\'abord l\'arrondissement</option>';
+        return;
+    }
+    mairieSelect.innerHTML = '<option value="">Sélectionner une mairie</option>' + (mairiesData[arr] || []).map(m => `<option value="${m}">${m}</option>`).join('');
+}
+
+function updateQuartiersImproved() {
+    const mairie = document.getElementById('selMairieImproved').value;
+    const quartierSelect = document.getElementById('newBinQuartierImproved');
+    if (!mairie) {
+        quartierSelect.innerHTML = '<option value="">Sélectionner d\'abord une mairie</option>';
+        return;
+    }
+    quartierSelect.innerHTML = '<option value="">Sélectionner un quartier</option>' + (quartiersParMairie[mairie] || []).map(q => `<option value="${q}">${q}</option>`).join('');
+}
+
+function openEnrollModalImproved() {
+    if (!authCurrentUser || (authCurrentUser.role !== 'SUPER_ADMIN' && authCurrentUser.role !== 'ADMIN')) {
+        notify('⛔ Seuls les administrateurs peuvent enrôler des capteurs');
+        return;
+    }
+    document.getElementById('enrollModalImproved').style.display = 'flex';
+    document.getElementById('enrollFormImproved').reset();
+    document.getElementById('selArrImproved').value = '';
+    document.getElementById('selMairieImproved').innerHTML = '<option value="">Sélectionner d\'abord l\'arrondissement</option>';
+    document.getElementById('newBinQuartierImproved').innerHTML = '<option value="">Sélectionner d\'abord une mairie</option>';
+}
+
+function closeEnrollModalImproved() {
+    document.getElementById('enrollModalImproved').style.display = 'none';
+}
+
+function saveNewBinImproved() {
+    const id = document.getElementById("newBinIdImproved").value.trim();
+    const detailLoc = document.getElementById("newBinLocImproved").value.trim();
+    let qPoint = document.getElementById("newBinQuartierImproved").value;
+    const quartierId = document.getElementById("newBinQuartierId").value.trim();
+    const manualQuartier = document.getElementById("newBinManualQuartier").value.trim();
+    const manualQuartierId = document.getElementById("newBinManualQuartierId").value.trim();
+    
+    if (!id || !detailLoc) {
+        notify("❌ L'ID du capteur et la localisation sont obligatoires");
+        return;
+    }
+    
+    let quartierNom = qPoint;
+    let quartierIdentifiant = quartierId;
+    
+    if (manualQuartier && manualQuartierId) {
+        quartierNom = manualQuartier;
+        quartierIdentifiant = manualQuartierId;
+        
+        if (!db.some(q => q.nom === manualQuartier)) {
+            db.push({
+                id: manualQuartierId,
+                nom: manualQuartier,
+                lat: 4.05 + (Math.random() - 0.5) * 0.1,
+                lng: 9.70 + (Math.random() - 0.5) * 0.1,
+                units: []
+            });
+            persist();
+            notify(`✅ Nouveau quartier "${manualQuartier}" créé`);
+        } else {
+            const existing = db.find(q => q.nom === manualQuartier);
+            if (existing && !existing.id) {
+                existing.id = manualQuartierId;
+                persist();
+            }
+        }
+    } else if (!qPoint) {
+        notify("❌ Veuillez sélectionner un quartier ou en ajouter un nouveau");
+        return;
+    }
+    
+    let quartierRacine = quartierNom.split(" - ")[0];
+    let qObj = db.find(x => x.nom === quartierRacine) || db.find(x => x.nom === quartierNom);
+    
+    if (qObj && id) {
+        if (quartierIdentifiant && !qObj.id) {
+            qObj.id = quartierIdentifiant;
+            persist();
+        }
+        
+        qObj.units.push({
+            id: id,
+            loc: `${quartierNom} - ${detailLoc}`,
+            lvl: 0,
+            bat: 100,
+            online: true,
+            lidOpen: false,
+            lastUpdate: new Date().toLocaleString()
+        });
+        persist();
+        render();
+        closeEnrollModalImproved();
+        notify(`✅ Capteur ${id} enrôlé avec succès dans ${qObj.nom}`);
+    } else {
+        notify("❌ Erreur : impossible d'enrôler le capteur");
+    }
+}
+
+// Initialiser les écouteurs
+document.addEventListener('DOMContentLoaded', function() {
+    const selArrImproved = document.getElementById('selArrImproved');
+    if (selArrImproved) selArrImproved.addEventListener('change', updateMairiesImproved);
+    const selMairieImproved = document.getElementById('selMairieImproved');
+    if (selMairieImproved) selMairieImproved.addEventListener('change', updateQuartiersImproved);
+});
+
+window.openEnrollModal = function() {
+    openEnrollModalImproved();
+};
+
+// Horloge
+setInterval(() => { 
+    const clock = document.getElementById("clock");
+    if (clock) clock.innerText = new Date().toLocaleTimeString(); 
+}, 1000);
+setInterval(simulate, 15000);
+
+// Vérification de session au chargement
+function checkSession() {
+    authInitUsers();
+    const saved = localStorage.getItem('AUTH_CURRENT_USER');
+    if (saved) {
+        const userData = JSON.parse(saved);
+        const user = authUsers.find(u => u.id === userData.id && u.status === 'ACTIVE');
+        if (user) {
+            authCurrentUser = user;
+            document.getElementById('authOverlay').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('menuContainer').style.display = 'block';
+            document.getElementById('authUserInfo').style.display = 'flex';
+            if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') {
+                document.getElementById('adminBadge').style.display = 'flex';
+            }
+            updateUserInfo();
+            render();
+            updateGraph();
+            return true;
+        }
+    }
+    document.getElementById('authOverlay').style.display = 'flex';
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('menuContainer').style.display = 'none';
+    document.getElementById('authUserInfo').style.display = 'none';
+    document.getElementById('adminBadge').style.display = 'none';
+    return false;
+}
+
+checkSession();
 </script>
 </body>
 </html>
