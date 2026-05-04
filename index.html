@@ -182,6 +182,7 @@
             border-radius: 10px;
             flex-wrap: wrap;
             gap: 10px;
+            margin-bottom: 20px;
         }
 
         .control-group { display: flex; gap: 10px; align-items: center; }
@@ -497,7 +498,7 @@
             backdrop-filter: blur(15px);
             border: 1px solid rgba(0, 210, 255, 0.3);
             border-radius: 16px;
-            min-width: 260px;
+            min-width: 280px;
             z-index: 1000;
             display: none;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
@@ -904,6 +905,99 @@
             margin-top: 10px;
             font-size: 0.7rem;
         }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 400px;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .chat-message {
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+        .chat-message.sent {
+            background: linear-gradient(135deg, #00d2ff, #0088aa);
+            margin-left: auto;
+            color: white;
+        }
+        .chat-message.received {
+            background: rgba(30, 41, 59, 0.8);
+            margin-right: auto;
+            border-left: 3px solid var(--green);
+        }
+        .chat-message .sender {
+            font-size: 0.65rem;
+            font-weight: bold;
+            margin-bottom: 3px;
+            color: var(--green);
+        }
+        .chat-message .time {
+            font-size: 0.55rem;
+            color: #94a3b8;
+            text-align: right;
+            margin-top: 3px;
+        }
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input-area input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 25px;
+        }
+        .chat-input-area button {
+            border-radius: 25px;
+            padding: 12px 20px;
+        }
+        .admin-list {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .admin-chip {
+            padding: 5px 12px;
+            background: rgba(0,210,255,0.15);
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.3s ease;
+        }
+        .admin-chip:hover, .admin-chip.active {
+            background: var(--blue);
+            color: black;
+        }
+        .unread-badge {
+            background: var(--red);
+            color: white;
+            border-radius: 50%;
+            padding: 2px 5px;
+            font-size: 0.6rem;
+            margin-left: 5px;
+        }
+        .btn-messages {
+            position: relative;
+        }
+        .global-unread {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--red);
+            border-radius: 50%;
+            padding: 2px 5px;
+            font-size: 0.6rem;
+        }
     </style>
 </head>
 <body>
@@ -911,13 +1005,12 @@
 <!-- AUTHENTIFICATION -->
 <div id="authOverlay" class="auth-overlay">
     <div class="auth-card">
-        <div class="auth-tabs">
-            <div class="auth-tab active" onclick="switchAuthTab('login')">🔐 CONNEXION</div>
-            <div class="auth-tab" onclick="switchAuthTab('register')">📝 INSCRIPTION</div>
+        <div style="text-align:center; margin-bottom:20px;">
+            <div style="font-size:3rem;">🗑️</div>
+            <h2 style="font-family:Orbitron; color:var(--blue);">SWMS DOUALA</h2>
+            <p style="color:#64748b;">Command Center - Accès Administrateur</p>
         </div>
         <div id="authLoginForm" class="auth-form active">
-            <h2>COMMAND CENTER</h2>
-            <p>Accédez à votre espace de travail sécurisé</p>
             <div class="auth-input-group">
                 <label>📧 EMAIL ou MATRICULE</label>
                 <input type="text" id="authEmail" placeholder="exemple@swms.cm ou matricule">
@@ -932,31 +1025,6 @@
             <button class="auth-btn" onclick="authLogin()">🚪 SE CONNECTER</button>
             <div id="authLoginMsg" class="auth-message"></div>
         </div>
-        <div id="authRegisterForm" class="auth-form">
-            <h2>REJOINDRE L'ÉQUIPE</h2>
-            <p>Créez votre compte - Validation par l'administrateur</p>
-            <div class="auth-input-group">
-                <label>👤 NOM COMPLET</label>
-                <input type="text" id="regFullname" placeholder="Votre nom et prénom">
-            </div>
-            <div class="auth-input-group">
-                <label>📧 EMAIL</label>
-                <input type="email" id="regEmail" placeholder="exemple@swms.cm">
-            </div>
-            <div class="auth-input-group">
-                <label>📞 TÉLÉPHONE</label>
-                <input type="tel" id="regPhone" placeholder="+237 XXXXXXXX">
-            </div>
-            <div class="auth-input-group">
-                <label>🏢 FONCTION / POSTE</label>
-                <input type="text" id="regPoste" placeholder="Technicien, Superviseur...">
-            </div>
-            <button class="auth-btn" onclick="authRegister()">📨 SOUMETTRE LA DEMANDE</button>
-            <div style="text-align: center; margin-top: 20px;">
-                <button onclick="switchAuthTab('login')" style="background:none; border:1px solid rgba(0,210,255,0.5); color:var(--blue); padding:10px 25px; border-radius:30px; cursor:pointer;">◀ RETOUR À LA CONNEXION</button>
-            </div>
-            <div id="authRegisterMsg" class="auth-message"></div>
-        </div>
     </div>
 </div>
 
@@ -967,6 +1035,7 @@
     </div>
     <div id="dropdownMenu" class="dropdown-menu">
         <a onclick="openAdminPanel(); toggleMenu()">👑 GESTION DES UTILISATEURS</a>
+        <a onclick="openAdminMessaging(); toggleMenu()">💬 MESSAGERIE INTERNE</a>
         <a onclick="openEditProfileModal(); toggleMenu()">✏️ MODIFIER MON PROFIL</a>
         <a onclick="openChangePasswordModal(); toggleMenu()">🔑 CHANGER MON MOT DE PASSE</a>
         <a onclick="openMap(); toggleMenu()">🗺️ VISUALISER LA CARTE</a>
@@ -1011,7 +1080,7 @@
         </div>
         
         <div id="passwordRequestsSection" style="margin-top: 30px;">
-            <h3>🔐 DEMANDES DE RÉINITIALISATION DE MOT DE PASSE</h3>
+            <h3>🔐 DEMANDES DE RÉINITIALISATION DE MOT DE PASSE (EMPLOYÉS)</h3>
             <div id="passwordRequestsList"></div>
         </div>
     </div>
@@ -1045,18 +1114,30 @@
     </div>
 </div>
 
-<!-- MODAL MOT DE PASSE OUBLIÉ -->
+<!-- MODAL MOT DE PASSE OUBLIÉ (Admin - récupération directe) -->
 <div id="forgotPasswordModal" class="modal">
     <div class="modal-content forgot-password-modal">
         <h2 style="font-family:Orbitron; color:var(--blue); margin-bottom:20px;">🔑 RÉCUPÉRATION DE MOT DE PASSE</h2>
-        <div class="forgot-password-form">
+        <div class="forgot-password-form" id="forgotPwdForm">
             <div class="forgot-password-request">
                 <label>📧 EMAIL ou MATRICULE</label>
                 <input type="text" id="forgotIdentifier" placeholder="Votre email ou matricule">
             </div>
-            <button onclick="requestPasswordReset()" style="background:var(--blue); color:black;">📨 ENVOYER LA DEMANDE</button>
+            <button onclick="processForgotPassword()" style="background:var(--blue); color:black;">🔍 VÉRIFIER MON COMPTE</button>
             <button onclick="closeForgotPasswordModal()" style="background:rgba(255,49,49,0.15); border-color:rgba(255,49,49,0.4); color:#ff6b6b;">ANNULER</button>
             <div id="forgotPasswordMsg" class="auth-message"></div>
+        </div>
+        <div id="adminResetForm" style="display:none;">
+            <div style="background:rgba(57,255,20,0.1); padding:15px; border-radius:10px; margin-bottom:15px;">
+                <p><strong id="adminNameDisplay"></strong></p>
+                <p style="font-size:0.8rem; color:#00d2ff;" id="adminEmailDisplay"></p>
+            </div>
+            <div class="assign-form">
+                <input type="password" id="adminNewPassword" placeholder="Nouveau mot de passe (min 6 caractères)">
+                <input type="password" id="adminConfirmPassword" placeholder="Confirmer le nouveau mot de passe">
+                <button onclick="confirmAdminReset()" style="background:linear-gradient(135deg,var(--green),#2ecc71); color:black;">✅ RÉINITIALISER</button>
+                <button onclick="closeForgotPasswordModal()" style="background:rgba(255,49,49,0.15); color:#ff6b6b;">ANNULER</button>
+            </div>
         </div>
     </div>
 </div>
@@ -1072,6 +1153,31 @@
             <input type="password" id="assignConfirmPwd" placeholder="Confirmer le mot de passe">
             <button onclick="confirmAssignPassword()" style="background:linear-gradient(135deg,var(--green),#2ecc71); color:black;">✅ VALIDER ET ACTIVER</button>
             <button onclick="closeAssignModal()" style="background:rgba(255,49,49,0.15); color:#ff6b6b;">ANNULER</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL MESSAGERIE INTERNE -->
+<div id="messagingModal" class="modal">
+    <div class="modal-content" style="max-width: 700px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="font-family:Orbitron; color:var(--green);">💬 MESSAGERIE INTERNE</h2>
+            <button onclick="closeMessagingModal()" style="background:rgba(255,49,49,0.15); border-color:rgba(255,49,49,0.4); color:#ff6b6b; padding:8px 20px; border-radius:10px;">✖ FERMER</button>
+        </div>
+        
+        <div class="admin-list" id="adminListContainer"></div>
+        
+        <div id="chatArea" style="display: none;">
+            <div id="chatHeader" style="margin-bottom: 10px; padding: 10px; background: rgba(0,210,255,0.1); border-radius: 10px;">
+                <strong id="chatWithName"></strong>
+            </div>
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="chat-input-area">
+                    <input type="text" id="chatMessageInput" placeholder="Écrivez votre message..." onkeypress="if(event.keyCode===13) sendAdminMessage()">
+                    <button onclick="sendAdminMessage()">📨 ENVOYER</button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -1094,6 +1200,10 @@
             Signalements Citoyens
             <h2 id="citCount" style="color: var(--citizen-purple);">0</h2>
         </div>
+        <div class="card btn-messages" style="border-left-color: var(--green); cursor: pointer;" onclick="openAdminMessaging()">
+            💬 Messages Admin
+            <h2 id="unreadCountHeader" style="color: var(--green);">0</h2>
+        </div>
     </div>
 
     <div class="controls-bar">
@@ -1113,13 +1223,16 @@
         <div class="control-group">
             <button onclick="openMap()">🗺️ CARTE</button>
             <button onclick="openCitizenInbox()" style="border-color: var(--citizen-purple); color: var(--citizen-purple); position: relative;">
-                📩 MESSAGES <span id="msgNew" class="msg-badge" style="display:none;">!</span>
+                📩 MESSAGES CITOYENS <span id="msgNew" class="msg-badge" style="display:none;">!</span>
             </button>
             <button onclick="openCitizenPortal()" style="background: var(--citizen-purple); color: white; border: none;">📢 PORTAIL CITOYEN</button>
+            <button onclick="openAdminMessaging()" style="background: var(--green); color: black; border: none; position: relative;">
+                💬 ADMIN <span id="globalUnreadBadge" style="position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; padding: 2px 5px; font-size: 0.6rem; display: none;">0</span>
+            </button>
         </div>
     </div>
 
-    <table>
+    <table id="dataTable">
         <thead>
             <tr>
                 <th>ID Quartier</th>
@@ -1344,17 +1457,109 @@
 </div>
 
 <script>
+// ===================== CONFIGURATION INITIALE =====================
+// Configuration des quartiers de Douala (doit être définie AVANT db)
+const configurationDouala = [
+    { nom: "Bonanjo", lat: 4.044, lng: 9.684, points: ["Marché Bonanjo", "Station-Service Bonanjo", "Supermarché Bonanjo", "Pharmacie Bonanjo", "École Bonanjo", "Hôpital Bonanjo", "Carrefour Principal Bonanjo", "Entrée Rue Bonanjo", "Mairie de Zone Bonanjo", "Stade de proximité Bonanjo", "Boulangerie Bonanjo", "Poste de Police Bonanjo"] },
+    { nom: "Akwa", lat: 4.050, lng: 9.700, points: ["Marché Akwa", "Station-Service Akwa", "Supermarché Akwa", "Pharmacie Akwa", "École Akwa", "Hôpital Akwa", "Carrefour Principal Akwa", "Entrée Rue Akwa", "Mairie de Zone Akwa", "Stade de proximité Akwa", "Boulangerie Akwa", "Poste de Police Akwa"] },
+    { nom: "New Bell", lat: 4.035, lng: 9.715, points: ["Marché New Bell", "Station-Service New Bell", "Supermarché New Bell", "Pharmacie New Bell", "École New Bell", "Hôpital New Bell", "Carrefour Principal New Bell", "Entrée Rue New Bell", "Mairie de Zone New Bell", "Stade de proximité New Bell", "Boulangerie New Bell", "Poste de Police New Bell"] },
+    { nom: "Ndokoti", lat: 4.048, lng: 9.742, points: ["Marché Ndokoti", "Station-Service Ndokoti", "Supermarché Ndokoti", "Pharmacie Ndokoti", "École Ndokoti", "Hôpital Ndokoti", "Carrefour Principal Ndokoti", "Entrée Rue Ndokoti", "Mairie de Zone Ndokoti", "Stade de proximité Ndokoti", "Boulangerie Ndokoti", "Poste de Police Ndokoti"] },
+    { nom: "Bonamoussadi", lat: 4.085, lng: 9.735, points: ["Marché Bonamoussadi", "Station-Service Bonamoussadi", "Supermarché Bonamoussadi", "Pharmacie Bonamoussadi", "École Bonamoussadi", "Hôpital Bonamoussadi", "Carrefour Principal Bonamoussadi", "Entrée Rue Bonamoussadi", "Mairie de Zone Bonamoussadi", "Stade de proximité Bonamoussadi", "Boulangerie Bonamoussadi", "Poste de Police Bonamoussadi"] },
+    { nom: "Deido", lat: 4.062, lng: 9.702, points: ["Marché Deido", "Station-Service Deido", "Supermarché Deido", "Pharmacie Deido", "École Deido", "Hôpital Deido", "Carrefour Principal Deido", "Entrée Rue Deido", "Mairie de Zone Deido", "Stade de proximité Deido", "Boulangerie Deido", "Poste de Police Deido"] },
+    { nom: "Logpom", lat: 4.095, lng: 9.750, points: ["Marché Logpom", "Station-Service Logpom", "Supermarché Logpom", "Pharmacie Logpom", "École Logpom", "Hôpital Logpom", "Carrefour Principal Logpom", "Entrée Rue Logpom", "Mairie de Zone Logpom", "Stade de proximité Logpom", "Boulangerie Logpom", "Poste de Police Logpom"] },
+    { nom: "Village", lat: 4.020, lng: 9.770, points: ["Marché Village", "Station-Service Village", "Supermarché Village", "Pharmacie Village", "École Village", "Hôpital Village", "Carrefour Principal Village", "Entrée Rue Village", "Mairie de Zone Village", "Stade de proximité Village", "Boulangerie Village", "Poste de Police Village"] },
+    { nom: "Logbaba", lat: 4.040, lng: 9.760, points: ["Marché Logbaba", "Station-Service Logbaba", "Supermarché Logbaba", "Pharmacie Logbaba", "École Logbaba", "Hôpital Logbaba", "Carrefour Principal Logbaba", "Entrée Rue Logbaba", "Mairie de Zone Logbaba", "Stade de proximité Logbaba", "Boulangerie Logbaba", "Poste de Police Logbaba"] },
+    { nom: "Bonabéri", lat: 4.075, lng: 9.670, points: ["Marché Bonabéri", "Station-Service Bonabéri", "Supermarché Bonabéri", "Pharmacie Bonabéri", "École Bonabéri", "Hôpital Bonabéri", "Carrefour Principal Bonabéri", "Entrée Rue Bonabéri", "Mairie de Zone Bonabéri", "Stade de proximité Bonabéri", "Boulangerie Bonabéri", "Poste de Police Bonabéri"] }
+];
+
+const quartiersDouala = ["Akwa", "New Bell", "Deido", "Bonabéri", "Ndokoti", "Logpom", "Village", "Logbaba", "Bonanjo", "Bonamoussadi", "Kotto", "Makepe", "Bali", "Nylon"];
+
+const pointTemplate = ["Marché", "Station-Service", "Supermarché", "Pharmacie", "École", "Hôpital", "Carrefour Principal", "Entrée Rue", "Mairie de Zone", "Stade de proximité", "Boulangerie", "Poste de Police"];
+
+const mairiesData = {
+    "Douala 1er": ["Mairie de Bonanjo", "CUD (Direction)"],
+    "Douala 2e": ["Mairie de New Bell"],
+    "Douala 3e": ["Mairie de Logbaba"],
+    "Douala 4e": ["Mairie de Bonabéri"],
+    "Douala 5e": ["Mairie de Kotto"]
+};
+
+const quartiersParMairie = {
+    "Mairie de Bonanjo": ["Bonanjo - Poste", "Akwa - Palais Dika"],
+    "CUD (Direction)": ["Bali - Koumassi", "Deido - Rond Point"],
+    "Mairie de New Bell": ["New Bell - Marché", "Nkololoun - Rail", "Babylone", "Nylon - Tergal"],
+    "Mairie de Logbaba": ["Ndokoti - Tunnel", "Logbaba - Magzi", "Village - Jumeaux", "Nyalla - Rail"],
+    "Mairie de Bonabéri": ["Bonassama - Pont", "Mabanda - Grand Marché", "Sodiko", "Boquette"],
+    "Mairie de Kotto": ["Bonamoussadi - Bijou", "Logpom - Bassong", "Kotto - Santa Lucia", "Makepe - Rhône-Poulenc"]
+};
+
+// ===================== INITIALISATION DE LA BASE DE DONNÉES =====================
+let db = [];
+
+function initDatabase() {
+    const saved = localStorage.getItem('DOUALA_DB');
+    if (saved) {
+        try {
+            db = JSON.parse(saved);
+            if (!db || !Array.isArray(db) || db.length === 0) {
+                throw new Error("Base de données vide");
+            }
+            console.log("Base de données chargée depuis localStorage");
+        } catch(e) {
+            console.error("Erreur chargement DB, création d'une nouvelle", e);
+            createDefaultDatabase();
+        }
+    } else {
+        console.log("Création d'une nouvelle base de données");
+        createDefaultDatabase();
+    }
+}
+
+function createDefaultDatabase() {
+    db = configurationDouala.map((q, idx) => ({
+        id: "Q-" + (idx + 1).toString().padStart(3, '0'),
+        nom: q.nom,
+        lat: q.lat,
+        lng: q.lng,
+        units: q.points.map((pt, i) => ({
+            id: q.nom.slice(0, 3).toUpperCase() + "-" + (100 + i),
+            loc: pt,
+            lvl: Math.floor(Math.random() * 40),
+            bat: 100,
+            online: true,
+            lidOpen: false,
+            lastUpdate: new Date().toLocaleString('fr-FR')
+        }))
+    }));
+    persist();
+}
+
+function persist() {
+    localStorage.setItem('DOUALA_DB', JSON.stringify(db));
+}
+
 // ===================== SYSTÈME D'AUTHENTIFICATION =====================
 let authUsers = [];
 let authCurrentUser = null;
 let pendingAssignUserId = null;
 let passwordResetRequests = [];
+let adminMessages = [];
+let currentChatWith = null;
 
 function authInitUsers() {
     const saved = localStorage.getItem('AUTH_USERS');
     const requestsSaved = localStorage.getItem('PASSWORD_RESET_REQUESTS');
+    const messagesSaved = localStorage.getItem('ADMIN_MESSAGES');
+    
     if (requestsSaved) {
-        passwordResetRequests = JSON.parse(requestsSaved);
+        try {
+            passwordResetRequests = JSON.parse(requestsSaved);
+        } catch(e) { passwordResetRequests = []; }
+    }
+    if (messagesSaved) {
+        try {
+            adminMessages = JSON.parse(messagesSaved);
+        } catch(e) { adminMessages = []; }
     }
     
     const superAdminAccount = {
@@ -1371,20 +1576,25 @@ function authInitUsers() {
     };
     
     if (saved) {
-        authUsers = JSON.parse(saved);
-        const adminExists = authUsers.some(u => u.email === superAdminAccount.email);
-        if (!adminExists) {
-            authUsers.unshift(superAdminAccount);
-            authSaveUsers();
-        } else {
-            const admin = authUsers.find(u => u.email === superAdminAccount.email);
-            if (admin) {
-                if (admin.status !== 'ACTIVE') admin.status = 'ACTIVE';
-                if (admin.password !== superAdminAccount.password) admin.password = superAdminAccount.password;
-                if (admin.role !== 'SUPER_ADMIN') admin.role = 'SUPER_ADMIN';
-                if (!admin.position) admin.position = "Directeur Général";
+        try {
+            authUsers = JSON.parse(saved);
+            const adminExists = authUsers.some(u => u.email === superAdminAccount.email);
+            if (!adminExists) {
+                authUsers.unshift(superAdminAccount);
                 authSaveUsers();
+            } else {
+                const admin = authUsers.find(u => u.email === superAdminAccount.email);
+                if (admin) {
+                    if (admin.status !== 'ACTIVE') admin.status = 'ACTIVE';
+                    if (admin.password !== superAdminAccount.password) admin.password = superAdminAccount.password;
+                    if (admin.role !== 'SUPER_ADMIN') admin.role = 'SUPER_ADMIN';
+                    if (!admin.position) admin.position = "Directeur Général";
+                    authSaveUsers();
+                }
             }
+        } catch(e) {
+            authUsers = [superAdminAccount];
+            authSaveUsers();
         }
     } else {
         authUsers = [superAdminAccount];
@@ -1397,37 +1607,273 @@ function authSaveUsers() {
     if (document.getElementById('adminPanelOverlay') && document.getElementById('adminPanelOverlay').style.display === 'flex') {
         renderAdminPanel();
     }
+    updateUnreadCount();
 }
 
 function savePasswordRequests() {
     localStorage.setItem('PASSWORD_RESET_REQUESTS', JSON.stringify(passwordResetRequests));
+    if (document.getElementById('adminPanelOverlay') && document.getElementById('adminPanelOverlay').style.display === 'flex') {
+        renderAdminPanel();
+    }
+    updateUnreadCount();
 }
 
-function switchAuthTab(tab) {
-    const loginForm = document.getElementById('authLoginForm');
-    const registerForm = document.getElementById('authRegisterForm');
-    const tabs = document.querySelectorAll('.auth-tab');
-    if (tab === 'login') {
-        loginForm.classList.add('active');
-        registerForm.classList.remove('active');
-        tabs[0].classList.add('active');
-        tabs[1].classList.remove('active');
-    } else {
-        loginForm.classList.remove('active');
-        registerForm.classList.add('active');
-        tabs[0].classList.remove('active');
-        tabs[1].classList.add('active');
+function saveAdminMessages() {
+    localStorage.setItem('ADMIN_MESSAGES', JSON.stringify(adminMessages));
+    updateUnreadCount();
+}
+
+function updateUnreadCount() {
+    if (!authCurrentUser) return;
+    const unread = adminMessages.filter(m => m.to === authCurrentUser.id && !m.read).length;
+    const unreadHeader = document.getElementById('unreadCountHeader');
+    const globalBadge = document.getElementById('globalUnreadBadge');
+    
+    if (unreadHeader) unreadHeader.innerText = unread;
+    if (globalBadge) {
+        if (unread > 0) {
+            globalBadge.style.display = 'inline-block';
+            globalBadge.innerText = unread;
+        } else {
+            globalBadge.style.display = 'none';
+        }
     }
 }
 
-function authShowMessage(containerId, message, type) {
-    const el = document.getElementById(containerId);
-    if (!el) return;
-    el.textContent = message;
-    el.className = `auth-message ${type}`;
-    setTimeout(() => { el.className = 'auth-message'; }, 5000);
+// ===================== VARIABLES GLOBALES =====================
+let filter = "ALL";
+let search = "";
+let map, markers = [];
+let citizenReports = [];
+let photosArray = [];
+let currentUserLocation = null;
+let currentAddressName = null;
+let myChart = null;
+const alertCooldowns = {};
+
+// ===================== FONCTIONS PRINCIPALES =====================
+function getStatusInfo(lvl, online) {
+    if (!online) return { txt: "HORS-LIGNE", color: "#555", alert: "MAINTENANCE" };
+    if (lvl > 90) return { txt: "BLOQUÉ (PLEIN)", color: "#ff3131", alert: "URGENT" };
+    if (lvl > 70) return { txt: "ATTENTION", color: "#ff9100", alert: "ATTENTION" };
+    if (lvl > 40) return { txt: "MOYEN", color: "#00d2ff", alert: "OK" };
+    return { txt: "OPTIMAL", color: "#39ff14", alert: "OK" };
 }
 
+function triggerCriticalPop(nomQuartier, count) {
+    const container = document.getElementById("alert-popup-container");
+    if (!container) return;
+    const id = "pop-" + nomQuartier;
+    if (document.getElementById(id)) return;
+    const pop = document.createElement("div");
+    pop.id = id;
+    pop.className = "critical-pop";
+    pop.innerText = `URGENT : ${nomQuartier} (${count} BACS PLEINS)`;
+    container.appendChild(pop);
+    setTimeout(() => { if (pop) pop.remove(); }, 5000);
+}
+
+function render() {
+    const body = document.getElementById("mainBody");
+    if (!body) {
+        console.error("mainBody non trouvé");
+        return;
+    }
+    
+    if (!db || !Array.isArray(db)) {
+        console.error("db n'est pas valide", db);
+        body.innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">Erreur de chargement des données</td></tr>';
+        return;
+    }
+    
+    body.innerHTML = "";
+    let totalLvlCity = 0, activeUnitsCity = 0, globalAlerts = 0;
+    const NOW = Date.now();
+
+    for (const q of db) {
+        if (!q.nom.toLowerCase().includes(search.toLowerCase())) continue;
+        
+        const onlineUnits = q.units.filter(u => u.online);
+        const offlineUnits = q.units.filter(u => !u.online);
+        let avgLvl = onlineUnits.length > 0 ? onlineUnits.reduce((a, b) => a + b.lvl, 0) / onlineUnits.length : 0;
+        let fullBins = onlineUnits.filter(u => u.lvl > 90).length;
+        
+        if (fullBins >= 3 && (!alertCooldowns[q.nom] || (NOW - alertCooldowns[q.nom] > 300000))) {
+            triggerCriticalPop(q.nom, fullBins);
+            alertCooldowns[q.nom] = NOW;
+        }
+
+        let s = getStatusInfo(avgLvl, onlineUnits.length > 0);
+        if (filter !== "ALL" && s.alert !== filter) continue;
+        
+        globalAlerts += fullBins;
+        if (onlineUnits.length > 0) {
+            totalLvlCity += onlineUnits.reduce((a, b) => a + b.lvl, 0);
+            activeUnitsCity += onlineUnits.length;
+        }
+
+        const alertBadge = fullBins > 0 ? `<button class="blink-btn" onclick="openModal('${q.nom}')">VIDER</button>` : "";
+        const repairBadge = offlineUnits.length > 0 ? `<span class="repair-status">🛠️ PANNE RÉSEAU (${offlineUnits.length})</span>` : "";
+
+        body.innerHTML += `<tr>
+            <td style="color:var(--blue); font-weight:bold;">${escapeHtml(q.id)}</td>
+            <td style="font-weight:bold;">${escapeHtml(q.nom)} ${repairBadge}</td>
+            <td>${onlineUnits.length > 0 ? avgLvl.toFixed(1) + '%' : '<span style="color:#555">SIGNAL GELÉ</span>'}
+                <div class="progress-bar"><div class="progress-fill" style="width:${avgLvl}%; background:${onlineUnits.length > 0 ? s.color : '#334155'}"></div></div>
+            </td>
+            <td>${onlineUnits.length} / ${q.units.length}</td>
+            <td style="color:${fullBins > 0 ? 'var(--red)' : 'white'}; font-weight:bold;">${fullBins} ${alertBadge}</td>
+            <td><span class="status-pill" style="border:1px solid ${s.color}; color:${s.color}">${s.txt}</span></td>
+            <td><button onclick="openModal('${q.nom}')">GÉRER LES UNITÉS</button></td>
+        </tr>`;
+    }
+
+    const avgEl = document.getElementById("avg");
+    if (avgEl) avgEl.innerText = activeUnitsCity > 0 ? (totalLvlCity / activeUnitsCity).toFixed(1) + "%" : "---";
+    const alertsEl = document.getElementById("alerts");
+    if (alertsEl) alertsEl.innerText = globalAlerts;
+    
+    updateGraph();
+}
+
+function updateGraph() {
+    const ctx = document.getElementById('chart');
+    if (!ctx) return;
+    
+    if (!db || !Array.isArray(db)) return;
+    
+    const labels = db.map(q => q.nom);
+    const data = db.map(q => {
+        const active = q.units.filter(u => u.online);
+        return active.length > 0 ? active.reduce((a, b) => a + b.lvl, 0) / active.length : 0;
+    });
+    
+    if (myChart) {
+        myChart.data.datasets[0].data = data;
+        myChart.update();
+    } else {
+        myChart = new Chart(ctx, {
+            type: 'bar',
+            data: { labels: labels, datasets: [{ label: '% Remplissage', data: data, backgroundColor: '#00d2ff' }] },
+            options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
+        });
+    }
+}
+
+function simulate() {
+    if (!db || !Array.isArray(db)) return;
+    
+    for (const q of db) {
+        for (const u of q.units) {
+            if (Math.random() > 0.99) {
+                u.online = !u.online;
+                if (!u.online) notify(`📡 SIGNAL PERDU : ${u.id}`);
+            }
+            if (u.online) {
+                if (u.lvl < 91) {
+                    u.lvl = Math.max(0, Math.min(100, u.lvl + (Math.random() * 6)));
+                }
+                u.bat = Math.max(5, u.bat - 0.05);
+                u.lastUpdate = new Date().toLocaleString('fr-FR');
+                if (u.lvl > 90) {
+                    u.lidOpen = false;
+                } else {
+                    u.lidOpen = Math.random() > 0.8;
+                }
+            }
+        }
+    }
+    persist();
+    render();
+}
+
+function openModal(nomQuartier) {
+    const q = db.find(x => x.nom === nomQuartier);
+    if (!q) return;
+    
+    const modalTitle = document.getElementById("modalTitle");
+    if (modalTitle) modalTitle.innerText = `LOGS UNITÉS : ${nomQuartier.toUpperCase()}`;
+    
+    const tableBody = document.getElementById("modalTableBody");
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = "";
+    for (const u of q.units) {
+        let s = getStatusInfo(u.lvl, u.online);
+        let lidStatus = u.lvl > 90 ? `<span style="color:var(--red); font-weight:bold;">🔒 VERROUILLÉ</span>` : (u.lidOpen ? `<span style="color:var(--green);">OUVERT</span>` : `<span style="color:#aaa;">FERMÉ</span>`);
+        const deleteButton = (authCurrentUser && authCurrentUser.role !== 'EMPLOYE') ? 
+            `<button class="btn-delete" onclick="deleteBin('${nomQuartier}', '${u.id}')">🗑️</button>` : '—';
+        
+        tableBody.innerHTML += `<tr>
+            <td style="color:var(--blue); font-weight:600;">${escapeHtml(u.id)}</td>
+            <td>📍 ${escapeHtml(u.loc)}</td>
+            <td>${u.online ? u.lvl.toFixed(1) + '%' : '--'}</td>
+            <td>${lidStatus}</td>
+            <td style="color:${s.color}">${s.txt}</td>
+            <td style="color:${u.online ? 'var(--green)' : 'var(--red)'}">${u.online ? 'CONNECTÉ' : 'DÉCONNECTÉ'}</td>
+            <td>${u.bat.toFixed(0)}%</td>
+            <td style="font-size:0.75rem;">${u.lastUpdate}</td>
+            <td><span class="status-pill" style="border:1px solid ${s.color}">${s.alert}</span></td>
+            <td>${deleteButton}</td>
+        </tr>`;
+    }
+    document.getElementById("detailsModal").style.display = "flex";
+}
+
+function deleteBin(quartierNom, unitId) {
+    if (authCurrentUser && authCurrentUser.role === 'EMPLOYE') {
+        authShowToast('⛔ Vous n\'avez pas les droits pour supprimer une poubelle');
+        return;
+    }
+    const qObj = db.find(x => x.nom === quartierNom);
+    if (qObj) {
+        qObj.units = qObj.units.filter(u => u.id !== unitId);
+        persist();
+        openModal(quartierNom);
+        render();
+    }
+}
+
+function closeModal() {
+    document.getElementById("detailsModal").style.display = "none";
+}
+
+function setFilter(f) {
+    filter = f;
+    render();
+}
+
+function manualRefresh() {
+    simulate();
+    notify("Actualisation forcée effectuée");
+}
+
+function notify(msg) {
+    const n = document.createElement("div");
+    n.className = "toast";
+    n.innerText = msg;
+    const container = document.getElementById("notifContainer");
+    if (container) {
+        container.appendChild(n);
+        setTimeout(() => n.remove(), 3000);
+    }
+}
+
+function authShowToast(message) {
+    notify(message);
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+// ===================== AUTHENTIFICATION =====================
 function authLogin() {
     const identifier = document.getElementById('authEmail').value.trim();
     const password = document.getElementById('authPassword').value;
@@ -1467,50 +1913,27 @@ function authLogin() {
     
     updateUserInfo();
     authShowToast(`✅ Bienvenue ${user.fullname}`);
-    render();
-    updateGraph();
+    
+    // Forcer le rendu après connexion
+    setTimeout(() => {
+        render();
+        updateGraph();
+    }, 100);
+    
+    listenToCitizenReports();
+    updateUnreadCount();
 }
 
-function authRegister() {
-    const fullname = document.getElementById('regFullname').value.trim();
-    const email = document.getElementById('regEmail').value.trim();
-    const phone = document.getElementById('regPhone').value.trim();
-    const position = document.getElementById('regPoste').value.trim();
-    
-    if (!fullname || !email || !phone || !position) {
-        authShowMessage('authRegisterMsg', '❌ Tous les champs sont obligatoires', 'error');
-        return;
+function authShowMessage(elementId, message, type) {
+    const el = document.getElementById(elementId);
+    if (el) {
+        el.textContent = message;
+        el.className = `auth-message ${type}`;
+        el.style.display = 'block';
+        setTimeout(() => {
+            el.style.display = 'none';
+        }, 3000);
     }
-    
-    if (authUsers.find(u => u.email === email)) {
-        authShowMessage('authRegisterMsg', '❌ Cet email existe déjà', 'error');
-        return;
-    }
-    
-    const newUser = {
-        id: 'user_' + Date.now(),
-        fullname: fullname,
-        email: email,
-        phone: phone,
-        position: position,
-        matricule: 'EN_ATTENTE',
-        role: 'EMPLOYE',
-        status: 'PENDING',
-        password: null,
-        createdAt: new Date().toISOString()
-    };
-    
-    authUsers.push(newUser);
-    authSaveUsers();
-    
-    authShowMessage('authRegisterMsg', '✅ Demande envoyée ! Un administrateur vous attribuera un mot de passe et un matricule.', 'success');
-    
-    document.getElementById('regFullname').value = '';
-    document.getElementById('regEmail').value = '';
-    document.getElementById('regPhone').value = '';
-    document.getElementById('regPoste').value = '';
-    
-    setTimeout(() => switchAuthTab('login'), 2000);
 }
 
 function authLogout() {
@@ -1545,251 +1968,301 @@ function toggleMenu() {
     if (menu) menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
 }
 
-document.addEventListener('click', function(event) {
-    const menu = document.getElementById('dropdownMenu');
-    const menuIcon = document.querySelector('.menu-icon');
-    if (menu && menuIcon && !menuIcon.contains(event.target) && !menu.contains(event.target)) {
-        menu.style.display = 'none';
-    }
-});
-
-// ========== MODIFICATION PROFIL ==========
-function openEditProfileModal() {
-    document.getElementById('editFullname').value = authCurrentUser.fullname || '';
-    document.getElementById('editEmail').value = authCurrentUser.email || '';
-    document.getElementById('editPhone').value = authCurrentUser.phone || '';
-    document.getElementById('editProfileModal').style.display = 'flex';
-}
-
-function closeEditProfileModal() {
-    document.getElementById('editProfileModal').style.display = 'none';
-}
-
-function updateProfile() {
-    const newFullname = document.getElementById('editFullname').value.trim();
-    const newEmail = document.getElementById('editEmail').value.trim();
-    const newPhone = document.getElementById('editPhone').value.trim();
-    
-    if (!newFullname || !newEmail || !newPhone) {
-        authShowToast('❌ Tous les champs sont obligatoires');
+// ===================== ÉCOUTE DES SIGNALEMENTS =====================
+function listenToCitizenReports() {
+    if (typeof firebase === 'undefined') {
+        console.error("Firebase non chargé");
         return;
     }
     
-    if (newEmail !== authCurrentUser.email && authUsers.find(u => u.email === newEmail && u.id !== authCurrentUser.id)) {
-        authShowToast('❌ Cet email est déjà utilisé par un autre compte');
-        return;
-    }
-    
-    const user = authUsers.find(u => u.id === authCurrentUser.id);
-    if (user) {
-        user.fullname = newFullname;
-        user.email = newEmail;
-        user.phone = newPhone;
-        authSaveUsers();
-        
-        authCurrentUser.fullname = newFullname;
-        authCurrentUser.email = newEmail;
-        authCurrentUser.phone = newPhone;
-        
-        localStorage.setItem('AUTH_CURRENT_USER', JSON.stringify({
-            id: authCurrentUser.id,
-            fullname: authCurrentUser.fullname,
-            email: authCurrentUser.email,
-            role: authCurrentUser.role,
-            matricule: authCurrentUser.matricule,
-            phone: authCurrentUser.phone,
-            position: authCurrentUser.position
-        }));
-        
-        updateUserInfo();
-        authShowToast('✅ Profil mis à jour avec succès');
-        closeEditProfileModal();
-    }
-}
-
-// ========== MOT DE PASSE OUBLIÉ ==========
-function openForgotPasswordModal() {
-    document.getElementById('forgotIdentifier').value = '';
-    document.getElementById('forgotPasswordMsg').className = 'auth-message';
-    document.getElementById('forgotPasswordMsg').style.display = 'none';
-    document.getElementById('forgotPasswordModal').style.display = 'flex';
-}
-
-function closeForgotPasswordModal() {
-    document.getElementById('forgotPasswordModal').style.display = 'none';
-}
-
-function requestPasswordReset() {
-    const identifier = document.getElementById('forgotIdentifier').value.trim();
-    const msgDiv = document.getElementById('forgotPasswordMsg');
-    
-    if (!identifier) {
-        msgDiv.textContent = '❌ Veuillez entrer votre email ou matricule';
-        msgDiv.className = 'auth-message error';
-        msgDiv.style.display = 'block';
-        return;
-    }
-    
-    const user = authUsers.find(u => u.email === identifier || u.matricule === identifier);
-    
-    if (!user) {
-        msgDiv.textContent = '❌ Aucun compte trouvé avec ces informations';
-        msgDiv.className = 'auth-message error';
-        msgDiv.style.display = 'block';
-        return;
-    }
-    
-    if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') {
-        // Pour Super Admin et Admin : processus de récupération avec code
-        const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
-        const resetRequest = {
-            id: Date.now(),
-            userId: user.id,
-            email: user.email,
-            code: resetCode,
-            createdAt: new Date().toISOString(),
-            status: 'PENDING'
-        };
-        
-        if (!passwordResetRequests) passwordResetRequests = [];
-        passwordResetRequests.push(resetRequest);
-        savePasswordRequests();
-        
-        const message = `DEMANDE DE RÉINITIALISATION SWMS DOUALA\n\nBonjour ${user.fullname},\n\nVotre code de réinitialisation est : ${resetCode}\n\nCe code est valable 15 minutes.\n\n--\nSWMS Douala - Command Center`;
-        
-        if (user.email && user.email !== 'EN_ATTENTE') {
-            window.open(`mailto:${user.email}?subject=SWMS Douala - Code de réinitialisation&body=${encodeURIComponent(message)}`, '_blank');
-        }
-        if (user.phone && user.phone !== '+237 XXXXXXXX') {
-            const phoneNumber = user.phone.replace(/[^0-9]/g, '');
-            if (phoneNumber.length >= 9) {
-                window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+    try {
+        db_online.ref('reports').on('value', (snapshot) => {
+            const data = snapshot.val();
+            citizenReports = data ? Object.entries(data).map(([key, val]) => ({...val, firebaseId: key})).reverse() : [];
+            updateCitizenInboxUI();
+            
+            if (document.getElementById('historyModal') && document.getElementById('historyModal').style.display === 'flex') {
+                refreshHistoryList();
             }
+            
+            const count = citizenReports.filter(r => r.status === "En attente").length;
+            const citCount = document.getElementById("citCount");
+            if (citCount) citCount.innerText = count;
+            
+            if (count > 0) {
+                const badge = document.getElementById("msgNew");
+                if (badge) badge.style.display = "block";
+            }
+        });
+    } catch(e) {
+        console.error("Erreur Firebase:", e);
+    }
+}
+
+function updateCitizenInboxUI() {
+    const body = document.getElementById("citizenInboxBody");
+    if (!body) return;
+    
+    const pendingReports = citizenReports.filter(r => r.status === "En attente");
+    
+    if(pendingReports.length === 0) {
+        body.innerHTML = `<p style="color: #64748b; text-align: center;">Aucun message en attente.</p>`;
+        return;
+    }
+
+    body.innerHTML = pendingReports.map(r => {
+        let photoDisplayHtml = "";
+        if (r.photos && Array.isArray(r.photos) && r.photos.length > 0) {
+            photoDisplayHtml = r.photos.map(photoUrl => `
+                <img src="${photoUrl}" onclick="viewPhoto('${photoUrl}', '${escapeHtml(r.name)}')" 
+                style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid var(--citizen-purple); margin-right: 5px;">
+            `).join("");
         }
         
-        msgDiv.textContent = `✅ Un code de réinitialisation a été envoyé à ${user.email}. Vérifiez vos emails/WhatsApp.`;
-        msgDiv.className = 'auth-message success';
-        msgDiv.style.display = 'block';
+        const deleteButton = (authCurrentUser && authCurrentUser.role !== 'EMPLOYE') ? 
+            `<button onclick="deleteCitizenReport('${r.firebaseId}')" style="background:none; border:none; color:var(--red); cursor:pointer; font-size:1.1rem;">🗑️</button>` : '';
         
+        const locationInfo = r.userAddress ? `<br><small class="coord-badge">📍 ${escapeHtml(r.userAddress.substring(0, 60))}</small>` : '';
+        
+        return `
+        <div class="msg-item" style="display: flex; justify-content: space-between; align-items: flex-start; background: rgba(188, 19, 254, 0.05); padding: 15px; border-left: 4px solid var(--citizen-purple); margin-bottom: 10px;">
+            <div style="flex-grow: 1;">
+                <b style="color:var(--citizen-purple); font-size:1.1rem;">${escapeHtml(r.name)}</b> 
+                <span style="color:var(--green); margin-left:10px; font-weight:bold;">📞 ${r.phone || 'N/A'}</span>
+                <br>
+                <small>📍 ${escapeHtml(r.loc)} [${escapeHtml(r.q)}]</small> <small style="color:#64748b; margin-left:5px;">(${r.time})</small>
+                ${locationInfo}
+                <br>
+                <span style="font-size:0.7rem; color:var(--orange); font-weight:bold;">${(r.type || 'SIGNALEMENT').toUpperCase()}</span>
+                
+                ${(r.description || r.desc) ? `<div style="margin-top:8px; font-style:italic; font-size:0.85rem; color:#cbd5e1; background:rgba(0,0,0,0.2); padding:8px; border-radius:4px; border-left: 2px solid var(--citizen-purple);">"${escapeHtml(r.description || r.desc)}"</div>` : ''}
+                
+                <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px;">
+                    ${photoDisplayHtml}
+                </div>
+            </div>
+            <div style="display:flex; flex-direction: column; gap:10px; align-items:flex-end; min-width:100px;">
+                <button onclick="processCitizenReport('${r.firebaseId}')" style="font-size:0.6rem; border-color:var(--green); color:var(--green); width: 100%;">TRAITER</button>
+                ${deleteButton}
+            </div>
+        </div>
+    `}).join("");
+}
+
+function viewPhoto(photoData, name) {
+    const modal = document.getElementById("photoViewModal");
+    const img = document.getElementById("imgFullView");
+    const legend = document.getElementById("photoLegend");
+    if (img) img.src = photoData;
+    if (legend) legend.innerText = "Signalement envoyé par : " + name;
+    if (modal) modal.style.display = "flex";
+}
+
+function processCitizenReport(id) {
+    if (typeof db_online !== 'undefined') {
+        db_online.ref('reports/' + id).update({ status: "Traité" })
+        .then(() => { notify("Action enregistrée."); });
+    }
+}
+
+function deleteCitizenReport(id) {
+    if(confirm("Supprimer définitivement ce signalement ?")) {
+        if (typeof db_online !== 'undefined') {
+            db_online.ref('reports/' + id).remove()
+            .then(() => { notify("Signalement supprimé du cloud."); });
+        }
+    }
+}
+
+// ===================== MODALS =====================
+function openCitizenInbox() {
+    const modal = document.getElementById("citizenInboxModal");
+    if (modal) {
+        modal.style.display = "flex";
+        const msgBadge = document.getElementById("msgNew");
+        if (msgBadge) msgBadge.style.display = "none";
+        updateCitizenInboxUI();
+    }
+}
+
+function closeCitizenInbox() {
+    const modal = document.getElementById("citizenInboxModal");
+    if (modal) modal.style.display = "none";
+}
+
+function openHistoryModal() {
+    updateQuartierFilter();
+    refreshHistoryList();
+    document.getElementById('historyModal').style.display = 'flex';
+}
+
+function closeHistoryModal() {
+    document.getElementById('historyModal').style.display = 'none';
+}
+
+function openMap() {
+    document.getElementById("mapModal").style.display = "flex";
+    if (!map) {
+        map = L.map('bigMap').setView([4.0511, 9.7679], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    }
+    if (markers && markers.length) {
+        markers.forEach(m => map.removeLayer(m));
+    }
+    markers = [];
+    if (db && Array.isArray(db)) {
+        for (const q of db) {
+            const onlineUnits = q.units.filter(u => u.online);
+            const avg = onlineUnits.length > 0 ? onlineUnits.reduce((a,b)=> a+b.lvl,0)/onlineUnits.length : 0;
+            let color = avg > 90 ? 'red' : (avg > 70 ? 'orange' : 'cyan');
+            const m = L.circleMarker([q.lat, q.lng], { radius: 12, fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.8 }).addTo(map).bindPopup(`<b>${q.nom}</b><br>Remplissage: ${avg.toFixed(1)}%`);
+            markers.push(m);
+        }
+    }
+}
+
+function closeMap() {
+    document.getElementById("mapModal").style.display = "none";
+}
+
+function openCitizenPortal() {
+    const modal = document.getElementById("citizenPortalModal");
+    if (modal) {
+        modal.style.display = "flex";
         setTimeout(() => {
-            const code = prompt("Entrez le code de réinitialisation reçu :");
-            if (code === resetCode) {
-                const newPassword = prompt("Nouveau mot de passe (min 6 caractères) :");
-                if (newPassword && newPassword.length >= 6) {
-                    user.password = newPassword;
-                    authSaveUsers();
-                    authShowToast('✅ Mot de passe réinitialisé avec succès');
-                    closeForgotPasswordModal();
-                } else if (newPassword) {
-                    alert("Mot de passe trop court (min 6 caractères)");
-                }
-            } else if (code) {
-                alert("Code invalide");
-            }
+            initGeolocation();
         }, 500);
-        
-    } else {
-        // Pour les employés : envoyer une demande à l'administrateur
-        const existingRequest = passwordResetRequests.find(r => r.userId === user.id && r.status === 'PENDING');
-        if (!existingRequest) {
-            const resetRequest = {
-                id: Date.now(),
-                userId: user.id,
-                userFullname: user.fullname,
-                userEmail: user.email,
-                userMatricule: user.matricule,
-                status: 'PENDING',
-                createdAt: new Date().toISOString()
-            };
-            
-            passwordResetRequests.push(resetRequest);
-            savePasswordRequests();
-            
-            // Notifier l'administrateur (via notification dans le système)
-            if (renderAdminPanel) renderAdminPanel();
-            authShowToast(`📢 Demande de réinitialisation envoyée à l'administrateur`);
-        } else {
-            authShowToast(`⏳ Une demande est déjà en attente pour ce compte`);
-        }
-        
-        msgDiv.textContent = '✅ Votre demande a été transmise à un administrateur. Vous serez notifié une fois votre mot de passe réinitialisé.';
-        msgDiv.className = 'auth-message success';
-        msgDiv.style.display = 'block';
-        
-        setTimeout(() => closeForgotPasswordModal(), 3000);
+        resetCitizenForm();
     }
 }
 
-function renderPasswordRequests() {
-    const container = document.getElementById('passwordRequestsList');
+function closeCitizenPortal() {
+    const modal = document.getElementById("citizenPortalModal");
+    if (modal) modal.style.display = "none";
+}
+
+function openAdminMessaging() {
+    if (!authCurrentUser) return;
+    renderAdminList();
+    document.getElementById('messagingModal').style.display = 'flex';
+    markMessagesAsRead();
+}
+
+function closeMessagingModal() {
+    document.getElementById('messagingModal').style.display = 'none';
+    currentChatWith = null;
+    document.getElementById('chatArea').style.display = 'none';
+}
+
+function renderAdminList() {
+    const container = document.getElementById('adminListContainer');
     if (!container) return;
     
-    const pendingRequests = passwordResetRequests.filter(r => r.status === 'PENDING');
+    const adminList = authUsers.filter(u => (u.role === 'ADMIN' || u.role === 'SUPER_ADMIN') && u.id !== authCurrentUser.id && u.status === 'ACTIVE');
     
-    if (pendingRequests.length === 0) {
-        container.innerHTML = '<p style="color:#64748b; text-align:center;">Aucune demande en attente</p>';
+    if (adminList.length === 0) {
+        container.innerHTML = '<p style="color:#64748b; text-align:center;">Aucun autre administrateur disponible</p>';
         return;
     }
     
-    container.innerHTML = '<div style="background:rgba(255,145,0,0.1); padding:10px; border-radius:10px;">' +
-        pendingRequests.map(req => {
-            const user = authUsers.find(u => u.id === req.userId);
-            return `
-                <div class="pwd-request-badge" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <div>
-                        <strong>${escapeHtml(user?.fullname || req.userFullname)}</strong><br>
-                        <small>📧 ${escapeHtml(user?.email || req.userEmail)}</small><br>
-                        <small>🔑 Matricule: ${escapeHtml(user?.matricule || req.userMatricule || 'N/A')}</small>
-                    </div>
-                    <div>
-                        <button onclick="resetEmployeePassword('${req.userId}')" style="background:var(--orange); color:black; border:none; padding:5px 12px; border-radius:5px; cursor:pointer; margin-right:5px;">🔑 RÉINITIALISER</button>
-                        <button onclick="rejectPasswordRequest('${req.id}')" style="background:rgba(255,49,49,0.3); color:#ff6b6b; border:none; padding:5px 12px; border-radius:5px; cursor:pointer;">❌ IGNORER</button>
-                    </div>
-                </div>
-            `;
-        }).join('') + '</div>';
+    const unreadCounts = {};
+    adminMessages.filter(m => m.to === authCurrentUser.id && !m.read).forEach(m => {
+        unreadCounts[m.from] = (unreadCounts[m.from] || 0) + 1;
+    });
+    
+    container.innerHTML = adminList.map(admin => `
+        <div class="admin-chip" onclick="startChatWith('${admin.id}', '${escapeHtml(admin.fullname)}')">
+            👤 ${escapeHtml(admin.fullname)} ${unreadCounts[admin.id] ? `<span class="unread-badge">${unreadCounts[admin.id]}</span>` : ''}
+        </div>
+    `).join('');
 }
 
-function resetEmployeePassword(userId) {
-    const newPassword = prompt("Nouveau mot de passe (min 6 caractères) :");
-    if (newPassword && newPassword.length >= 6) {
-        const user = authUsers.find(u => u.id === userId);
-        if (user) {
-            user.password = newPassword;
-            authSaveUsers();
-            
-            const message = `VOTRE MOT DE PASSE A ÉTÉ RÉINITIALISÉ\n\nBonjour ${user.fullname},\n\nVotre nouveau mot de passe : ${newPassword}\n\nVeuillez vous connecter et changer votre mot de passe dès que possible.\n\n--\nSWMS Douala - Command Center`;
-            
-            if (user.email && user.email !== 'EN_ATTENTE') {
-                window.open(`mailto:${user.email}?subject=SWMS Douala - Réinitialisation mot de passe&body=${encodeURIComponent(message)}`, '_blank');
-            }
-            if (user.phone && user.phone !== '+237 XXXXXXXX') {
-                const phoneNumber = user.phone.replace(/[^0-9]/g, '');
-                if (phoneNumber.length >= 9) {
-                    window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
-                }
-            }
-            
-            // Supprimer les demandes en attente pour cet utilisateur
-            passwordResetRequests = passwordResetRequests.filter(r => r.userId !== userId);
-            savePasswordRequests();
-            
-            authShowToast(`✅ Mot de passe réinitialisé pour ${user.fullname}`);
-            renderAdminPanel();
+function startChatWith(userId, userName) {
+    currentChatWith = userId;
+    document.getElementById('chatWithName').innerHTML = `💬 Discussion avec ${userName}`;
+    document.getElementById('chatArea').style.display = 'block';
+    loadChatMessages();
+}
+
+function loadChatMessages() {
+    if (!currentChatWith) return;
+    
+    const messagesContainer = document.getElementById('chatMessages');
+    const relevantMessages = adminMessages.filter(m => 
+        (m.from === authCurrentUser.id && m.to === currentChatWith) ||
+        (m.from === currentChatWith && m.to === authCurrentUser.id)
+    ).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    
+    if (relevantMessages.length === 0) {
+        messagesContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;">Aucun message. Commencez la conversation !</div>';
+    } else {
+        messagesContainer.innerHTML = relevantMessages.map(msg => {
+            const isSent = msg.from === authCurrentUser.id;
+            return `
+                <div class="chat-message ${isSent ? 'sent' : 'received'}">
+                    ${!isSent ? `<div class="sender">${escapeHtml(msg.fromName)}</div>` : ''}
+                    <div>${escapeHtml(msg.content).replace(/\n/g, '<br>')}</div>
+                    <div class="time">${new Date(msg.timestamp).toLocaleString()}</div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    adminMessages.forEach(msg => {
+        if (msg.from === currentChatWith && msg.to === authCurrentUser.id && !msg.read) {
+            msg.read = true;
         }
-    } else if (newPassword) {
-        authShowToast('❌ 6 caractères minimum');
+    });
+    saveAdminMessages();
+    updateUnreadCount();
+    
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function sendAdminMessage() {
+    const input = document.getElementById('chatMessageInput');
+    const content = input.value.trim();
+    
+    if (!content || !currentChatWith) return;
+    
+    const newMessage = {
+        id: Date.now() + Math.random(),
+        from: authCurrentUser.id,
+        fromName: authCurrentUser.fullname,
+        to: currentChatWith,
+        content: content,
+        timestamp: new Date().toISOString(),
+        read: false,
+        type: 'chat'
+    };
+    
+    adminMessages.push(newMessage);
+    saveAdminMessages();
+    input.value = '';
+    loadChatMessages();
+    
+    const recipient = authUsers.find(u => u.id === currentChatWith);
+    if (recipient) {
+        authShowToast(`💬 Message envoyé à ${recipient.fullname}`);
     }
 }
 
-function rejectPasswordRequest(requestId) {
-    passwordResetRequests = passwordResetRequests.filter(r => r.id !== requestId);
-    savePasswordRequests();
-    renderAdminPanel();
-    authShowToast('✅ Demande ignorée');
+function markMessagesAsRead() {
+    let hasNew = false;
+    adminMessages.forEach(msg => {
+        if (msg.to === authCurrentUser.id && !msg.read) {
+            msg.read = true;
+            hasNew = true;
+        }
+    });
+    if (hasNew) {
+        saveAdminMessages();
+        updateUnreadCount();
+        renderAdminList();
+    }
 }
 
-// ========== PANEL ADMIN ==========
+// ===================== PANEL ADMIN =====================
 function openAdminPanel() {
     if (!authCurrentUser || (authCurrentUser.role !== 'SUPER_ADMIN' && authCurrentUser.role !== 'ADMIN')) {
         authShowToast('⛔ Accès réservé aux administrateurs');
@@ -1817,7 +2290,7 @@ function renderAdminPanel() {
         usersToShow = authUsers.filter(u => u.role === 'EMPLOYE');
     }
     
-    usersToShow.forEach(user => {
+    for (const user of usersToShow) {
         let statusClass = user.status === 'ACTIVE' ? 'status-active' : (user.status === 'PENDING' ? 'status-pending' : 'status-blocked');
         let statusText = user.status === 'ACTIVE' ? 'ACTIF' : (user.status === 'PENDING' ? 'EN ATTENTE' : 'BLOQUÉ');
         let roleDisplay = user.role === 'SUPER_ADMIN' ? '⭐ SUPER ADMIN' : (user.role === 'ADMIN' ? '👑 ADMIN' : '👷 EMPLOYÉ');
@@ -1868,12 +2341,81 @@ function renderAdminPanel() {
             <td><span class="status-badge ${statusClass}">${statusText}</span></td>
             <td>${actions}</td>
         </tr>`;
-    });
+    }
     
     html += '</tbody></table>';
     container.innerHTML = html;
     
     renderPasswordRequests();
+}
+
+function renderPasswordRequests() {
+    const container = document.getElementById('passwordRequestsList');
+    if (!container) return;
+    
+    const pendingRequests = passwordResetRequests.filter(r => r.status === 'PENDING');
+    
+    if (pendingRequests.length === 0) {
+        container.innerHTML = '<p style="color:#64748b; text-align:center;">Aucune demande en attente</p>';
+        return;
+    }
+    
+    container.innerHTML = '<div style="background:rgba(255,145,0,0.1); padding:10px; border-radius:10px;">' +
+        pendingRequests.map(req => {
+            return `
+                <div class="pwd-request-badge" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <div>
+                        <strong>${escapeHtml(req.userFullname)}</strong><br>
+                        <small>📧 ${escapeHtml(req.userEmail)}</small><br>
+                        <small>📞 ${escapeHtml(req.userPhone || 'Non renseigné')}</small><br>
+                        <small>🔑 Matricule: ${escapeHtml(req.userMatricule || 'N/A')}</small>
+                    </div>
+                    <div>
+                        <button onclick="resetEmployeePassword('${req.userId}')" style="background:var(--orange); color:black; border:none; padding:5px 12px; border-radius:5px; cursor:pointer; margin-right:5px;">🔑 RÉINITIALISER</button>
+                        <button onclick="rejectPasswordRequest('${req.id}')" style="background:rgba(255,49,49,0.3); color:#ff6b6b; border:none; padding:5px 12px; border-radius:5px; cursor:pointer;">❌ IGNORER</button>
+                    </div>
+                </div>
+            `;
+        }).join('') + '</div>';
+}
+
+function resetEmployeePassword(userId) {
+    const newPassword = prompt("Nouveau mot de passe (min 6 caractères) :");
+    if (newPassword && newPassword.length >= 6) {
+        const user = authUsers.find(u => u.id === userId);
+        if (user) {
+            user.password = newPassword;
+            authSaveUsers();
+            
+            const notificationMessage = {
+                id: Date.now() + Math.random(),
+                from: authCurrentUser.id,
+                fromName: authCurrentUser.fullname,
+                to: userId,
+                content: `🔐 VOTRE MOT DE PASSE A ÉTÉ RÉINITIALISÉ\n\nVotre nouveau mot de passe : ${newPassword}\n\nVeuillez vous connecter et changer votre mot de passe dès que possible.\n\n--\nSWMS Douala - Command Center`,
+                timestamp: new Date().toISOString(),
+                read: false,
+                type: 'password_reset'
+            };
+            adminMessages.push(notificationMessage);
+            saveAdminMessages();
+            
+            passwordResetRequests = passwordResetRequests.filter(r => r.userId !== userId);
+            savePasswordRequests();
+            
+            authShowToast(`✅ Mot de passe réinitialisé pour ${user.fullname}. L'employé a reçu une notification.`);
+            renderAdminPanel();
+        }
+    } else if (newPassword) {
+        authShowToast('❌ 6 caractères minimum');
+    }
+}
+
+function rejectPasswordRequest(requestId) {
+    passwordResetRequests = passwordResetRequests.filter(r => r.id !== requestId);
+    savePasswordRequests();
+    renderAdminPanel();
+    authShowToast('✅ Demande ignorée');
 }
 
 function openEditUserModal(userId) {
@@ -1935,19 +2477,20 @@ function confirmAssignPassword() {
         user.status = 'ACTIVE';
         authSaveUsers();
         
-        const message = `BIENVENUE DANS SWMS DOUALA COMMAND CENTER\n\nBonjour ${user.fullname},\n\nVos identifiants de connexion :\n\n🔑 MATRICULE : ${matricule}\n🔒 MOT DE PASSE : ${password}\n\n📍 LIEN : ${window.location.href}\n\n--\nSWMS Douala - Command Center`;
+        const notificationMessage = {
+            id: Date.now() + Math.random(),
+            from: authCurrentUser.id,
+            fromName: authCurrentUser.fullname,
+            to: user.id,
+            content: `🔑 BIENVENUE DANS SWMS DOUALA COMMAND CENTER\n\nBonjour ${user.fullname},\n\nVos identifiants de connexion :\n\nMATRICULE : ${matricule}\nMOT DE PASSE : ${password}\n\nLien : ${window.location.href}\n\n--\nSWMS Douala - Command Center`,
+            timestamp: new Date().toISOString(),
+            read: false,
+            type: 'welcome'
+        };
+        adminMessages.push(notificationMessage);
+        saveAdminMessages();
         
-        if (user.email && user.email !== 'EN_ATTENTE') {
-            window.open(`mailto:${user.email}?subject=SWMS Douala - Vos identifiants&body=${encodeURIComponent(message)}`, '_blank');
-        }
-        if (user.phone && user.phone !== '+237 XXXXXXXX') {
-            const phoneNumber = user.phone.replace(/[^0-9]/g, '');
-            if (phoneNumber.length >= 9) {
-                window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
-            }
-        }
-        
-        authShowToast(`✅ ${user.fullname} a été activé ! Un email et un WhatsApp ont été envoyés.`);
+        authShowToast(`✅ ${user.fullname} a été activé !`);
         
         closeAssignModal();
         renderAdminPanel();
@@ -2015,6 +2558,20 @@ function resetUserPassword(userId) {
         if (user) {
             user.password = newPwd;
             authSaveUsers();
+            
+            const notificationMessage = {
+                id: Date.now() + Math.random(),
+                from: authCurrentUser.id,
+                fromName: authCurrentUser.fullname,
+                to: userId,
+                content: `🔐 VOTRE MOT DE PASSE A ÉTÉ RÉINITIALISÉ\n\nVotre nouveau mot de passe : ${newPwd}\n\nVeuillez vous connecter et changer votre mot de passe dès que possible.\n\n--\nSWMS Douala - Command Center`,
+                timestamp: new Date().toISOString(),
+                read: false,
+                type: 'password_reset'
+            };
+            adminMessages.push(notificationMessage);
+            saveAdminMessages();
+            
             authShowToast(`🔑 Mot de passe modifié pour ${user.fullname}`);
         }
     } else if (newPwd) {
@@ -2052,7 +2609,6 @@ function deleteUser(userId) {
     }
 }
 
-// ========== CHANGEMENT MOT DE PASSE ==========
 function openChangePasswordModal() {
     document.getElementById('changePwdModal').style.display = 'flex';
 }
@@ -2108,55 +2664,171 @@ function changePassword() {
     }
 }
 
-// ========== CORE APP ==========
-const firebaseConfig = { databaseURL: "https://douala-clean-default-rtdb.firebaseio.com" };
-firebase.initializeApp(firebaseConfig);
-const db_online = firebase.database();
-
-const doualaGeo = {
-    "Douala 1er": { mairies: ["Mairie de Bonanjo", "CUD (Direction)"], quartiers: ["Bonanjo - Poste", "Akwa - Palais Dika", "Bali - Koumassi", "Deido - Rond Point"] },
-    "Douala 2e": { mairies: ["Mairie de New Bell"], quartiers: ["New Bell - Marché", "Nkololoun - Rail", "Babylone", "Nylon - Tergal"] },
-    "Douala 3e": { mairies: ["Mairie de Logbaba"], quartiers: ["Ndokoti - Tunnel", "Logbaba - Magzi", "Village - Jumeaux", "Nyalla - Rail"] },
-    "Douala 4e": { mairies: ["Mairie de Bonabéri"], quartiers: ["Bonassama - Pont", "Mabanda - Grand Marché", "Sodiko", "Boquette"] },
-    "Douala 5e": { mairies: ["Mairie de Kotto"], quartiers: ["Bonamoussadi - Bijou", "Logpom - Bassong", "Kotto - Santa Lucia", "Makepe - Rhône-Poulenc"] }
-};
-
-const pointTemplate = ["Marché", "Station-Service", "Supermarché", "Pharmacie", "École", "Hôpital", "Carrefour Principal", "Entrée Rue", "Mairie de Zone", "Stade de proximité", "Boulangerie", "Poste de Police"];
-
-const configurationDouala = [
-    { nom: "Bonanjo", lat: 4.044, lng: 9.684, points: pointTemplate.map(p => p + " Bonanjo") },
-    { nom: "Akwa", lat: 4.050, lng: 9.700, points: pointTemplate.map(p => p + " Akwa") },
-    { nom: "New Bell", lat: 4.035, lng: 9.715, points: pointTemplate.map(p => p + " New Bell") },
-    { nom: "Ndokoti", lat: 4.048, lng: 9.742, points: pointTemplate.map(p => p + " Ndokoti") },
-    { nom: "Bonamoussadi", lat: 4.085, lng: 9.735, points: pointTemplate.map(p => p + " Bonamoussadi") },
-    { nom: "Deido", lat: 4.062, lng: 9.702, points: pointTemplate.map(p => p + " Deido") },
-    { nom: "Logpom", lat: 4.095, lng: 9.750, points: pointTemplate.map(p => p + " Logpom") },
-    { nom: "Village", lat: 4.020, lng: 9.770, points: pointTemplate.map(p => p + " Village") },
-    { nom: "Logbaba", lat: 4.040, lng: 9.760, points: pointTemplate.map(p => p + " Logbaba") },
-    { nom: "Bonabéri", lat: 4.075, lng: 9.670, points: pointTemplate.map(p => p + " Bonabéri") }
-];
-
-let filter = "ALL", search = "";
-let map, markers = [];
-let citizenReports = [];
-
-// Liste des quartiers pour le datalist
-const quartiersDouala = ["Akwa", "New Bell", "Deido", "Bonabéri", "Ndokoti", "Logpom", "Village", "Logbaba", "Bonanjo", "Bonamoussadi", "Kotto", "Makepe", "Bali", "Nylon"];
-const dataListCit = document.getElementById('quartiers-list-cit');
-if (dataListCit) {
-    quartiersDouala.sort().forEach(q => {
-        let option = document.createElement('option');
-        option.value = q;
-        dataListCit.appendChild(option);
-    });
+function openEditProfileModal() {
+    document.getElementById('editFullname').value = authCurrentUser.fullname || '';
+    document.getElementById('editEmail').value = authCurrentUser.email || '';
+    document.getElementById('editPhone').value = authCurrentUser.phone || '';
+    document.getElementById('editProfileModal').style.display = 'flex';
 }
 
-// Variables pour la prise de photo
-let photosArray = [];
-let currentUserLocation = null;
-let currentAddressName = null;
+function closeEditProfileModal() {
+    document.getElementById('editProfileModal').style.display = 'none';
+}
 
-// Géolocalisation
+function updateProfile() {
+    const newFullname = document.getElementById('editFullname').value.trim();
+    const newEmail = document.getElementById('editEmail').value.trim();
+    const newPhone = document.getElementById('editPhone').value.trim();
+    
+    if (!newFullname || !newEmail || !newPhone) {
+        authShowToast('❌ Tous les champs sont obligatoires');
+        return;
+    }
+    
+    if (newEmail !== authCurrentUser.email && authUsers.find(u => u.email === newEmail && u.id !== authCurrentUser.id)) {
+        authShowToast('❌ Cet email est déjà utilisé par un autre compte');
+        return;
+    }
+    
+    const user = authUsers.find(u => u.id === authCurrentUser.id);
+    if (user) {
+        user.fullname = newFullname;
+        user.email = newEmail;
+        user.phone = newPhone;
+        authSaveUsers();
+        
+        authCurrentUser.fullname = newFullname;
+        authCurrentUser.email = newEmail;
+        authCurrentUser.phone = newPhone;
+        
+        localStorage.setItem('AUTH_CURRENT_USER', JSON.stringify({
+            id: authCurrentUser.id,
+            fullname: authCurrentUser.fullname,
+            email: authCurrentUser.email,
+            role: authCurrentUser.role,
+            matricule: authCurrentUser.matricule,
+            phone: authCurrentUser.phone,
+            position: authCurrentUser.position
+        }));
+        
+        updateUserInfo();
+        authShowToast('✅ Profil mis à jour avec succès');
+        closeEditProfileModal();
+    }
+}
+
+function openForgotPasswordModal() {
+    document.getElementById('forgotIdentifier').value = '';
+    document.getElementById('forgotPasswordMsg').className = 'auth-message';
+    document.getElementById('forgotPasswordMsg').style.display = 'none';
+    document.getElementById('forgotPwdForm').style.display = 'block';
+    document.getElementById('adminResetForm').style.display = 'none';
+    document.getElementById('forgotPasswordModal').style.display = 'flex';
+}
+
+function closeForgotPasswordModal() {
+    document.getElementById('forgotPasswordModal').style.display = 'none';
+}
+
+function processForgotPassword() {
+    const identifier = document.getElementById('forgotIdentifier').value.trim();
+    const msgDiv = document.getElementById('forgotPasswordMsg');
+    
+    if (!identifier) {
+        msgDiv.textContent = '❌ Veuillez entrer votre email ou matricule';
+        msgDiv.className = 'auth-message error';
+        msgDiv.style.display = 'block';
+        return;
+    }
+    
+    const user = authUsers.find(u => u.email === identifier || u.matricule === identifier);
+    
+    if (!user) {
+        msgDiv.textContent = '❌ Aucun compte trouvé avec ces informations';
+        msgDiv.className = 'auth-message error';
+        msgDiv.style.display = 'block';
+        return;
+    }
+    
+    if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
+        document.getElementById('adminNameDisplay').innerText = user.fullname;
+        document.getElementById('adminEmailDisplay').innerText = user.email;
+        document.getElementById('forgotPwdForm').style.display = 'none';
+        document.getElementById('adminResetForm').style.display = 'block';
+        msgDiv.style.display = 'none';
+    } 
+    else if (user.role === 'EMPLOYE') {
+        const existingRequest = passwordResetRequests.find(r => r.userId === user.id && r.status === 'PENDING');
+        if (!existingRequest) {
+            const resetRequest = {
+                id: Date.now(),
+                userId: user.id,
+                userFullname: user.fullname,
+                userEmail: user.email,
+                userMatricule: user.matricule,
+                userPhone: user.phone,
+                status: 'PENDING',
+                createdAt: new Date().toISOString()
+            };
+            
+            passwordResetRequests.push(resetRequest);
+            savePasswordRequests();
+            
+            const adminUsers = authUsers.filter(u => u.role === 'ADMIN' || u.role === 'SUPER_ADMIN');
+            adminUsers.forEach(admin => {
+                const notificationMessage = {
+                    id: Date.now() + Math.random(),
+                    from: user.id,
+                    fromName: user.fullname,
+                    to: admin.id,
+                    content: `🔐 DEMANDE DE RÉINITIALISATION\n\nL'employé ${user.fullname} (${user.email}) a oublié son mot de passe.\n\nVeuillez lui réinitialiser son mot de passe dans le panel Admin.`,
+                    timestamp: new Date().toISOString(),
+                    read: false,
+                    type: 'password_reset_request'
+                };
+                adminMessages.push(notificationMessage);
+            });
+            saveAdminMessages();
+            
+            authShowToast(`📢 Demande envoyée à l'administrateur pour ${user.fullname}`);
+        } else {
+            authShowToast(`⏳ Une demande est déjà en attente pour ${user.fullname}`);
+        }
+        
+        msgDiv.textContent = '✅ Votre demande a été transmise à un administrateur. Vous serez notifié une fois votre mot de passe réinitialisé.';
+        msgDiv.className = 'auth-message success';
+        msgDiv.style.display = 'block';
+        
+        setTimeout(() => closeForgotPasswordModal(), 3000);
+    }
+}
+
+function confirmAdminReset() {
+    const newPassword = document.getElementById('adminNewPassword').value;
+    const confirmPassword = document.getElementById('adminConfirmPassword').value;
+    const adminName = document.getElementById('adminNameDisplay').innerText;
+    const adminEmail = document.getElementById('adminEmailDisplay').innerText;
+    
+    if (!newPassword || newPassword.length < 6) {
+        authShowToast('❌ Le mot de passe doit contenir au moins 6 caractères');
+        return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+        authShowToast('❌ Les mots de passe ne correspondent pas');
+        return;
+    }
+    
+    const user = authUsers.find(u => u.fullname === adminName && u.email === adminEmail);
+    if (user) {
+        user.password = newPassword;
+        authSaveUsers();
+        authShowToast(`✅ Mot de passe réinitialisé pour ${user.fullname}`);
+        closeForgotPasswordModal();
+    }
+}
+
+// ===================== GÉOLOCALISATION =====================
 function initGeolocation() {
     const locationDiv = document.getElementById('locationStatus');
     if (!locationDiv) return;
@@ -2216,7 +2888,6 @@ function initGeolocation() {
     );
 }
 
-// Capture photo avec horodatage
 async function capturePhotoWithTimestamp() {
     return new Promise(async (resolve, reject) => {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -2251,9 +2922,6 @@ async function capturePhotoWithTimestamp() {
             ctx.fillStyle = 'white';
             ctx.shadowColor = 'black';
             ctx.shadowBlur = 3;
-            ctx.shadowOffsetX = 2;
-            ctx.shadowOffsetY = 2;
-            
             ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
             ctx.fillRect(0, canvas.height - 70, canvas.width, 70);
             
@@ -2265,8 +2933,6 @@ async function capturePhotoWithTimestamp() {
             ctx.font = 'bold 12px "Courier New", monospace';
             ctx.fillText(`📍 ${locationText}`, 10, canvas.height - 20);
             
-            ctx.shadowColor = 'transparent';
-            
             const photoData = canvas.toDataURL('image/jpeg', 0.85);
             stream.getTracks().forEach(track => track.stop());
             
@@ -2277,13 +2943,12 @@ async function capturePhotoWithTimestamp() {
     });
 }
 
-// Gestion des fichiers photo
 async function handleFiles(input) {
     const files = Array.from(input.files);
     if (files.length === 0) return;
     
     const photoStatus = document.getElementById("photoStatusText");
-    photoStatus.innerText = "⌛ Traitement de la photo...";
+    if (photoStatus) photoStatus.innerText = "⌛ Traitement de la photo...";
     
     for (let file of files) {
         if (photosArray.length >= 5) {
@@ -2304,7 +2969,7 @@ async function handleFiles(input) {
     }
     
     renderGallery();
-    photoStatus.innerText = `✅ ${photosArray.length} photo(s) avec horodatage`;
+    if (photoStatus) photoStatus.innerText = `✅ ${photosArray.length} photo(s) avec horodatage`;
 }
 
 function compressImage(file) {
@@ -2347,10 +3012,9 @@ function removePhoto(index, event) {
     photosArray.splice(index, 1);
     renderGallery();
     const photoStatus = document.getElementById("photoStatusText");
-    photoStatus.innerText = photosArray.length > 0 ? `✅ ${photosArray.length} photo(s) avec horodatage` : "📷 CLIQUEZ POUR PRENDRE UNE PHOTO (AVEC HEURE ET LIEU)";
+    if (photoStatus) photoStatus.innerText = photosArray.length > 0 ? `✅ ${photosArray.length} photo(s) avec horodatage` : "📷 CLIQUEZ POUR PRENDRE UNE PHOTO (AVEC HEURE ET LIEU)";
 }
 
-// Envoi du signalement
 async function sendToDashboard() {
     const name = document.getElementById("citName").value.trim();
     const rawPhone = document.getElementById("citPhone").value.trim();
@@ -2376,8 +3040,8 @@ async function sendToDashboard() {
     }
     
     const phone = "+237" + rawPhone;
-    btn.disabled = true;
-    btn.innerText = "ENVOI EN COURS...";
+    if (btn) btn.disabled = true;
+    if (btn) btn.innerText = "ENVOI EN COURS...";
     
     let finalAddress = currentAddressName;
     let finalLat = currentUserLocation?.lat;
@@ -2418,18 +3082,25 @@ async function sendToDashboard() {
     };
     
     try {
-        await db_online.ref('reports/' + id).set(report);
+        if (typeof db_online !== 'undefined') {
+            await db_online.ref('reports/' + id).set(report);
+        } else {
+            console.warn("Firebase non disponible, sauvegarde locale");
+            let localReports = JSON.parse(localStorage.getItem('LOCAL_REPORTS') || '[]');
+            localReports.push(report);
+            localStorage.setItem('LOCAL_REPORTS', JSON.stringify(localReports));
+        }
         const successDiv = document.getElementById("success");
         if (successDiv) successDiv.style.display = "block";
-        btn.innerText = "✓ ENVOYÉ !";
+        if (btn) btn.innerText = "✓ ENVOYÉ !";
         setTimeout(() => {
             closeCitizenPortal();
             resetCitizenForm();
         }, 2000);
     } catch (error) {
         alert("Erreur réseau : Impossible d'envoyer l'alerte.");
-        btn.disabled = false;
-        btn.innerText = "RÉESSAYER L'ENVOI";
+        if (btn) btn.disabled = false;
+        if (btn) btn.innerText = "RÉESSAYER L'ENVOI";
     }
 }
 
@@ -2445,340 +3116,7 @@ function resetCitizenForm() {
     if (photoStatus) photoStatus.innerText = "📷 CLIQUEZ POUR PRENDRE UNE PHOTO (AVEC HEURE ET LIEU)";
 }
 
-// ========== FONCTIONS DES MODALS ==========
-function openCitizenPortal() {
-    const modal = document.getElementById("citizenPortalModal");
-    if (modal) {
-        modal.style.display = "flex";
-        setTimeout(() => {
-            initGeolocation();
-        }, 500);
-        resetCitizenForm();
-    }
-}
-
-function closeCitizenPortal() {
-    const modal = document.getElementById("citizenPortalModal");
-    if (modal) modal.style.display = "none";
-}
-
-function openCitizenInbox() {
-    const modal = document.getElementById("citizenInboxModal");
-    if (modal) {
-        modal.style.display = "flex";
-        const msgBadge = document.getElementById("msgNew");
-        if (msgBadge) msgBadge.style.display = "none";
-        updateCitizenInboxUI();
-    } else {
-        console.error("Modal citizenInboxModal introuvable");
-        notify("❌ Erreur d'affichage de la boîte de messages");
-    }
-}
-
-function closeCitizenInbox() {
-    const modal = document.getElementById("citizenInboxModal");
-    if (modal) modal.style.display = "none";
-}
-
-function openHistoryModal() {
-    updateQuartierFilter();
-    refreshHistoryList();
-    document.getElementById('historyModal').style.display = 'flex';
-}
-
-function closeHistoryModal() {
-    document.getElementById('historyModal').style.display = 'none';
-}
-
-function openMap() {
-    document.getElementById("mapModal").style.display = "flex";
-    if (!map) {
-        map = L.map('bigMap').setView([4.0511, 9.7679], 12);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-    }
-    markers.forEach(m => map.removeLayer(m));
-    markers = [];
-    db.forEach(q => {
-        const onlineUnits = q.units.filter(u => u.online);
-        const avg = onlineUnits.length > 0 ? onlineUnits.reduce((a,b)=> a+b.lvl,0)/onlineUnits.length : 0;
-        let color = avg > 90 ? 'red' : (avg > 70 ? 'orange' : 'cyan');
-        const m = L.circleMarker([q.lat, q.lng], { radius: 12, fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.8 }).addTo(map).bindPopup(`<b>${q.nom}</b><br>Remplissage: ${avg.toFixed(1)}%`);
-        markers.push(m);
-    });
-}
-
-function closeMap() {
-    document.getElementById("mapModal").style.display = "none";
-}
-
-function persist() { 
-    localStorage.setItem('DOUALA_DB', JSON.stringify(db)); 
-}
-
-let db = localStorage.getItem('DOUALA_DB') ? JSON.parse(localStorage.getItem('DOUALA_DB')) : configurationDouala.map((q, idx) => ({
-    id: "Q-" + (idx + 1).toString().padStart(3, '0'),
-    nom: q.nom, lat: q.lat, lng: q.lng,
-    units: q.points.map((pt, i) => ({
-        id: q.nom.slice(0, 3).toUpperCase() + "-" + (100 + i),
-        loc: pt, lvl: Math.random() * 40, bat: 100, online: true, lidOpen: false,
-        lastUpdate: new Date().toLocaleString('fr-FR')
-    }))
-}));
-
-const alertCooldowns = {};
-
-db_online.ref('reports').on('value', (snapshot) => {
-    const data = snapshot.val();
-    citizenReports = data ? Object.entries(data).map(([key, val]) => ({...val, firebaseId: key})).reverse() : [];
-    updateCitizenInboxUI();
-    if(citizenReports.length > 0 && citizenReports[0].status === "En attente") {
-        const badge = document.getElementById("msgNew");
-        if (badge) badge.style.display = "block";
-    }
-});
-
-function updateCitizenInboxUI() {
-    const body = document.getElementById("citizenInboxBody");
-    const count = citizenReports.filter(r => r.status === "En attente").length;
-    const citCount = document.getElementById("citCount");
-    if (citCount) citCount.innerText = count;
-    
-    if(!body) return;
-    
-    if(citizenReports.length === 0) {
-        body.innerHTML = `<p style="color: #64748b; text-align: center;">Aucun message en attente.</p>`;
-        return;
-    }
-
-    body.innerHTML = citizenReports.map(r => {
-        let photoDisplayHtml = "";
-        if (r.photos && Array.isArray(r.photos)) {
-            photoDisplayHtml = r.photos.map(photoUrl => `
-                <img src="${photoUrl}" onclick="viewPhoto('${photoUrl}', '${r.name}')" 
-                style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid var(--citizen-purple); margin-right: 5px;">
-            `).join("");
-        }
-        
-        const deleteButton = (authCurrentUser && authCurrentUser.role !== 'EMPLOYE') ? 
-            `<button onclick="deleteCitizenReport('${r.firebaseId}')" style="background:none; border:none; color:var(--red); cursor:pointer; font-size:1.1rem;">🗑️</button>` : '';
-        
-        const locationInfo = r.userAddress ? `<br><small class="coord-badge">📍 ${r.userAddress.substring(0, 60)}</small>` : '';
-        
-        return `
-        <div class="msg-item" style="opacity: ${r.status === 'Traité' ? 0.6 : 1}; display: flex; justify-content: space-between; align-items: flex-start; background: rgba(188, 19, 254, 0.05); padding: 15px; border-left: 4px solid var(--citizen-purple); margin-bottom: 10px;">
-            <div style="flex-grow: 1;">
-                <b style="color:var(--citizen-purple); font-size:1.1rem;">${escapeHtml(r.name)}</b> 
-                <span style="color:var(--green); margin-left:10px; font-weight:bold;">📞 ${r.phone || 'N/A'}</span>
-                <br>
-                <small>📍 ${escapeHtml(r.loc)} [${escapeHtml(r.q)}]</small> <small style="color:#64748b; margin-left:5px;">(${r.time})</small>
-                ${locationInfo}
-                <br>
-                <span style="font-size:0.7rem; color:var(--orange); font-weight:bold;">${(r.type || 'SIGNALEMENT').toUpperCase()}</span>
-                
-                ${(r.description || r.desc) ? `<div style="margin-top:8px; font-style:italic; font-size:0.85rem; color:#cbd5e1; background:rgba(0,0,0,0.2); padding:8px; border-radius:4px; border-left: 2px solid var(--citizen-purple);">"${escapeHtml(r.description || r.desc)}"</div>` : ''}
-                
-                <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px;">
-                    ${photoDisplayHtml}
-                </div>
-            </div>
-            <div style="display:flex; flex-direction: column; gap:10px; align-items:flex-end; min-width:100px;">
-                ${r.status === 'En attente' ? 
-                `<button onclick="processCitizenReport('${r.firebaseId}')" style="font-size:0.6rem; border-color:var(--green); color:var(--green); width: 100%;">TRAITER</button>` : 
-                `<span style="color:var(--green); font-size:0.7rem; font-weight:bold;">TRAITÉ ✓</span>`}
-                ${deleteButton}
-            </div>
-        </div>
-    `}).join("");
-}
-
-function viewPhoto(photoData, name) {
-    const modal = document.getElementById("photoViewModal");
-    const img = document.getElementById("imgFullView");
-    const legend = document.getElementById("photoLegend");
-    if (img) img.src = photoData;
-    if (legend) legend.innerText = "Signalement envoyé par : " + name;
-    if (modal) modal.style.display = "flex";
-}
-
-function processCitizenReport(id) {
-    db_online.ref('reports/' + id).update({ status: "Traité" })
-    .then(() => { notify("Action enregistrée."); });
-}
-
-function deleteCitizenReport(id) {
-    if(confirm("Supprimer définitivement ce signalement ?")) {
-        db_online.ref('reports/' + id).remove()
-        .then(() => { notify("Signalement supprimé du cloud."); });
-    }
-}
-
-function triggerCriticalPop(nomQuartier, count) {
-    const container = document.getElementById("alert-popup-container");
-    const id = "pop-" + nomQuartier;
-    if (document.getElementById(id)) return; 
-    const pop = document.createElement("div");
-    pop.id = id;
-    pop.className = "critical-pop";
-    pop.innerText = `URGENT : ${nomQuartier} (${count} BACS PLEINS)`;
-    container.appendChild(pop);
-    setTimeout(() => { if (pop) pop.remove(); }, 5000);
-}
-
-function getStatusInfo(lvl, online) {
-    if (!online) return { txt: "HORS-LIGNE", color: "#555", alert: "MAINTENANCE" };
-    if (lvl > 90) return { txt: "BLOQUÉ (PLEIN)", color: "#ff3131", alert: "URGENT" };
-    if (lvl > 70) return { txt: "ATTENTION", color: "#ff9100", alert: "ATTENTION" };
-    if (lvl > 40) return { txt: "MOYEN", color: "#00d2ff", alert: "OK" };
-    return { txt: "OPTIMAL", color: "#39ff14", alert: "OK" };
-}
-
-function render() {
-    const body = document.getElementById("mainBody");
-    if (!body) return;
-    body.innerHTML = "";
-    let totalLvlCity = 0, activeUnitsCity = 0, globalAlerts = 0;
-    const NOW = Date.now();
-
-    db.forEach(q => {
-        if (!q.nom.toLowerCase().includes(search.toLowerCase())) return;
-        const onlineUnits = q.units.filter(u => u.online);
-        const offlineUnits = q.units.filter(u => !u.online);
-        let avgLvl = onlineUnits.length > 0 ? onlineUnits.reduce((a, b) => a + b.lvl, 0) / onlineUnits.length : 0;
-        let fullBins = onlineUnits.filter(u => u.lvl > 90).length; 
-        
-        if (fullBins >= 3 && (!alertCooldowns[q.nom] || (NOW - alertCooldowns[q.nom] > 300000))) {
-            triggerCriticalPop(q.nom, fullBins);
-            alertCooldowns[q.nom] = NOW;
-        }
-
-        let s = getStatusInfo(avgLvl, onlineUnits.length > 0);
-        if (filter !== "ALL" && s.alert !== filter) return;
-        globalAlerts += fullBins;
-        if (onlineUnits.length > 0) { totalLvlCity += onlineUnits.reduce((a, b) => a + b.lvl, 0); activeUnitsCity += onlineUnits.length; }
-
-        const alertBadge = fullBins > 0 ? `<button class="blink-btn" onclick="openModal('${q.nom}')">VIDER</button>` : "";
-        const repairBadge = offlineUnits.length > 0 ? `<span class="repair-status">🛠️ PANNE RÉSEAU (${offlineUnits.length})</span>` : "";
-
-        body.innerHTML += `<tr>
-            <td style="color:var(--blue); font-weight:bold;">${q.id}</td>
-            <td style="font-weight:bold;">${q.nom} ${repairBadge}</td>
-            <td>${onlineUnits.length > 0 ? avgLvl.toFixed(1) + '%' : '<span style="color:#555">SIGNAL GELÉ</span>'}
-                <div class="progress-bar"><div class="progress-fill" style="width:${avgLvl}%; background:${onlineUnits.length > 0 ? s.color : '#334155'}"></div></div>
-            </td>
-            <td>${onlineUnits.length} / ${q.units.length}</td>
-            <td style="color:${fullBins > 0 ? 'var(--red)' : 'white'}; font-weight:bold;">${fullBins} ${alertBadge}</td>
-            <td><span class="status-pill" style="border:1px solid ${s.color}; color:${s.color}">${s.txt}</span></td>
-            <td><button onclick="openModal('${q.nom}')">GÉRER LES UNITÉS</button></td>
-        </tr>`;
-    });
-
-    const avgEl = document.getElementById("avg");
-    if (avgEl) avgEl.innerText = activeUnitsCity > 0 ? (totalLvlCity / activeUnitsCity).toFixed(1) + "%" : "---";
-    const alertsEl = document.getElementById("alerts");
-    if (alertsEl) alertsEl.innerText = globalAlerts;
-}
-
-function simulate() {
-    db.forEach(q => {
-        q.units.forEach(u => {
-            if (Math.random() > 0.99) { u.online = !u.online; if(!u.online) notify(`📡 SIGNAL PERDU : ${u.id}`); }
-            if(u.online) {
-                if (u.lvl < 91) { u.lvl = Math.max(0, Math.min(100, u.lvl + (Math.random() * 6))); }
-                u.bat = Math.max(5, u.bat - 0.05);
-                u.lastUpdate = new Date().toLocaleString('fr-FR');
-                if (u.lvl > 90) { u.lidOpen = false; } else { u.lidOpen = Math.random() > 0.8; }
-            }
-        });
-    });
-    persist(); 
-    render(); updateGraph();
-}
-
-function openModal(nomQuartier) {
-    let q = db.find(x => x.nom == nomQuartier);
-    const modalTitle = document.getElementById("modalTitle");
-    if (modalTitle) modalTitle.innerText = `LOGS UNITÉS : ${nomQuartier.toUpperCase()}`;
-    const tableBody = document.getElementById("modalTableBody");
-    if (!tableBody) return;
-    tableBody.innerHTML = "";
-    q.units.forEach(u => {
-        let s = getStatusInfo(u.lvl, u.online);
-        let lidStatus = u.lvl > 90 ? `<span style="color:var(--red); font-weight:bold;">🔒 VERROUILLÉ</span>` : (u.lidOpen ? `<span style="color:var(--green);">OUVERT</span>` : `<span style="color:#aaa;">FERMÉ</span>`);
-        const deleteButton = (authCurrentUser && authCurrentUser.role !== 'EMPLOYE') ? 
-            `<button class="btn-delete" onclick="deleteBin('${nomQuartier}', '${u.id}')">🗑️</button>` : '—';
-        tableBody.innerHTML += `<tr>
-            <td style="color:var(--blue); font-weight:600;">${u.id}</td>
-            <td>📍 ${u.loc}</td>
-            <td>${u.online ? u.lvl.toFixed(1) + '%' : '--'}</td>
-            <td>${lidStatus}</td>
-            <td style="color:${s.color}">${s.txt}</td>
-            <td style="color:${u.online ? 'var(--green)' : 'var(--red)'}">${u.online ? 'CONNECTÉ' : 'DÉCONNECTÉ'}</td>
-            <td>${u.bat.toFixed(0)}%</td>
-            <td style="font-size:0.75rem;">${u.lastUpdate}</td>
-            <td><span class="status-pill" style="border:1px solid ${s.color}">${s.alert}</span></td>
-            <td>${deleteButton}</td>
-        </tr>`;
-    });
-    document.getElementById("detailsModal").style.display = "flex";
-}
-
-function deleteBin(q, id) {
-    if (authCurrentUser && authCurrentUser.role === 'EMPLOYE') {
-        authShowToast('⛔ Vous n\'avez pas les droits pour supprimer une poubelle');
-        return;
-    }
-    let qObj = db.find(x => x.nom === q);
-    qObj.units = qObj.units.filter(u => u.id !== id);
-    persist(); openModal(q); render();
-}
-
-function closeModal() { 
-    document.getElementById("detailsModal").style.display = "none"; 
-}
-
-function setFilter(f) { filter = f; render(); }
-function manualRefresh() { simulate(); notify("Actualisation forcée effectuée"); }
-function notify(m) {
-    const n = document.createElement("div"); n.className = "toast"; n.innerText = m;
-    const container = document.getElementById("notifContainer");
-    if (container) {
-        container.appendChild(n);
-        setTimeout(() => n.remove(), 3000);
-    }
-}
-
-let myChart;
-function updateGraph() {
-    const ctx = document.getElementById('chart');
-    if (!ctx) return;
-    const labels = db.map(q => q.nom);
-    const data = db.map(q => {
-        const active = q.units.filter(u => u.online);
-        return active.length > 0 ? active.reduce((a, b) => a + b.lvl, 0) / active.length : 0;
-    });
-    if (myChart) { myChart.data.datasets[0].data = data; myChart.update(); }
-    else {
-        myChart = new Chart(ctx, {
-            type: 'bar',
-            data: { labels: labels, datasets: [{ label: '% Remplissage', data: data, backgroundColor: '#00d2ff' }] },
-            options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
-        });
-    }
-}
-
-function authShowToast(message) { notify(message); }
-
-function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-    });
-}
-
-// ========== HISTORIQUE ==========
+// ===================== HISTORIQUE =====================
 let historyCurrentPage = 1;
 let historyFilteredData = [];
 let historyStatusFilter = "ALL";
@@ -2797,13 +3135,8 @@ function updateQuartierFilter() {
     const quartiers = getAllQuartiersFromReports();
     quartierSelect.innerHTML = '<option value="ALL">📍 Tous les quartiers</option>';
     quartiers.forEach(q => {
-        quartierSelect.innerHTML += `<option value="${q}">${q}</option>`;
+        quartierSelect.innerHTML += `<option value="${q}">${escapeHtml(q)}</option>`;
     });
-}
-
-function filterByStatus(status) {
-    historyStatusFilter = status;
-    refreshHistoryList();
 }
 
 function refreshHistoryList() {
@@ -2861,6 +3194,11 @@ function updateHistoryStats() {
     `;
 }
 
+function filterByStatus(status) {
+    historyStatusFilter = status;
+    refreshHistoryList();
+}
+
 function getTypeClass(type) {
     if (type === 'Poubelle qui déborde') return 'type-critique';
     if (type === 'Dépôt sauvage') return 'type-urgent';
@@ -2890,15 +3228,15 @@ function renderHistoryTable() {
     
     tbody.innerHTML = pageData.map(r => `
         <tr style="border-bottom:1px solid #334155;">
-            <td><small>${r.time || r.date ? new Date(r.date).toLocaleString() : '-'}</small></td>
+            <td><small>${r.time || new Date(r.date).toLocaleString() || '-'}</small></td>
             <td><strong>${escapeHtml(r.name)}</strong></td>
             <td>${escapeHtml(r.phone || '-')}</td>
             <td><span class="type-badge ${getTypeClass(r.type)}">${getTypeIcon(r.type)} ${escapeHtml(r.type || 'Non spécifié')}</span></td>
             <td><strong>${escapeHtml(r.q)}</strong></td>
-            <td>${escapeHtml(r.loc)}${r.userAddress ? `<br><small class="coord-badge">📍 ${r.userAddress.substring(0, 50)}</small>` : ''}</td>
+            <td>${escapeHtml(r.loc)}${r.userAddress ? `<br><small class="coord-badge">📍 ${escapeHtml(r.userAddress.substring(0, 50))}</small>` : ''}</td>
             <td style="max-width:200px;">${escapeHtml(r.description || r.desc || '-')}</td>
             <td>${r.status === 'Traité' ? '<span style="color:#39ff14;">✅ Traité</span>' : '<span style="color:#ff9100;">⏳ En attente</span>'}</td>
-        </tr>
+        </table>
     `).join('');
     
     const totalPages = Math.ceil(historyFilteredData.length / historyItemsPerPage);
@@ -2946,24 +3284,7 @@ function exportHistoryToCSV() {
     notify('📎 Export CSV effectué');
 }
 
-// ========== ENRÔLEMENT AMÉLIORÉ ==========
-const mairiesData = {
-    "Douala 1er": ["Mairie de Bonanjo", "CUD (Direction)"],
-    "Douala 2e": ["Mairie de New Bell"],
-    "Douala 3e": ["Mairie de Logbaba"],
-    "Douala 4e": ["Mairie de Bonabéri"],
-    "Douala 5e": ["Mairie de Kotto"]
-};
-
-const quartiersParMairie = {
-    "Mairie de Bonanjo": ["Bonanjo - Poste", "Akwa - Palais Dika"],
-    "CUD (Direction)": ["Bali - Koumassi", "Deido - Rond Point"],
-    "Mairie de New Bell": ["New Bell - Marché", "Nkololoun - Rail", "Babylone", "Nylon - Tergal"],
-    "Mairie de Logbaba": ["Ndokoti - Tunnel", "Logbaba - Magzi", "Village - Jumeaux", "Nyalla - Rail"],
-    "Mairie de Bonabéri": ["Bonassama - Pont", "Mabanda - Grand Marché", "Sodiko", "Boquette"],
-    "Mairie de Kotto": ["Bonamoussadi - Bijou", "Logpom - Bassong", "Kotto - Santa Lucia", "Makepe - Rhône-Poulenc"]
-};
-
+// ===================== ENRÔLEMENT =====================
 function updateMairiesImproved() {
     const arr = document.getElementById('selArrImproved').value;
     const mairieSelect = document.getElementById('selMairieImproved');
@@ -3069,47 +3390,88 @@ function saveNewBinImproved() {
     }
 }
 
-// Initialiser les écouteurs
+// ===================== INITIALISATION =====================
+// Initialiser la base de données
+initDatabase();
+
+// Initialiser Firebase si disponible
+let db_online = null;
+try {
+    if (typeof firebase !== 'undefined') {
+        const firebaseConfig = { databaseURL: "https://douala-clean-default-rtdb.firebaseio.com" };
+        firebase.initializeApp(firebaseConfig);
+        db_online = firebase.database();
+        console.log("Firebase initialisé");
+    } else {
+        console.warn("Firebase non disponible");
+    }
+} catch(e) {
+    console.warn("Erreur Firebase:", e);
+}
+
+// Initialiser l'authentification
+authInitUsers();
+
+// Remplir le datalist des quartiers
+const dataListCit = document.getElementById('quartiers-list-cit');
+if (dataListCit) {
+    quartiersDouala.sort().forEach(q => {
+        let option = document.createElement('option');
+        option.value = q;
+        dataListCit.appendChild(option);
+    });
+}
+
+// Configurer les écouteurs d'événements
 document.addEventListener('DOMContentLoaded', function() {
     const selArrImproved = document.getElementById('selArrImproved');
     if (selArrImproved) selArrImproved.addEventListener('change', updateMairiesImproved);
     const selMairieImproved = document.getElementById('selMairieImproved');
     if (selMairieImproved) selMairieImproved.addEventListener('change', updateQuartiersImproved);
+    
+    // Horloge
+    setInterval(() => { 
+        const clock = document.getElementById("clock");
+        if (clock) clock.innerText = new Date().toLocaleTimeString(); 
+    }, 1000);
+    
+    // Simulation toutes les 30 secondes
+    setInterval(simulate, 30000);
 });
-
-window.openEnrollModal = function() {
-    openEnrollModalImproved();
-};
-
-// Horloge
-setInterval(() => { 
-    const clock = document.getElementById("clock");
-    if (clock) clock.innerText = new Date().toLocaleTimeString(); 
-}, 1000);
-setInterval(simulate, 15000);
 
 // Vérification de session au chargement
 function checkSession() {
-    authInitUsers();
     const saved = localStorage.getItem('AUTH_CURRENT_USER');
     if (saved) {
-        const userData = JSON.parse(saved);
-        const user = authUsers.find(u => u.id === userData.id && u.status === 'ACTIVE');
-        if (user) {
-            authCurrentUser = user;
-            document.getElementById('authOverlay').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
-            document.getElementById('menuContainer').style.display = 'block';
-            document.getElementById('authUserInfo').style.display = 'flex';
-            if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') {
-                document.getElementById('adminBadge').style.display = 'flex';
+        try {
+            const userData = JSON.parse(saved);
+            const user = authUsers.find(u => u.id === userData.id && u.status === 'ACTIVE');
+            if (user) {
+                authCurrentUser = user;
+                document.getElementById('authOverlay').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                document.getElementById('menuContainer').style.display = 'block';
+                document.getElementById('authUserInfo').style.display = 'flex';
+                if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') {
+                    document.getElementById('adminBadge').style.display = 'flex';
+                }
+                updateUserInfo();
+                
+                // Attendre que le DOM soit prêt pour render
+                setTimeout(() => {
+                    render();
+                    updateGraph();
+                }, 100);
+                
+                listenToCitizenReports();
+                updateUnreadCount();
+                return true;
             }
-            updateUserInfo();
-            render();
-            updateGraph();
-            return true;
+        } catch(e) {
+            console.error("Erreur session:", e);
         }
     }
+    
     document.getElementById('authOverlay').style.display = 'flex';
     document.getElementById('dashboard').style.display = 'none';
     document.getElementById('menuContainer').style.display = 'none';
@@ -3118,6 +3480,7 @@ function checkSession() {
     return false;
 }
 
+// Démarrer l'application
 checkSession();
 </script>
 </body>
