@@ -30,6 +30,7 @@
         }
 
         /* ========== ÉCRAN DE BIENVENUE / CIVISME ========== */
+        /* CORRECTION 1 : Hauteur auto + scroll possible */
         .welcome-screen {
             position: fixed;
             top: 0;
@@ -1350,7 +1351,7 @@
             }, 30000);
         }
 
-        // Fonction pour ajouter les infos GPS sur une photo (texte superposé)
+        // Fonction pour ajouter les infos GPS sur une photo APRÈS que l'utilisateur l'a prise et validée
         async function addGpsInfoToPhoto(originalBase64) {
             return new Promise((resolve) => {
                 const img = new Image();
@@ -1361,7 +1362,7 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0);
                     
-                    // Ajouter les informations GPS et date/heure
+                    // Ajouter les informations GPS et date/heure (l'utilisateur a déjà pris la photo)
                     const now = new Date();
                     const dateStr = now.toLocaleDateString('fr-FR');
                     const timeStr = now.toLocaleTimeString('fr-FR');
@@ -1395,6 +1396,7 @@
             });
         }
 
+        // handleFiles est appelée APRÈS que l'utilisateur a pris la photo et validé
         window.handleFiles = async function(input) {
             const files = Array.from(input.files);
             if (files.length === 0) return;
@@ -1415,7 +1417,7 @@
                         reader.readAsDataURL(file);
                     });
                     
-                    // Ajouter les infos GPS sur la photo
+                    // Ajouter les infos GPS sur la photo APRÈS capture utilisateur
                     const photoWithGps = await addGpsInfoToPhoto(base64);
                     photosArray.push(photoWithGps);
                 }
@@ -1433,6 +1435,9 @@
             } else {
                 photoWrapperDiv.classList.add('required');
             }
+            
+            // Vider l'input file pour permettre de nouvelles photos
+            input.value = '';
         };
 
         function renderGallery() {
@@ -1467,9 +1472,10 @@
             }
         };
 
-        // Clic sur le wrapper pour déclencher l'input file
+        // Au clic sur le wrapper, on ouvre l'appareil photo (l'utilisateur prend la photo et valide)
         document.getElementById('photoWrapper').addEventListener('click', function(e) {
             if (e.target.classList && e.target.classList.contains('remove-badge')) return;
+            // Déclencher l'input file, ce qui ouvre l'appareil photo natif
             document.getElementById('citPhoto').click();
         });
 
