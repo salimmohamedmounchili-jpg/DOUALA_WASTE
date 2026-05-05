@@ -30,7 +30,6 @@
         }
 
         /* ========== ÉCRAN DE BIENVENUE / CIVISME ========== */
-        /* CORRECTION 1 : Hauteur auto + scroll si nécessaire */
         .welcome-screen {
             position: fixed;
             top: 0;
@@ -889,8 +888,7 @@
                         <div class="photo-btn-wrapper required" id="photoWrapper">
                             <span id="photoStatusText">📷 PRENDRE UNE PHOTO</span>
                             <div class="photo-required-text">⚠️ PHOTO OBLIGATOIRE - Cliquez ici pour prendre une photo</div>
-                            <!-- On garde l'input file mais on va aussi utiliser getUserMedia -->
-                            <input type="file" id="citPhoto" accept="image/*" capture="environment" multiple style="display:none">
+                            <input type="file" id="citPhoto" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFiles(this)">
                             <div id="galleryPreview"></div>
                             <div class="photo-count" id="photoCount"></div>
                         </div>
@@ -1352,28 +1350,18 @@
             }, 30000);
         }
 
-        // ---------- CORRECTION CAMÉRA ARRIÈRE + CONSERVATION GPS ----------
-        // Nouvelle fonction qui utilise la caméra arrière ET les données GPS actuelles
-        async function takePhotoWithBackCameraAndGps() {
-            return new Promise(async (resolve, reject) => {
-                try {
-                    // Forcer la caméra arrière
-                    const stream = await navigator.mediaDevices.getUserMedia({
-                        video: { facingMode: { exact: "environment" } }
-                    });
-                    const video = document.createElement('video');
-                    video.srcObject = stream;
-                    video.setAttribute('playsinline', true);
-                    video.play();
-                    await new Promise(r => { video.onloadedmetadata = r; });
-                    
+        // Fonction pour ajouter les infos GPS sur une photo (texte superposé)
+        async function addGpsInfoToPhoto(originalBase64) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
+                    canvas.width = img.width;
+                    canvas.height = img.height;
                     const ctx = canvas.getContext('2d');
-                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
                     
-                    // Ajouter les infos de localisation (les mêmes que celles affichées dans l'interface)
+                    // Ajouter les informations GPS et date/heure
                     const now = new Date();
                     const dateStr = now.toLocaleDateString('fr-FR');
                     const timeStr = now.toLocaleTimeString('fr-FR');
@@ -1401,108 +1389,13 @@
                     }
                     
                     ctx.shadowBlur = 0;
-                    const photoData = canvas.toDataURL('image/jpeg', 0.85);
-                    stream.getTracks().forEach(track => track.stop());
-                    resolve(photoData);
-                } catch (err) {
-                    // Fallback : on utilise l'input file avec capture
-                    console.warn("getUserMedia échoué, fallback sur input file", err);
-                    const input = document.createElement('input');
-                    input.type = 'file';
-                    input.accept = 'image/*';
-                    input.capture = 'environment';
-                    input.onchange = async (e) => {
-                        const file = e.target.files[0];
-                        if (file) {
-                            const reader = new FileReader();
-                            reader.onload = (ev) => {
-                                // On ne peut pas ajouter le texte sur l'image facilement, mais on conserve les données GPS séparément
-                                resolve(ev.target.result);
-                            };
-                            reader.readAsDataURL(file);
-                        } else reject(new Error("Aucune photo"));
-                    };
-                    input.click();
-                }
+                    resolve(canvas.toDataURL('image/jpeg', 0.85));
+                };
+                img.src = originalBase64;
             });
         }
 
-        // Remplacer l'ancienne gestion de la photo par la nouvelle
-        const photoWrapper = document.getElementById('photoWrapper');
-        const originalFileInput = document.getElementById('citPhoto');
-        
-        // On garde l'input file original mais on va aussi ajouter notre logique personnalisée
-        photoWrapper.addEventListener('click', async (e) => {
-            // Éviter les clics sur les boutons de suppression
-            if (e.target.classList && e.target.classList.contains('remove-badge')) return;
-            
-            const photoStatusText = document.getElementById('photoStatusText');
-            photoStatusText.innerText = "⌛ Ouverture caméra arrière...";
-            
-            try {
-                const photoData = await takePhotoWithBackCameraAndGps();
-                photosArray.push(photoData);
-                renderGallery();
-                const count = photosArray.length;
-                document.getElementById('photoCount').innerText = count > 0 ? `${count} photo(s) prise(s)` : '';
-                photoStatusText.innerText = count > 0 ? `✅ ${count} photo(s) avec horodatage et GPS` : "📷 PRENDRE UNE PHOTO";
-                
-                const photoWrapperDiv = document.getElementById('photoWrapper');
-                if (count > 0) {
-                    photoWrapperDiv.classList.remove('required');
-                    document.getElementById('photoErrorMessage').style.display = 'none';
-                } else {
-                    photoWrapperDiv.classList.add('required');
-                }
-            } catch (err) {
-                console.error("Erreur prise de vue:", err);
-                photoStatusText.innerText = "❌ Erreur caméra, réessayez";
-                alert("Impossible d'accéder à la caméra arrière. Vérifiez les permissions.");
-            }
-        });
-        
-        // Garder aussi le support de l'input file original (si l'utilisateur clique sur l'input caché)
-        originalFileInput.addEventListener('change', async (e) => {
-            const files = Array.from(e.target.files);
-            if (files.length === 0) return;
-            
-            const photoStatusText = document.getElementById('photoStatusText');
-            photoStatusText.innerText = "⌛ Traitement...";
-            
-            for (let file of files) {
-                if (photosArray.length >= 5) {
-                    alert("Maximum 5 photos autorisées.");
-                    break;
-                }
-                if (file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    await new Promise((resolve) => {
-                        reader.onload = (ev) => {
-                            photosArray.push(ev.target.result);
-                            resolve();
-                        };
-                        reader.readAsDataURL(file);
-                    });
-                }
-            }
-            
-            renderGallery();
-            const count = photosArray.length;
-            document.getElementById('photoCount').innerText = count > 0 ? `${count} photo(s) prise(s)` : '';
-            photoStatusText.innerText = count > 0 ? `✅ ${count} photo(s)` : "📷 PRENDRE UNE PHOTO";
-            
-            const photoWrapperDiv = document.getElementById('photoWrapper');
-            if (count > 0) {
-                photoWrapperDiv.classList.remove('required');
-                document.getElementById('photoErrorMessage').style.display = 'none';
-            } else {
-                photoWrapperDiv.classList.add('required');
-            }
-        });
-
-        // Fonctions existantes modifiées pour utiliser la nouvelle méthode
         window.handleFiles = async function(input) {
-            // Cette fonction est gardée pour compatibilité, mais on utilise maintenant l'événement personnalisé
             const files = Array.from(input.files);
             if (files.length === 0) return;
             
@@ -1514,22 +1407,24 @@
                     alert("Maximum 5 photos autorisées.");
                     break;
                 }
+                
                 if (file.type.startsWith('image/')) {
                     const reader = new FileReader();
-                    await new Promise((resolve) => {
-                        reader.onload = (ev) => {
-                            photosArray.push(ev.target.result);
-                            resolve();
-                        };
+                    const base64 = await new Promise((resolve) => {
+                        reader.onload = (ev) => resolve(ev.target.result);
                         reader.readAsDataURL(file);
                     });
+                    
+                    // Ajouter les infos GPS sur la photo
+                    const photoWithGps = await addGpsInfoToPhoto(base64);
+                    photosArray.push(photoWithGps);
                 }
             }
             
             renderGallery();
             const count = photosArray.length;
             document.getElementById('photoCount').innerText = count > 0 ? `${count} photo(s) prise(s)` : '';
-            photoStatus.innerText = count > 0 ? `✅ ${count} photo(s) avec horodatage` : "📷 PRENDRE UNE PHOTO";
+            photoStatus.innerText = count > 0 ? `✅ ${count} photo(s) avec GPS` : "📷 PRENDRE UNE PHOTO";
             
             const photoWrapperDiv = document.getElementById('photoWrapper');
             if (count > 0) {
@@ -1562,7 +1457,7 @@
             const count = photosArray.length;
             document.getElementById('photoCount').innerText = count > 0 ? `${count} photo(s) prise(s)` : '';
             const photoStatus = document.getElementById("photoStatusText");
-            photoStatus.innerText = count > 0 ? `✅ ${count} photo(s) avec horodatage` : "📷 PRENDRE UNE PHOTO";
+            photoStatus.innerText = count > 0 ? `✅ ${count} photo(s) avec GPS` : "📷 PRENDRE UNE PHOTO";
             
             const photoWrapperDiv = document.getElementById('photoWrapper');
             if (count === 0) {
@@ -1571,6 +1466,12 @@
                 photoWrapperDiv.classList.remove('required');
             }
         };
+
+        // Clic sur le wrapper pour déclencher l'input file
+        document.getElementById('photoWrapper').addEventListener('click', function(e) {
+            if (e.target.classList && e.target.classList.contains('remove-badge')) return;
+            document.getElementById('citPhoto').click();
+        });
 
         window.sendToDashboard = async function() {
             const name = document.getElementById("citName").value.trim();
@@ -1703,7 +1604,6 @@
             });
         }
 
-        // Événements et initialisation
         // Rendre showMainForm globale
         window.showMainForm = showMainForm;
         
