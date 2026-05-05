@@ -10,6 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     
     <style>
+        /* VOTRE STYLE EXISTANT - IDENTIQUE */
         * {
             margin: 0;
             padding: 0;
@@ -29,8 +30,6 @@
             margin: 0 auto;
         }
 
-        /* ========== ÉCRAN DE BIENVENUE / CIVISME ========== */
-        /* CORRECTION 1 : Hauteur auto + scroll possible */
         .welcome-screen {
             position: fixed;
             top: 0;
@@ -286,7 +285,6 @@
             }
         }
 
-        /* ========== FORMULAIRE PRINCIPAL ========== */
         .main-content {
             display: none;
             animation: fadeSlideIn 0.5s ease;
@@ -955,6 +953,11 @@
         let reportsListener = null;
         let gpsWatchId = null;
         let gpsTimeout = null;
+        
+        // Cache pour la hiérarchie GPS (évite les appels répétés)
+        let cachedHierarchy = null;
+        let hierarchyFetching = false;
+        let hierarchyCallbacks = [];
 
         // Création des particules animées
         function createParticles() {
@@ -1187,6 +1190,18 @@
         };
 
         async function getLocationHierarchy(lat, lng) {
+            // Cache pour éviter les appels répétés
+            if (cachedHierarchy) return cachedHierarchy;
+            
+            // Si déjà en cours d'appel, attendre
+            if (hierarchyFetching) {
+                return new Promise((resolve) => {
+                    hierarchyCallbacks.push(resolve);
+                });
+            }
+            
+            hierarchyFetching = true;
+            
             try {
                 const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&namedetails=1`);
                 const data = await response.json();
@@ -1195,6 +1210,8 @@
                     let lieu = data.name || data.address.road || data.address.pedestrian || data.address.footway || "";
                     let quartier = data.address.suburb || data.address.neighbourhood || data.address.city_district || "";
                     let commune = data.address.city || data.address.town || data.address.village || "Douala";
+                    let region = data.address.state || data.address.province || "Littoral";
+                    let pays = data.address.country || "Cameroun";
                     
                     let arrondissement = "";
                     let mairie = "";
@@ -1232,20 +1249,47 @@
                     if (arrondissement && arrondissement !== "Douala") fullAddress += (fullAddress ? ", " : "") + arrondissement;
                     if (commune && !fullAddress.includes(commune)) fullAddress += (fullAddress ? ", " : "") + commune;
                     
-                    return {
+                    cachedHierarchy = {
                         lieu: lieu || "Position GPS",
                         quartier: quartier || "Quartier non détecté",
                         arrondissement: arrondissement,
                         mairie: mairie,
                         commune: commune,
+                        region: region,
+                        pays: pays,
                         fullAddress: fullAddress || data.display_name
                     };
+                } else {
+                    cachedHierarchy = { 
+                        lieu: "Position GPS", 
+                        quartier: "Non détecté", 
+                        arrondissement: "Douala", 
+                        mairie: "Communauté Urbaine de Douala (CUD)",
+                        commune: "Douala",
+                        region: "Littoral",
+                        pays: "Cameroun",
+                        fullAddress: `${lat.toFixed(5)}, ${lng.toFixed(5)}`
+                    };
                 }
-                return null;
             } catch (error) {
                 console.error("Erreur géocodage:", error);
-                return null;
+                cachedHierarchy = { 
+                    lieu: "Position GPS", 
+                    quartier: "Non détecté", 
+                    arrondissement: "Douala", 
+                    mairie: "Communauté Urbaine de Douala (CUD)",
+                    commune: "Douala",
+                    region: "Littoral",
+                    pays: "Cameroun",
+                    fullAddress: `${lat.toFixed(5)}, ${lng.toFixed(5)}`
+                };
             }
+            
+            hierarchyFetching = false;
+            hierarchyCallbacks.forEach(cb => cb(cachedHierarchy));
+            hierarchyCallbacks = [];
+            
+            return cachedHierarchy;
         }
 
         function initGeolocation() {
@@ -1298,7 +1342,7 @@
                         gpsTimerDiv.innerHTML = "✓ Localisation réussie !";
                         
                         document.getElementById('exactAddress').innerHTML = `📍 ${hierarchy.lieu}`;
-                        document.getElementById('hierarchyInfo').innerHTML = `🏘️ Quartier: ${hierarchy.quartier} | 🏛️ Mairie: ${hierarchy.mairie} | 🗺️ ${hierarchy.arrondissement}`;
+                        document.getElementById('hierarchyInfo').innerHTML = `🏘️ Quartier: ${hierarchy.quartier} | 🏛️ Mairie: ${hierarchy.mairie} | 🗺️ ${hierarchy.arrondissement} | ${hierarchy.commune} | ${hierarchy.region} | ${hierarchy.pays}`;
                         document.getElementById('coordsDisplay').innerHTML = `📐 Lat: ${latitude.toFixed(6)} | Lng: ${longitude.toFixed(6)} | Précision: ${Math.round(accuracy)}m`;
                         addressCard.style.display = 'block';
                     } else {
@@ -1307,7 +1351,10 @@
                             lieu: "Position GPS", 
                             quartier: "Non détecté", 
                             arrondissement: "Douala", 
-                            mairie: "Communauté Urbaine de Douala (CUD)", 
+                            mairie: "Communauté Urbaine de Douala (CUD)",
+                            commune: "Douala",
+                            region: "Littoral",
+                            pays: "Cameroun",
                             fullAddress: currentAddressName 
                         };
                         
@@ -1315,7 +1362,7 @@
                         locationDiv.className = 'location-status location-success';
                         gpsTimerDiv.innerHTML = "✓ Localisation réussie !";
                         document.getElementById('exactAddress').innerHTML = `📍 ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
-                        document.getElementById('hierarchyInfo').innerHTML = `🏘️ Quartier: Non détecté | 🏛️ Mairie: CUD | 🗺️ Douala`;
+                        document.getElementById('hierarchyInfo').innerHTML = `🏘️ Quartier: Non détecté | 🏛️ Mairie: CUD | 🗺️ Douala | Littoral | Cameroun`;
                         document.getElementById('coordsDisplay').innerHTML = `📐 Lat: ${latitude.toFixed(6)} | Lng: ${longitude.toFixed(6)}`;
                         addressCard.style.display = 'block';
                     }
@@ -1351,60 +1398,131 @@
             }, 30000);
         }
 
-        // Fonction pour ajouter les infos GPS sur une photo APRÈS que l'utilisateur l'a prise et validée
+        // ========== FONCTION OPTIMISÉE POUR AJOUTER LES INFOS SUR LA PHOTO ==========
+        // Réduction de la taille de l'image AVANT traitement pour accélérer
         async function addGpsInfoToPhoto(originalBase64) {
             return new Promise((resolve) => {
                 const img = new Image();
                 img.onload = () => {
+                    // OPTIMISATION : Réduire la taille de l'image si trop grande
+                    let width = img.width;
+                    let height = img.height;
+                    const MAX_WIDTH = 1200;
+                    const MAX_HEIGHT = 1200;
+                    
+                    if (width > MAX_WIDTH) {
+                        height = (height * MAX_WIDTH) / width;
+                        width = MAX_WIDTH;
+                    }
+                    if (height > MAX_HEIGHT) {
+                        width = (width * MAX_HEIGHT) / height;
+                        height = MAX_HEIGHT;
+                    }
+                    
                     const canvas = document.createElement('canvas');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
+                    canvas.width = width;
+                    canvas.height = height;
                     const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0);
+                    ctx.drawImage(img, 0, 0, width, height);
                     
-                    // Ajouter les informations GPS et date/heure (l'utilisateur a déjà pris la photo)
+                    // Date et heure actuelles
                     const now = new Date();
-                    const dateStr = now.toLocaleDateString('fr-FR');
-                    const timeStr = now.toLocaleTimeString('fr-FR');
+                    const dateStr = now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                     
-                    ctx.font = 'bold 14px "Courier New", monospace';
+                    // Hauteur de la zone de texte (adaptée à la taille de l'image)
+                    const textZoneHeight = Math.min(200, Math.floor(height * 0.2));
+                    
+                    // Fond noir semi-transparent
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+                    ctx.fillRect(0, height - textZoneHeight, width, textZoneHeight);
+                    
+                    // Bordure
+                    ctx.strokeStyle = '#39ff14';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(4, height - textZoneHeight + 4, width - 8, textZoneHeight - 8);
+                    
+                    // Tailles de police adaptées
+                    const fontSizeBig = Math.max(14, Math.floor(width / 30));
+                    const fontSizeMedium = Math.max(12, Math.floor(width / 38));
+                    const fontSizeSmall = Math.max(10, Math.floor(width / 45));
+                    
+                    let yOffset = height - textZoneHeight + 15;
+                    
+                    // Date et heure
+                    ctx.font = `bold ${fontSizeBig}px "Courier New", monospace`;
                     ctx.fillStyle = '#39ff14';
-                    ctx.shadowBlur = 2;
-                    ctx.fillText(`📅 ${dateStr} | ⏰ ${timeStr}`, 10, canvas.height - 80);
+                    ctx.fillText(`📅 ${dateStr}  ⏰ ${timeStr}`, 8, yOffset);
+                    yOffset += fontSizeBig + 6;
                     
-                    if (currentHierarchy) {
-                        ctx.fillStyle = '#00d2ff';
-                        ctx.fillText(`📍 ${currentHierarchy.lieu || currentHierarchy.quartier || "Position GPS"}`, 10, canvas.height - 55);
+                    // Quartier
+                    if (currentHierarchy && currentHierarchy.quartier && currentHierarchy.quartier !== "Non détecté") {
+                        ctx.font = `bold ${fontSizeMedium}px "Courier New", monospace`;
                         ctx.fillStyle = '#bc13fe';
-                        ctx.fillText(`🏘️ ${currentHierarchy.quartier || ""} | 🏛️ ${currentHierarchy.mairie}`, 10, canvas.height - 35);
-                        ctx.fillStyle = '#39ff14';
-                        ctx.fillText(`🗺️ ${currentHierarchy.arrondissement || "Douala"}`, 10, canvas.height - 15);
-                    } else if (currentUserLocation) {
+                        let quartierText = currentHierarchy.quartier;
+                        if (quartierText.length > 35) quartierText = quartierText.substring(0, 32) + "...";
+                        ctx.fillText(`🏘️ ${quartierText}`, 8, yOffset);
+                        yOffset += fontSizeMedium + 5;
+                    }
+                    
+                    // Mairie
+                    if (currentHierarchy && currentHierarchy.mairie) {
+                        ctx.font = `${fontSizeMedium}px "Courier New", monospace`;
+                        ctx.fillStyle = '#ff9100';
+                        let mairieText = currentHierarchy.mairie;
+                        if (mairieText.length > 40) mairieText = mairieText.substring(0, 37) + "...";
+                        ctx.fillText(`🏛️ ${mairieText}`, 8, yOffset);
+                        yOffset += fontSizeMedium + 5;
+                    }
+                    
+                    // Arrondissement
+                    if (currentHierarchy && currentHierarchy.arrondissement) {
+                        ctx.font = `${fontSizeMedium}px "Courier New", monospace`;
                         ctx.fillStyle = '#00d2ff';
-                        ctx.fillText(`📍 ${currentUserLocation.lat.toFixed(5)}, ${currentUserLocation.lng.toFixed(5)}`, 10, canvas.height - 35);
+                        ctx.fillText(`🗺️ ${currentHierarchy.arrondissement}`, 8, yOffset);
+                        yOffset += fontSizeMedium + 5;
                     }
                     
-                    if (currentUserLocation) {
+                    // Ville, Région, Pays (sur une seule ligne si possible)
+                    let locationLine = "";
+                    if (currentHierarchy?.commune) locationLine += `${currentHierarchy.commune}`;
+                    if (currentHierarchy?.region) locationLine += ` - ${currentHierarchy.region}`;
+                    if (currentHierarchy?.pays) locationLine += ` - ${currentHierarchy.pays}`;
+                    
+                    if (locationLine) {
+                        ctx.font = `${fontSizeSmall}px "Courier New", monospace`;
                         ctx.fillStyle = '#ffffff';
-                        ctx.fillText(`🌍 GPS: ${currentUserLocation.lat.toFixed(5)}, ${currentUserLocation.lng.toFixed(5)}`, 10, canvas.height - 8);
+                        if (locationLine.length > 50) locationLine = locationLine.substring(0, 47) + "...";
+                        ctx.fillText(`📍 ${locationLine}`, 8, yOffset);
+                        yOffset += fontSizeSmall + 5;
                     }
                     
-                    ctx.shadowBlur = 0;
-                    resolve(canvas.toDataURL('image/jpeg', 0.85));
+                    // Coordonnées GPS
+                    if (currentUserLocation) {
+                        ctx.font = `bold ${fontSizeSmall}px "Courier New", monospace`;
+                        ctx.fillStyle = '#cbd5e1';
+                        ctx.fillText(`🌍 ${currentUserLocation.lat.toFixed(5)}°, ${currentUserLocation.lng.toFixed(5)}°`, 8, yOffset);
+                    }
+                    
+                    // Compression optimisée (qualité 0.8 au lieu de 0.9)
+                    const finalDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                    resolve(finalDataUrl);
                 };
                 img.src = originalBase64;
             });
         }
 
-        // handleFiles est appelée APRÈS que l'utilisateur a pris la photo et validé
+        // handleFiles optimisé
         window.handleFiles = async function(input) {
             const files = Array.from(input.files);
             if (files.length === 0) return;
             
             const photoStatus = document.getElementById("photoStatusText");
-            photoStatus.innerText = "⌛ Traitement de la photo...";
+            photoStatus.innerText = "⌛ Traitement photo...";
             
-            for (let file of files) {
+            // Traiter les photos une par une avec un petit délai pour ne pas bloquer l'UI
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
                 if (photosArray.length >= 5) {
                     alert("Maximum 5 photos autorisées.");
                     break;
@@ -1417,16 +1535,22 @@
                         reader.readAsDataURL(file);
                     });
                     
-                    // Ajouter les infos GPS sur la photo APRÈS capture utilisateur
                     const photoWithGps = await addGpsInfoToPhoto(base64);
                     photosArray.push(photoWithGps);
+                    
+                    // Mettre à jour l'interface après chaque photo
+                    renderGallery();
+                    document.getElementById('photoCount').innerText = `${photosArray.length} photo(s)`;
+                    photoStatus.innerText = `✅ ${photosArray.length} photo(s) traitée(s)`;
+                    
+                    // Petit délai pour permettre à l'UI de respirer
+                    await new Promise(r => setTimeout(r, 50));
                 }
             }
             
-            renderGallery();
             const count = photosArray.length;
-            document.getElementById('photoCount').innerText = count > 0 ? `${count} photo(s) prise(s)` : '';
-            photoStatus.innerText = count > 0 ? `✅ ${count} photo(s) avec GPS` : "📷 PRENDRE UNE PHOTO";
+            document.getElementById('photoCount').innerText = count > 0 ? `${count} photo(s) - Localisation incluse` : '';
+            photoStatus.innerText = count > 0 ? `✅ ${count} photo(s) - Localisation visible` : "📷 PRENDRE UNE PHOTO";
             
             const photoWrapperDiv = document.getElementById('photoWrapper');
             if (count > 0) {
@@ -1436,7 +1560,6 @@
                 photoWrapperDiv.classList.add('required');
             }
             
-            // Vider l'input file pour permettre de nouvelles photos
             input.value = '';
         };
 
@@ -1460,9 +1583,9 @@
             photosArray.splice(index, 1);
             renderGallery();
             const count = photosArray.length;
-            document.getElementById('photoCount').innerText = count > 0 ? `${count} photo(s) prise(s)` : '';
+            document.getElementById('photoCount').innerText = count > 0 ? `${count} photo(s) - Localisation incluse` : '';
             const photoStatus = document.getElementById("photoStatusText");
-            photoStatus.innerText = count > 0 ? `✅ ${count} photo(s) avec GPS` : "📷 PRENDRE UNE PHOTO";
+            photoStatus.innerText = count > 0 ? `✅ ${count} photo(s) - Localisation visible` : "📷 PRENDRE UNE PHOTO";
             
             const photoWrapperDiv = document.getElementById('photoWrapper');
             if (count === 0) {
@@ -1472,10 +1595,9 @@
             }
         };
 
-        // Au clic sur le wrapper, on ouvre l'appareil photo (l'utilisateur prend la photo et valide)
+        // Au clic sur le wrapper, on ouvre l'appareil photo
         document.getElementById('photoWrapper').addEventListener('click', function(e) {
             if (e.target.classList && e.target.classList.contains('remove-badge')) return;
-            // Déclencher l'input file, ce qui ouvre l'appareil photo natif
             document.getElementById('citPhoto').click();
         });
 
@@ -1488,15 +1610,19 @@
             const desc = document.getElementById("citDesc").value.trim();
             const btn = document.getElementById("sendBtn");
             const successDiv = document.getElementById("successMessage");
+            const errorDiv = document.getElementById("photoErrorMessage");
             
+            // Vérification des photos
             if (photosArray.length === 0) {
                 const photoWrapperDiv = document.getElementById('photoWrapper');
                 photoWrapperDiv.classList.add('required');
-                document.getElementById('photoErrorMessage').style.display = 'block';
+                errorDiv.innerHTML = "❌ La photo est obligatoire ! Veuillez prendre au moins une photo.";
+                errorDiv.style.display = 'block';
                 photoWrapperDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return;
             }
             
+            // Validation du téléphone
             if (!rawPhone || rawPhone.length !== 9 || !rawPhone.startsWith('6')) {
                 alert("❌ Veuillez entrer un numéro de téléphone valide (9 chiffres commençant par 6)");
                 return;
@@ -1520,6 +1646,9 @@
             let finalArrondissement = currentHierarchy?.arrondissement || "";
             let finalMairie = currentHierarchy?.mairie || "";
             let finalLieu = currentHierarchy?.lieu || "";
+            let finalCommune = currentHierarchy?.commune || "";
+            let finalRegion = currentHierarchy?.region || "";
+            let finalPays = currentHierarchy?.pays || "";
             
             if (!finalAddress) {
                 try {
@@ -1528,9 +1657,7 @@
                     });
                     finalLat = location.coords.latitude;
                     finalLng = location.coords.longitude;
-                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${finalLat}&lon=${finalLng}&zoom=18`);
-                    const data = await response.json();
-                    finalAddress = data.display_name || `${finalLat.toFixed(5)}, ${finalLng.toFixed(5)}`;
+                    finalAddress = `${finalLat.toFixed(5)}, ${finalLng.toFixed(5)}`;
                 } catch (error) {
                     finalAddress = "Localisation non disponible";
                 }
@@ -1556,7 +1683,10 @@
                 gpsQuartier: finalQuartier,
                 gpsArrondissement: finalArrondissement,
                 gpsMairie: finalMairie,
-                gpsLieu: finalLieu
+                gpsLieu: finalLieu,
+                gpsCommune: finalCommune,
+                gpsRegion: finalRegion,
+                gpsPays: finalPays
             };
             
             try {
@@ -1578,7 +1708,8 @@
                     btn.innerText = "📨 ENVOYER LE SIGNALEMENT";
                 }, 5000);
             } catch (error) {
-                alert("❌ Erreur réseau : Impossible d'envoyer l'alerte. Vérifiez votre connexion.");
+                console.error("Erreur Firebase:", error);
+                alert("❌ Erreur de connexion à la base de données. Vérifiez votre connexion internet et réessayez.");
                 btn.disabled = false;
                 btn.innerText = "📨 ENVOYER LE SIGNALEMENT";
             }
