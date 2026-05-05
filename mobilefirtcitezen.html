@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>SWMS Douala - Signalement Citoyen</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;800&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
@@ -30,6 +30,7 @@
         }
 
         /* ========== ÉCRAN DE BIENVENUE / CIVISME ========== */
+        /* CORRECTION 1 : Hauteur auto + scroll si nécessaire */
         .welcome-screen {
             position: fixed;
             top: 0;
@@ -43,6 +44,8 @@
             align-items: center;
             backdrop-filter: blur(5px);
             transition: all 0.5s ease;
+            overflow-y: auto;
+            padding: 20px;
         }
 
         .welcome-screen.hide {
@@ -58,7 +61,8 @@
             padding: 40px 30px;
             text-align: center;
             max-width: 500px;
-            margin: 20px;
+            width: 100%;
+            margin: auto;
             border: 1px solid rgba(0, 210, 255, 0.3);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             animation: fadeInUp 0.6s ease;
@@ -882,10 +886,11 @@
                     
                     <div class="input-group">
                         <label>📸 PHOTOS <span style="color:#ff3131;">(OBLIGATOIRE)</span></label>
-                        <div class="photo-btn-wrapper required" id="photoWrapper" onclick="document.getElementById('citPhoto').click()">
+                        <div class="photo-btn-wrapper required" id="photoWrapper">
                             <span id="photoStatusText">📷 PRENDRE UNE PHOTO</span>
                             <div class="photo-required-text">⚠️ PHOTO OBLIGATOIRE - Cliquez ici pour prendre une photo</div>
-                            <input type="file" id="citPhoto" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFiles(this)">
+                            <!-- On garde l'input file mais on va aussi utiliser getUserMedia -->
+                            <input type="file" id="citPhoto" accept="image/*" capture="environment" multiple style="display:none">
                             <div id="galleryPreview"></div>
                             <div class="photo-count" id="photoCount"></div>
                         </div>
@@ -1347,104 +1352,157 @@
             }, 30000);
         }
 
-        async function capturePhotoWithTimestamp() {
+        // ---------- CORRECTION CAMÉRA ARRIÈRE + CONSERVATION GPS ----------
+        // Nouvelle fonction qui utilise la caméra arrière ET les données GPS actuelles
+        async function takePhotoWithBackCameraAndGps() {
             return new Promise(async (resolve, reject) => {
-                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    reject(new Error("Appareil photo non disponible"));
-                    return;
-                }
-                
                 try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                    const video = document.createElement('video');
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    
-                    video.srcObject = stream;
-                    video.play();
-                    
-                    await new Promise((resolve) => {
-                        video.onloadedmetadata = () => {
-                            canvas.width = video.videoWidth;
-                            canvas.height = video.videoHeight;
-                            resolve();
-                        };
+                    // Forcer la caméra arrière
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: { exact: "environment" } }
                     });
+                    const video = document.createElement('video');
+                    video.srcObject = stream;
+                    video.setAttribute('playsinline', true);
+                    video.play();
+                    await new Promise(r => { video.onloadedmetadata = r; });
                     
+                    const canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    const ctx = canvas.getContext('2d');
                     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                     
+                    // Ajouter les infos de localisation (les mêmes que celles affichées dans l'interface)
                     const now = new Date();
-                    const dateStr = now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                    const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    const dateStr = now.toLocaleDateString('fr-FR');
+                    const timeStr = now.toLocaleTimeString('fr-FR');
                     
-                    ctx.font = 'bold 18px "Courier New", monospace';
-                    ctx.fillStyle = 'white';
-                    ctx.shadowColor = 'black';
-                    ctx.shadowBlur = 3;
-                    ctx.shadowOffsetX = 2;
-                    ctx.shadowOffsetY = 2;
-                    
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                    ctx.fillRect(0, canvas.height - 130, canvas.width, 130);
-                    
+                    ctx.font = 'bold 14px "Courier New", monospace';
                     ctx.fillStyle = '#39ff14';
-                    ctx.fillText(`📅 ${dateStr} | ⏰ ${timeStr}`, 10, canvas.height - 105);
-                    
-                    const locationText = currentHierarchy ? currentHierarchy.lieu : (currentAddressName ? currentAddressName.substring(0, 50) : "Localisation");
-                    ctx.fillStyle = '#00d2ff';
-                    ctx.font = 'bold 12px "Courier New", monospace';
-                    ctx.fillText(`📍 ${locationText}`, 10, canvas.height - 85);
+                    ctx.shadowBlur = 2;
+                    ctx.fillText(`📅 ${dateStr} | ⏰ ${timeStr}`, 10, canvas.height - 80);
                     
                     if (currentHierarchy) {
+                        ctx.fillStyle = '#00d2ff';
+                        ctx.fillText(`📍 ${currentHierarchy.lieu || currentHierarchy.quartier || "Position GPS"}`, 10, canvas.height - 55);
                         ctx.fillStyle = '#bc13fe';
-                        ctx.fillText(`🏘️ Quartier: ${currentHierarchy.quartier}`, 10, canvas.height - 65);
-                        
-                        ctx.fillStyle = '#ff9100';
-                        ctx.fillText(`🏛️ Mairie: ${currentHierarchy.mairie}`, 10, canvas.height - 45);
-                        
+                        ctx.fillText(`🏘️ ${currentHierarchy.quartier || ""} | 🏛️ ${currentHierarchy.mairie}`, 10, canvas.height - 35);
                         ctx.fillStyle = '#39ff14';
-                        ctx.fillText(`🗺️ ${currentHierarchy.arrondissement}`, 10, canvas.height - 25);
+                        ctx.fillText(`🗺️ ${currentHierarchy.arrondissement || "Douala"}`, 10, canvas.height - 15);
+                    } else if (currentUserLocation) {
+                        ctx.fillStyle = '#00d2ff';
+                        ctx.fillText(`📍 ${currentUserLocation.lat.toFixed(5)}, ${currentUserLocation.lng.toFixed(5)}`, 10, canvas.height - 35);
                     }
                     
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = 'bold 10px "Courier New", monospace';
                     if (currentUserLocation) {
+                        ctx.fillStyle = '#ffffff';
                         ctx.fillText(`🌍 GPS: ${currentUserLocation.lat.toFixed(5)}, ${currentUserLocation.lng.toFixed(5)}`, 10, canvas.height - 8);
                     }
                     
-                    ctx.shadowColor = 'transparent';
-                    
+                    ctx.shadowBlur = 0;
                     const photoData = canvas.toDataURL('image/jpeg', 0.85);
                     stream.getTracks().forEach(track => track.stop());
-                    
                     resolve(photoData);
-                } catch (error) {
-                    reject(error);
+                } catch (err) {
+                    // Fallback : on utilise l'input file avec capture
+                    console.warn("getUserMedia échoué, fallback sur input file", err);
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.capture = 'environment';
+                    input.onchange = async (e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (ev) => {
+                                // On ne peut pas ajouter le texte sur l'image facilement, mais on conserve les données GPS séparément
+                                resolve(ev.target.result);
+                            };
+                            reader.readAsDataURL(file);
+                        } else reject(new Error("Aucune photo"));
+                    };
+                    input.click();
                 }
             });
         }
 
-        function compressImage(file) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 600;
-                        canvas.width = MAX_WIDTH;
-                        canvas.height = img.height * (MAX_WIDTH / img.width);
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.7));
-                    };
-                };
-            });
-        }
+        // Remplacer l'ancienne gestion de la photo par la nouvelle
+        const photoWrapper = document.getElementById('photoWrapper');
+        const originalFileInput = document.getElementById('citPhoto');
+        
+        // On garde l'input file original mais on va aussi ajouter notre logique personnalisée
+        photoWrapper.addEventListener('click', async (e) => {
+            // Éviter les clics sur les boutons de suppression
+            if (e.target.classList && e.target.classList.contains('remove-badge')) return;
+            
+            const photoStatusText = document.getElementById('photoStatusText');
+            photoStatusText.innerText = "⌛ Ouverture caméra arrière...";
+            
+            try {
+                const photoData = await takePhotoWithBackCameraAndGps();
+                photosArray.push(photoData);
+                renderGallery();
+                const count = photosArray.length;
+                document.getElementById('photoCount').innerText = count > 0 ? `${count} photo(s) prise(s)` : '';
+                photoStatusText.innerText = count > 0 ? `✅ ${count} photo(s) avec horodatage et GPS` : "📷 PRENDRE UNE PHOTO";
+                
+                const photoWrapperDiv = document.getElementById('photoWrapper');
+                if (count > 0) {
+                    photoWrapperDiv.classList.remove('required');
+                    document.getElementById('photoErrorMessage').style.display = 'none';
+                } else {
+                    photoWrapperDiv.classList.add('required');
+                }
+            } catch (err) {
+                console.error("Erreur prise de vue:", err);
+                photoStatusText.innerText = "❌ Erreur caméra, réessayez";
+                alert("Impossible d'accéder à la caméra arrière. Vérifiez les permissions.");
+            }
+        });
+        
+        // Garder aussi le support de l'input file original (si l'utilisateur clique sur l'input caché)
+        originalFileInput.addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+            
+            const photoStatusText = document.getElementById('photoStatusText');
+            photoStatusText.innerText = "⌛ Traitement...";
+            
+            for (let file of files) {
+                if (photosArray.length >= 5) {
+                    alert("Maximum 5 photos autorisées.");
+                    break;
+                }
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    await new Promise((resolve) => {
+                        reader.onload = (ev) => {
+                            photosArray.push(ev.target.result);
+                            resolve();
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                }
+            }
+            
+            renderGallery();
+            const count = photosArray.length;
+            document.getElementById('photoCount').innerText = count > 0 ? `${count} photo(s) prise(s)` : '';
+            photoStatusText.innerText = count > 0 ? `✅ ${count} photo(s)` : "📷 PRENDRE UNE PHOTO";
+            
+            const photoWrapperDiv = document.getElementById('photoWrapper');
+            if (count > 0) {
+                photoWrapperDiv.classList.remove('required');
+                document.getElementById('photoErrorMessage').style.display = 'none';
+            } else {
+                photoWrapperDiv.classList.add('required');
+            }
+        });
 
+        // Fonctions existantes modifiées pour utiliser la nouvelle méthode
         window.handleFiles = async function(input) {
+            // Cette fonction est gardée pour compatibilité, mais on utilise maintenant l'événement personnalisé
             const files = Array.from(input.files);
             if (files.length === 0) return;
             
@@ -1456,16 +1514,15 @@
                     alert("Maximum 5 photos autorisées.");
                     break;
                 }
-                
                 if (file.type.startsWith('image/')) {
-                    try {
-                        const photoWithStamp = await capturePhotoWithTimestamp();
-                        photosArray.push(photoWithStamp);
-                    } catch (error) {
-                        console.error("Erreur capture:", error);
-                        const base64 = await compressImage(file);
-                        photosArray.push(base64);
-                    }
+                    const reader = new FileReader();
+                    await new Promise((resolve) => {
+                        reader.onload = (ev) => {
+                            photosArray.push(ev.target.result);
+                            resolve();
+                        };
+                        reader.readAsDataURL(file);
+                    });
                 }
             }
             
@@ -1474,12 +1531,12 @@
             document.getElementById('photoCount').innerText = count > 0 ? `${count} photo(s) prise(s)` : '';
             photoStatus.innerText = count > 0 ? `✅ ${count} photo(s) avec horodatage` : "📷 PRENDRE UNE PHOTO";
             
-            const photoWrapper = document.getElementById('photoWrapper');
+            const photoWrapperDiv = document.getElementById('photoWrapper');
             if (count > 0) {
-                photoWrapper.classList.remove('required');
+                photoWrapperDiv.classList.remove('required');
                 document.getElementById('photoErrorMessage').style.display = 'none';
             } else {
-                photoWrapper.classList.add('required');
+                photoWrapperDiv.classList.add('required');
             }
         };
 
@@ -1507,11 +1564,11 @@
             const photoStatus = document.getElementById("photoStatusText");
             photoStatus.innerText = count > 0 ? `✅ ${count} photo(s) avec horodatage` : "📷 PRENDRE UNE PHOTO";
             
-            const photoWrapper = document.getElementById('photoWrapper');
+            const photoWrapperDiv = document.getElementById('photoWrapper');
             if (count === 0) {
-                photoWrapper.classList.add('required');
+                photoWrapperDiv.classList.add('required');
             } else {
-                photoWrapper.classList.remove('required');
+                photoWrapperDiv.classList.remove('required');
             }
         };
 
@@ -1526,10 +1583,10 @@
             const successDiv = document.getElementById("successMessage");
             
             if (photosArray.length === 0) {
-                const photoWrapper = document.getElementById('photoWrapper');
-                photoWrapper.classList.add('required');
+                const photoWrapperDiv = document.getElementById('photoWrapper');
+                photoWrapperDiv.classList.add('required');
                 document.getElementById('photoErrorMessage').style.display = 'block';
-                photoWrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                photoWrapperDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return;
             }
             
@@ -1647,8 +1704,6 @@
         }
 
         // Événements et initialisation
-        document.getElementById('photoInput').addEventListener('change', function(e) { window.handleFiles(e.target); });
-        
         // Rendre showMainForm globale
         window.showMainForm = showMainForm;
         
