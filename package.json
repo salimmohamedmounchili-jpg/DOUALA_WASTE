@@ -1,0 +1,14 @@
+{
+  "name": "swms-bridge",
+  "version": "1.0.0",
+  "description": "Bridge pour SWMS Douala",
+  "main": "bridge.js",
+  "scripts": {
+    "start": "node bridge.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mqtt": "^4.3.7",
+    "cors": "^2.8.5"
+  }
+}

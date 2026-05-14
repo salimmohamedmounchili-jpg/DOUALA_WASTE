@@ -1218,8 +1218,7 @@
             <button onclick="setFilter('ALL')">TOUS</button>
             <button onclick="setFilter('URGENT')" style="border-color: var(--red);">URGENT</button>
             <button onclick="openEnrollModalImproved()" style="border-color: var(--green); color: var(--green);">＋ ENRÔLER POUBELLE</button>
-            <button onclick="if(confirm('Reset total?')){localStorage.clear();location.reload();}" style="border-color:#555; font-size:0.7rem; color:#aaa;">RESET DB</button>
-        </div>
+            <button onclick="resetDatabase()" style="border-color:#555; font-size:0.7rem; color:#aaa;">RESET DB</button>        </div>
         <div class="control-group">
             <button onclick="openMap()">🗺️ CARTE</button>
             <button onclick="openCitizenInbox()" style="border-color: var(--citizen-purple); color: var(--citizen-purple); position: relative;">
@@ -1412,40 +1411,28 @@
             </div>
             <div class="enroll-row">
                 <div>
-                    <label>🏘️ 3. Quartier</label>
-                    <select id="newBinQuartierImproved" required style="width:100%; padding:10px; border-radius:8px;">
-                        <option value="">Sélectionner un quartier</option>
-                    </select>
-                </div>
+    <label>🏘️ 3. Quartier</label>
+    <input type="text" id="newBinQuartierImproved" list="quartiersList" placeholder="Saisissez ou sélectionnez un quartier" required style="width:100%; padding:10px; border-radius:8px;">
+    <datalist id="quartiersList">
+        <!-- Les options seront ajoutées dynamiquement par JavaScript -->
+    </datalist>
+</div>
                 <div>
-                    <label>🆔 4. Identifiant du quartier</label>
+                    <label>🆔 4. ID Quartier</label>
                     <input type="text" id="newBinQuartierId" placeholder="Ex: Q-101, AKW-001, etc." style="width:100%; padding:10px; border-radius:8px;">
                     <small class="info-text">Identifiant unique pour ce quartier</small>
                 </div>
             </div>
-            <div class="quartier-id-group">
-                <label>📝 OU AJOUTER UN NOUVEAU QUARTIER</label>
-                <div class="enroll-row">
-                    <div>
-                        <input type="text" id="newBinManualQuartier" placeholder="Nom du nouveau quartier" style="width:100%; padding:10px; border-radius:8px;">
-                        <small class="info-text">Saisissez un quartier qui n'existe pas</small>
-                    </div>
-                    <div>
-                        <input type="text" id="newBinManualQuartierId" placeholder="ID du nouveau quartier (Ex: Q-999)" style="width:100%; padding:10px; border-radius:8px;">
-                        <small class="info-text">Identifiant unique obligatoire</small>
-                    </div>
-                </div>
-            </div>
             <div class="enroll-row">
                 <div>
-                    <label>🆔 5. ID du capteur</label>
-                    <input type="text" id="newBinIdImproved" placeholder="Ex: DOU-105, SENS-001" required style="width:100%; padding:10px; border-radius:8px;">
-                    <small class="info-text">Identifiant unique du capteur</small>
-                </div>
-                <div>
-                    <label>📍 6. Localisation détaillée</label>
+                    <label>📍 5. Localisation</label>
                     <input type="text" id="newBinLocImproved" placeholder="Ex: Face Boulangerie, Carrefour..." required style="width:100%; padding:10px; border-radius:8px;">
                     <small class="info-text">Point de référence précis</small>
+                </div>
+                <div>
+                    <label>🆔 6. ID Capteur</label>
+                    <input type="text" id="newBinIdImproved" placeholder="Ex: DOU-105, SENS-001" required style="width:100%; padding:10px; border-radius:8px;">
+                    <small class="info-text">Identifiant unique du capteur</small>
                 </div>
             </div>
             <div style="display: flex; gap: 15px; margin-top: 10px;">
@@ -1505,6 +1492,7 @@ function initDatabase() {
                 throw new Error("Base de données vide");
             }
             console.log("Base de données chargée depuis localStorage");
+            return; // IMPORTANT : on ne crée pas une nouvelle base
         } catch(e) {
             console.error("Erreur chargement DB, création d'une nouvelle", e);
             createDefaultDatabase();
@@ -1514,8 +1502,22 @@ function initDatabase() {
         createDefaultDatabase();
     }
 }
-
 function createDefaultDatabase() {
+    // Vérifier si la base existe déjà dans localStorage
+    const saved = localStorage.getItem('DOUALA_DB');
+    if (saved) {
+        try {
+            db = JSON.parse(saved);
+            if (db && Array.isArray(db) && db.length > 0) {
+                console.log("Base de données existante conservée");
+                return; // IMPORTANT : on ne crée pas une nouvelle base
+            }
+        } catch(e) {
+            console.error("Erreur lors du parsing de la base existante");
+        }
+    }
+    
+    // Si la base est vide ou inexistante, créer la configuration par défaut
     db = configurationDouala.map((q, idx) => ({
         id: "Q-" + (idx + 1).toString().padStart(3, '0'),
         nom: q.nom,
@@ -1532,8 +1534,8 @@ function createDefaultDatabase() {
         }))
     }));
     persist();
+    console.log("Base de données initialisée avec la configuration par défaut");
 }
-
 function persist() {
     localStorage.setItem('DOUALA_DB', JSON.stringify(db));
 }
@@ -1760,32 +1762,99 @@ function updateGraph() {
     }
 }
 
-function simulate() {
-    if (!db || !Array.isArray(db)) return;
-    
-    for (const q of db) {
-        for (const u of q.units) {
-            if (Math.random() > 0.99) {
-                u.online = !u.online;
-                if (!u.online) notify(`📡 SIGNAL PERDU : ${u.id}`);
-            }
-            if (u.online) {
-                if (u.lvl < 91) {
-                    u.lvl = Math.max(0, Math.min(100, u.lvl + (Math.random() * 6)));
+// ===================== INTÉGRATION DONNÉES RÉELLES (BRIDGE) - SYNCHRONISATION AMÉLIORÉE =====================
+
+// Configuration du bridge
+const BRIDGE_URL = 'http://localhost:3000/api';
+let capteursReels = {}; // Stocke les données des capteurs réels
+let dernierRafraichissement = 0;
+
+// Fonction améliorée pour récupérer les données réelles du bridge
+async function fetchRealtimeData() {
+    try {
+        const response = await fetch(`${BRIDGE_URL}/capteurs`);
+        if (!response.ok) throw new Error('Erreur bridge');
+        const capteursListe = await response.json();
+        
+        // Vider le cache des capteurs réels avant de le remplir
+        capteursReels = {};
+        
+        // Pour chaque capteur, récupérer ses données
+        let capteursTrouves = 0;
+        for (const id of capteursListe) {
+            try {
+                const dataResponse = await fetch(`${BRIDGE_URL}/capteur/${id}`);
+                if (dataResponse.ok) {
+                    const data = await dataResponse.json();
+                    if (data && data.niveau !== undefined) {
+                        capteursReels[id] = data;
+                        capteursTrouves++;
+                    }
                 }
-                u.bat = Math.max(5, u.bat - 0.05);
-                u.lastUpdate = new Date().toLocaleString('fr-FR');
-                if (u.lvl > 90) {
-                    u.lidOpen = false;
-                } else {
-                    u.lidOpen = Math.random() > 0.8;
+            } catch (e) {
+                console.warn(`Impossible de récupérer les données du capteur ${id}`);
+            }
+        }
+        
+        console.log(`📊 ${capteursTrouves} capteurs mis à jour depuis le bridge`);
+        return capteursTrouves > 0;
+    } catch (error) {
+        console.error('Erreur bridge:', error);
+        return false;
+    }
+}
+
+// Fonction améliorée pour mapper les données réelles aux quartiers avec écrasement total
+function mapRealtimeToQuartiers() {
+    let nbMiseAJour = 0;
+    
+    // Pour chaque capteur dans capteursReels
+    for (const [id, data] of Object.entries(capteursReels)) {
+        // Chercher ce capteur dans tous les quartiers
+        for (const q of db) {
+            for (let i = 0; i < q.units.length; i++) {
+                const u = q.units[i];
+                if (u.id === id) {
+                    // FORCER la mise à jour complète
+                    u.lvl = data.niveau;
+                    u.bat = data.batterie;
+                    u.online = true;
+                    u.lastUpdate = new Date().toLocaleString();
+                    nbMiseAJour++;
+                    break;
                 }
             }
         }
     }
+    
+    console.log(`🔄 ${nbMiseAJour} capteurs mis à jour dans la base de données`);
+    
+    // Sauvegarder immédiatement
     persist();
+    
+    // Forcer le rendu
     render();
+    updateGraph();
 }
+
+// Version PURE : uniquement des données réelles, pas de simulation
+function simulate() {
+    fetchRealtimeData().then(success => {
+        if (success) {
+            mapRealtimeToQuartiers();
+            console.log('✅ Données réelles synchronisées');
+        } else {
+            console.warn('⚠️ Aucune donnée réelle disponible - vérifiez le bridge');
+        }
+    });
+}
+
+function manualRefresh() {
+    simulate();
+    notify("🔄 Actualisation depuis le bridge");
+}
+
+// ===================== FIN INTÉGRATION DONNÉES RÉELLES =====================
 
 function openModal(nomQuartier) {
     const q = db.find(x => x.nom === nomQuartier);
@@ -1821,19 +1890,26 @@ function openModal(nomQuartier) {
 }
 
 function deleteBin(quartierNom, unitId) {
+    // Vérification des droits
     if (authCurrentUser && authCurrentUser.role === 'EMPLOYE') {
         authShowToast('⛔ Vous n\'avez pas les droits pour supprimer une poubelle');
         return;
     }
+    
+    // Demande de confirmation
+    if (!confirm(`⚠️ Voulez-vous vraiment supprimer l'unité ${unitId} du quartier ${quartierNom} ? Cette action est irréversible.`)) {
+        return;
+    }
+    
     const qObj = db.find(x => x.nom === quartierNom);
     if (qObj) {
         qObj.units = qObj.units.filter(u => u.id !== unitId);
         persist();
         openModal(quartierNom);
         render();
+        authShowToast(`✅ Unité ${unitId} supprimée avec succès`);
     }
 }
-
 function closeModal() {
     document.getElementById("detailsModal").style.display = "none";
 }
@@ -1841,11 +1917,6 @@ function closeModal() {
 function setFilter(f) {
     filter = f;
     render();
-}
-
-function manualRefresh() {
-    simulate();
-    notify("Actualisation forcée effectuée");
 }
 
 function notify(msg) {
@@ -3236,7 +3307,7 @@ function renderHistoryTable() {
             <td>${escapeHtml(r.loc)}${r.userAddress ? `<br><small class="coord-badge">📍 ${escapeHtml(r.userAddress.substring(0, 50))}</small>` : ''}</td>
             <td style="max-width:200px;">${escapeHtml(r.description || r.desc || '-')}</td>
             <td>${r.status === 'Traité' ? '<span style="color:#39ff14;">✅ Traité</span>' : '<span style="color:#ff9100;">⏳ En attente</span>'}</td>
-        </table>
+        </tr>
     `).join('');
     
     const totalPages = Math.ceil(historyFilteredData.length / historyItemsPerPage);
@@ -3284,7 +3355,7 @@ function exportHistoryToCSV() {
     notify('📎 Export CSV effectué');
 }
 
-// ===================== ENRÔLEMENT =====================
+// ===================== ENRÔLEMENT AMÉLIORÉ (déjà défini plus haut) =====================
 function updateMairiesImproved() {
     const arr = document.getElementById('selArrImproved').value;
     const mairieSelect = document.getElementById('selMairieImproved');
@@ -3297,14 +3368,44 @@ function updateMairiesImproved() {
 
 function updateQuartiersImproved() {
     const mairie = document.getElementById('selMairieImproved').value;
-    const quartierSelect = document.getElementById('newBinQuartierImproved');
+    const quartierInput = document.getElementById('newBinQuartierImproved');
+    const datalist = document.getElementById('quartiersList');
+    
     if (!mairie) {
-        quartierSelect.innerHTML = '<option value="">Sélectionner d\'abord une mairie</option>';
+        // Si aucune mairie sélectionnée, on affiche tous les quartiers existants
+        const tousQuartiers = db.map(q => q.nom);
+        datalist.innerHTML = tousQuartiers.map(q => `<option value="${q}">`).join('');
+        quartierInput.placeholder = "Saisissez un quartier (existant ou nouveau)";
         return;
     }
-    quartierSelect.innerHTML = '<option value="">Sélectionner un quartier</option>' + (quartiersParMairie[mairie] || []).map(q => `<option value="${q}">${q}</option>`).join('');
+    
+    // Quartiers associés à la mairie sélectionnée
+    const quartiers = quartiersParMairie[mairie] || [];
+    
+    // Ajouter aussi les quartiers existants dans la base
+    const quartiersExistants = db.map(q => q.nom);
+    const tous = [...new Set([...quartiers, ...quartiersExistants])];
+    
+    datalist.innerHTML = tous.map(q => `<option value="${q}">`).join('');
+    quartierInput.placeholder = "Saisissez ou sélectionnez un quartier";
 }
-
+function updateQuartiersList() {
+    const datalist = document.getElementById('quartiersList');
+    if (!datalist) return;
+    
+    // Récupérer tous les quartiers de la base de données
+    const quartiersExistants = db.map(q => q.nom);
+    
+    // Récupérer les quartiers par mairie (si une mairie est sélectionnée)
+    const mairie = document.getElementById('selMairieImproved').value;
+    if (mairie) {
+        const quartiersParMairieList = quartiersParMairie[mairie] || [];
+        const tousQuartiers = [...new Set([...quartiersParMairieList, ...quartiersExistants])];
+        datalist.innerHTML = tousQuartiers.map(q => `<option value="${q}">`).join('');
+    } else {
+        datalist.innerHTML = quartiersExistants.map(q => `<option value="${q}">`).join('');
+    }
+}
 function openEnrollModalImproved() {
     if (!authCurrentUser || (authCurrentUser.role !== 'SUPER_ADMIN' && authCurrentUser.role !== 'ADMIN')) {
         notify('⛔ Seuls les administrateurs peuvent enrôler des capteurs');
@@ -3324,54 +3425,47 @@ function closeEnrollModalImproved() {
 function saveNewBinImproved() {
     const id = document.getElementById("newBinIdImproved").value.trim();
     const detailLoc = document.getElementById("newBinLocImproved").value.trim();
-    let qPoint = document.getElementById("newBinQuartierImproved").value;
+    const quartierNom = document.getElementById("newBinQuartierImproved").value.trim();
     const quartierId = document.getElementById("newBinQuartierId").value.trim();
-    const manualQuartier = document.getElementById("newBinManualQuartier").value.trim();
-    const manualQuartierId = document.getElementById("newBinManualQuartierId").value.trim();
     
-    if (!id || !detailLoc) {
-        notify("❌ L'ID du capteur et la localisation sont obligatoires");
+    if (!id || !detailLoc || !quartierNom) {
+        notify("❌ L'ID du capteur, la localisation et le quartier sont obligatoires");
         return;
     }
     
-    let quartierNom = qPoint;
-    let quartierIdentifiant = quartierId;
+    // Vérifier si le quartier existe déjà dans la base
+    let qObj = db.find(x => x.nom === quartierNom);
     
-    if (manualQuartier && manualQuartierId) {
-        quartierNom = manualQuartier;
-        quartierIdentifiant = manualQuartierId;
-        
-        if (!db.some(q => q.nom === manualQuartier)) {
-            db.push({
-                id: manualQuartierId,
-                nom: manualQuartier,
-                lat: 4.05 + (Math.random() - 0.5) * 0.1,
-                lng: 9.70 + (Math.random() - 0.5) * 0.1,
-                units: []
-            });
-            persist();
-            notify(`✅ Nouveau quartier "${manualQuartier}" créé`);
-        } else {
-            const existing = db.find(q => q.nom === manualQuartier);
-            if (existing && !existing.id) {
-                existing.id = manualQuartierId;
-                persist();
-            }
+    // Si le quartier n'existe pas, le créer automatiquement
+    if (!qObj) {
+        // Générer un ID de quartier si non fourni
+        if (!quartierId) {
+            quartierId = "Q-" + Date.now().toString().slice(-4);
         }
-    } else if (!qPoint) {
-        notify("❌ Veuillez sélectionner un quartier ou en ajouter un nouveau");
-        return;
+        
+        // Créer le nouveau quartier
+        qObj = {
+            id: quartierId,
+            nom: quartierNom,
+            lat: 4.05 + (Math.random() - 0.5) * 0.1,
+            lng: 9.70 + (Math.random() - 0.5) * 0.1,
+            units: []
+        };
+        db.push(qObj);
+        persist();
+        notify(`✅ Nouveau quartier "${quartierNom}" créé avec l'ID ${quartierId}`);
     }
     
-    let quartierRacine = quartierNom.split(" - ")[0];
-    let qObj = db.find(x => x.nom === quartierRacine) || db.find(x => x.nom === quartierNom);
-    
-    if (qObj && id) {
-        if (quartierIdentifiant && !qObj.id) {
-            qObj.id = quartierIdentifiant;
-            persist();
+    // Ajouter le capteur au quartier
+    if (qObj) {
+        // Vérifier si l'ID du capteur existe déjà
+        const existingUnit = qObj.units.find(u => u.id === id);
+        if (existingUnit) {
+            notify(`❌ L'ID du capteur "${id}" existe déjà dans ce quartier`);
+            return;
         }
         
+        // Ajouter le capteur
         qObj.units.push({
             id: id,
             loc: `${quartierNom} - ${detailLoc}`,
@@ -3435,8 +3529,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (clock) clock.innerText = new Date().toLocaleTimeString(); 
     }, 1000);
     
-    // Simulation toutes les 30 secondes
-    setInterval(simulate, 30000);
+    // Simulation toutes les 3 secondes (pour une synchronisation plus rapide)
+    setInterval(simulate, 3000);
 });
 
 // Vérification de session au chargement
@@ -3482,6 +3576,86 @@ function checkSession() {
 
 // Démarrer l'application
 checkSession();
+
+// ===================== FONCTION SUPPLÉMENTAIRE POUR AJOUTER UN CAPTEUR =====================
+// Fonction pour ajouter un capteur existant dans le bridge à la base de données
+async function ajouterCapteurDepuisBridge(capteurId, quartierNom, localisation) {
+    try {
+        const dataResponse = await fetch(`${BRIDGE_URL}/capteur/${capteurId}`);
+        if (!dataResponse.ok) throw new Error('Capteur non trouvé');
+        const data = await dataResponse.json();
+        
+        // Chercher le quartier
+        let qObj = db.find(x => x.nom === quartierNom);
+        if (!qObj) {
+            // Créer le quartier s'il n'existe pas
+            qObj = {
+                id: "Q-" + Date.now(),
+                nom: quartierNom,
+                lat: 4.05 + (Math.random() - 0.5) * 0.1,
+                lng: 9.70 + (Math.random() - 0.5) * 0.1,
+                units: []
+            };
+            db.push(qObj);
+        }
+        
+        // Ajouter le capteur
+        qObj.units.push({
+            id: capteurId,
+            loc: localisation || `Capteur ${capteurId}`,
+            lvl: data.niveau || 0,
+            bat: data.batterie || 100,
+            online: true,
+            lidOpen: false,
+            lastUpdate: new Date().toLocaleString()
+        });
+        
+        persist();
+        render();
+        notify(`✅ Capteur ${capteurId} ajouté à ${quartierNom}`);
+        return true;
+    } catch (error) {
+        console.error('Erreur ajout capteur:', error);
+        notify(`❌ Erreur : ${error.message}`);
+        return false;
+    }
+}
+
+// ===================== FONCTION DE TEST =====================
+// Fonction de test pour vérifier la connexion au bridge
+async function testBridgeConnection() {
+    try {
+        const response = await fetch(`${BRIDGE_URL}/capteurs`);
+        const data = await response.json();
+        console.log('✅ Bridge connecté. Capteurs détectés:', data);
+        return data;
+    } catch (error) {
+        console.error('❌ Bridge non accessible:', error);
+        return [];
+    }
+}
+
+// Appeler le test au démarrage
+setTimeout(() => {
+    testBridgeConnection().then(capteurs => {
+        if (capteurs.length > 0) {
+            notify(`✅ ${capteurs.length} capteurs détectés sur le bridge`);
+        } else {
+            notify('⏳ En attente de données du bridge...');
+        }
+    });
+}, 3000);
+function resetDatabase() {
+    if (!confirm('⚠️ Voulez-vous vraiment réinitialiser TOUTES les données (capteurs, quartiers, utilisateurs) ? Cette action est irréversible.')) {
+        return;
+    }
+    localStorage.removeItem('DOUALA_DB');
+    localStorage.removeItem('AUTH_USERS');
+    localStorage.removeItem('PASSWORD_RESET_REQUESTS');
+    localStorage.removeItem('ADMIN_MESSAGES');
+    localStorage.removeItem('AUTH_CURRENT_USER');
+    location.reload();
+}
 </script>
 </body>
 </html>
