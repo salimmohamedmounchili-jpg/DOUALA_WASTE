@@ -2554,114 +2554,62 @@ function updateGraph() {
     }
 }
 
-// ===================== INTÉGRATION DONNÉES RÉELLES (BRIDGE) =====================
-const BRIDGE_URL = 'http://localhost:3000/api';
-let capteursReels = {};
 
-async function fetchRealtimeData() {
-    try {
-        const response = await fetch(`${BRIDGE_URL}/capteurs`);
-        if (!response.ok) throw new Error('Erreur bridge');
-        const capteursListe = await response.json();
-        
-        capteursReels = {};
-        let capteursTrouves = 0;
-        for (const id of capteursListe) {
-            try {
-                const dataResponse = await fetch(`${BRIDGE_URL}/capteur/${id}`);
-                if (dataResponse.ok) {
-                    const data = await dataResponse.json();
-                    if (data && data.niveau !== undefined) {
-                        capteursReels[id] = data;
-                        capteursTrouves++;
-                    }
-                }
-            } catch (e) {
-                console.warn(`Impossible de récupérer les données du capteur ${id}`);
+function simulate() {
+    // On ne fait plus d'appel au bridge local (fetchRealtimeData supprimé)
+    
+    if (!db || !Array.isArray(db)) return;
+    
+    for (const q of db) {
+        for (const u of q.units) {
+            // Ne pas toucher aux capteurs qui commencent par CAP (capteurs réels)
+            if (u.id.startsWith('CAP')) continue;
+            
+            // Ne pas toucher aux unités hors ligne
+            if (!u.online) continue;
+            
+            // Taux de remplissage initial (vitesse de remplissage aléatoire)
+            if (!u.tauxRemplissage) {
+                u.tauxRemplissage = appSettings.simulation.simRateMin + Math.random() * (appSettings.simulation.simRateMax - appSettings.simulation.simRateMin);
             }
-        }
-        
-        console.log(`📊 ${capteursTrouves} capteurs mis à jour depuis le bridge`);
-        return capteursTrouves > 0;
-    } catch (error) {
-        console.error('Erreur bridge:', error);
-        return false;
-    }
-}
-
-function mapRealtimeToQuartiers() {
-    let nbMiseAJour = 0;
-    for (const [id, data] of Object.entries(capteursReels)) {
-        for (const q of db) {
-            for (let i = 0; i < q.units.length; i++) {
-                const u = q.units[i];
-                if (u.id === id) {
-                    u.lvl = data.niveau;
-                    u.bat = data.batterie;
-                    u.lastUpdate = new Date().toLocaleString();
-                    nbMiseAJour++;
-                    break;
-                }
+            
+            // Augmenter le niveau de remplissage
+            u.lvl = Math.min(100, u.lvl + u.tauxRemplissage * 0.3);
+            
+            // ===== COLLECTE AUTOMATIQUE SUPPRIMÉE =====
+            // if (u.lvl > 30 && Math.random() < 0.01) {
+            //     u.lvl = Math.max(0, u.lvl - 30);
+            //     notify(`🗑️ Collecte effectuée sur ${u.id} (${q.nom})`);
+            // }
+            // ==========================================
+            
+            // Diminution progressive de la batterie
+            u.bat = Math.max(5, u.bat - 0.02);
+            
+            // Mise à jour de la date de dernière activité
+            u.lastUpdate = new Date().toLocaleString(appSettings.datetime.formatDate === 'fr' ? 'fr-FR' : 'en-US');
+            
+            // État du couvercle (aléatoire, ouvert si moins de 70%)
+            u.lidOpen = u.lvl < 70 && Math.random() > 0.7;
+            
+            // Simulation de panne réseau aléatoire (0.1% de chance)
+            if (appSettings.reseau.autoOffline && Math.random() < 0.001) {
+                u.online = false;
+                notify('📴 ' + (appSettings.appareil.langue === 'en' ? 'Sensor offline: ' : 'Capteur hors-ligne: ') + u.id + ' (' + q.nom + ')');
             }
         }
     }
-    console.log(`🔄 ${nbMiseAJour} capteurs mis à jour (online conservé)`);
+    
+    // Sauvegarder les modifications
     persist();
     render();
     updateGraph();
 }
 
-function simulate() {
-    fetchRealtimeData().then(success => {
-        if (success) {
-            mapRealtimeToQuartiers();
-        }
-        
-        if (!db || !Array.isArray(db)) return;
-        
-        for (const q of db) {
-            for (const u of q.units) {
-                if (u.id.startsWith('CAP')) continue;
-                if (!u.online) continue;
-                
-                if (!u.tauxRemplissage) {
-                    u.tauxRemplissage = appSettings.simulation.simRateMin + Math.random() * (appSettings.simulation.simRateMax - appSettings.simulation.simRateMin);
-                }
-                
-                u.lvl = Math.min(100, u.lvl + u.tauxRemplissage * 0.3);
-                
-                if (appSettings.vidange.autoEmpty && u.lvl >= appSettings.vidange.emptyThreshold) {
-                    u.lvl = 0;
-                    notify('🗑️ ' + (appSettings.appareil.langue === 'en' ? 'Auto-empty: ' : 'Vidange auto: ') + u.id + ' (' + q.nom + ')');
-                }
-                
-                if (u.lvl > 30 && Math.random() < 0.01) {
-                    u.lvl = Math.max(0, u.lvl - 30);
-                    notify(`🗑️ Collecte effectuée sur ${u.id} (${q.nom})`);
-                }
-                
-                u.bat = Math.max(5, u.bat - 0.02);
-                u.lastUpdate = new Date().toLocaleString(appSettings.datetime.formatDate === 'fr' ? 'fr-FR' : 'en-US');
-                u.lidOpen = u.lvl < 70 && Math.random() > 0.7;
-                
-                if (appSettings.reseau.autoOffline && Math.random() < 0.001) {
-                    u.online = false;
-                    notify('📴 ' + (appSettings.appareil.langue === 'en' ? 'Sensor offline: ' : 'Capteur hors-ligne: ') + u.id);
-                }
-            }
-        }
-        
-        persist();
-        render();
-        updateGraph();
-    });
-}
-
 function manualRefresh() {
     simulate();
-    notify("🔄 " + (appSettings.appareil.langue === 'en' ? 'Refreshed from bridge' : 'Actualisation depuis le bridge'));
+    notify("🔄 Actualisation effectuée");
 }
-
 // ===================== MODALS =====================
 function openModal(nomQuartier) {
     const q = db.find(x => x.nom === nomQuartier);
@@ -4549,7 +4497,25 @@ function openEnrollModalImproved() {
 function closeEnrollModalImproved() {
     document.getElementById('enrollModalImproved').style.display = 'none';
 }
+// ===================== SYNCHRONISATION AVEC FIREBASE =====================
+function syncQuartiersToFirebase() {
+    if (typeof db_online !== 'undefined') {
+        // Sauvegarder tous les quartiers dans Firebase
+        db_online.ref('quartiers').set(db)
+            .then(() => {
+                console.log("✅ Quartiers synchronisés avec Firebase");
+            })
+            .catch((error) => {
+                console.error("❌ Erreur synchronisation:", error);
+            });
+    }
+}
 
+// Modifier la fonction persist() pour aussi synchroniser avec Firebase
+function persist() {
+    localStorage.setItem('DOUALA_DB', JSON.stringify(db));
+    syncQuartiersToFirebase(); // AJOUTER CETTE LIGNE
+}
 function saveNewBinImproved() {
     const id = document.getElementById("newBinIdImproved").value.trim();
     const detailLoc = document.getElementById("newBinLocImproved").value.trim();
@@ -4580,7 +4546,19 @@ function saveNewBinImproved() {
             units: []
         };
         db.push(qObj);
-        persist();
+        persist(); // Sauvegarde dans localStorage
+        
+        // ✅ AJOUT : Sauvegarde aussi dans Firebase
+        if (typeof db_online !== 'undefined') {
+            db_online.ref('quartiers/' + quartierId).set(qObj)
+                .then(() => {
+                    console.log("✅ Quartier sauvegardé dans Firebase");
+                })
+                .catch((error) => {
+                    console.error("❌ Erreur sauvegarde Firebase:", error);
+                });
+        }
+        
         notify(`✅ Nouveau quartier "${quartierNom}" créé avec l'ID ${quartierId}`);
     }
     
@@ -4603,7 +4581,19 @@ function saveNewBinImproved() {
             lidOpen: false,
             lastUpdate: new Date().toLocaleString()
         });
-        persist();
+        persist(); // Sauvegarde dans localStorage
+        
+        // ✅ AJOUT : Mise à jour aussi dans Firebase
+        if (typeof db_online !== 'undefined') {
+            db_online.ref('quartiers/' + qObj.id).update(qObj)
+                .then(() => {
+                    console.log("✅ Capteur ajouté et sauvegardé dans Firebase");
+                })
+                .catch((error) => {
+                    console.error("❌ Erreur mise à jour Firebase:", error);
+                });
+        }
+        
         render();
         closeEnrollModalImproved();
         notify(`✅ Capteur ${id} enrôlé avec succès dans ${qObj.nom}`);
@@ -4611,7 +4601,6 @@ function saveNewBinImproved() {
         notify("❌ Erreur : impossible d'enrôler le capteur");
     }
 }
-
 // ===================== INITIALISATION =====================
 // Initialiser la base de données
 initDatabase();
@@ -4620,15 +4609,14 @@ initDatabase();
 //let db_online = null;
 // Configuration Firebase (100% cloud)
 var firebaseConfig = {
-  apiKey: "AIzaSyDg14UFQFTssEfVwbr-wFowkArC6jv-V-s",
-  authDomain: "plateforme-de-supervisio-9e848.firebaseapp.com",
-  databaseURL: "https://plateforme-de-supervisio-9e848-default-rtdb.europe-west1.firebasedatabase.app/",
-  projectId: "plateforme-de-supervisio-9e848",
-  storageBucket: "plateforme-de-supervisio-9e848.firebasestorage.app",
-  messagingSenderId: "454450711395",
-  appId: "1:454450711395:web:0ab33f22e9d6de1038a156"
+    apiKey: "AIzaSyC2YNV7tz1nuaV8LCwwBem7OEL2QYXcD0A",
+    authDomain: "interface-de-supervision-694b8.firebaseapp.com",
+    databaseURL: "https://interface-de-supervision-694b8-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "interface-de-supervision-694b8",
+    storageBucket: "interface-de-supervision-694b8.firebasestorage.app",
+    messagingSenderId: "356077253834",
+    appId: "1:356077253834:web:b3aa9c3b505e1090d73033"
 };
-
 // Initialiser Firebase
 firebase.initializeApp(firebaseConfig);
 var db_online = firebase.database();
@@ -4690,6 +4678,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Vérification de session au chargement
 function checkSession() {
+    // === NOUVEAU : Écouter les quartiers dans Firebase ===
+    if (typeof db_online !== 'undefined') {
+        db_online.ref('quartiers').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                const quartiersArray = Object.values(data);
+                if (quartiersArray.length > 0) {
+                    db = quartiersArray;
+                    persist();
+                    render();
+                    updateGraph();
+                    console.log("✅ Quartiers chargés depuis Firebase");
+                }
+            }
+        });
+    }
+    // ====================================================
+    
     const saved = localStorage.getItem('AUTH_CURRENT_USER');
     if (saved) {
         try {
@@ -4706,7 +4712,6 @@ function checkSession() {
                 }
                 updateUserInfo();
                 
-                // Attendre que le DOM soit prêt pour render
                 setTimeout(() => {
                     render();
                     updateGraph();
@@ -4728,78 +4733,8 @@ function checkSession() {
     document.getElementById('adminBadge').style.display = 'none';
     return false;
 }
-
-// Démarrer l'application
-checkSession();
-
 // ===================== FONCTION SUPPLÉMENTAIRE POUR AJOUTER UN CAPTEUR =====================
-// Fonction pour ajouter un capteur existant dans le bridge à la base de données
-async function ajouterCapteurDepuisBridge(capteurId, quartierNom, localisation) {
-    try {
-        const dataResponse = await fetch(`${BRIDGE_URL}/capteur/${capteurId}`);
-        if (!dataResponse.ok) throw new Error('Capteur non trouvé');
-        const data = await dataResponse.json();
-        
-        // Chercher le quartier
-        let qObj = db.find(x => x.nom === quartierNom);
-        if (!qObj) {
-            // Créer le quartier s'il n'existe pas
-            qObj = {
-                id: "Q-" + Date.now(),
-                nom: quartierNom,
-                lat: 4.05 + (Math.random() - 0.5) * 0.1,
-                lng: 9.70 + (Math.random() - 0.5) * 0.1,
-                units: []
-            };
-            db.push(qObj);
-        }
-        
-        // Ajouter le capteur
-        qObj.units.push({
-            id: capteurId,
-            loc: localisation || `Capteur ${capteurId}`,
-            lvl: data.niveau || 0,
-            bat: data.batterie || 100,
-            online: true,
-            lidOpen: false,
-            lastUpdate: new Date().toLocaleString()
-        });
-        
-        persist();
-        render();
-        notify(`✅ Capteur ${capteurId} ajouté à ${quartierNom}`);
-        return true;
-    } catch (error) {
-        console.error('Erreur ajout capteur:', error);
-        notify(`❌ Erreur : ${error.message}`);
-        return false;
-    }
-}
 
-// ===================== FONCTION DE TEST =====================
-// Fonction de test pour vérifier la connexion au bridge
-async function testBridgeConnection() {
-    try {
-        const response = await fetch(`${BRIDGE_URL}/capteurs`);
-        const data = await response.json();
-        console.log('✅ Bridge connecté. Capteurs détectés:', data);
-        return data;
-    } catch (error) {
-        console.error('❌ Bridge non accessible:', error);
-        return [];
-    }
-}
-
-// Appeler le test au démarrage
-setTimeout(() => {
-    testBridgeConnection().then(capteurs => {
-        if (capteurs.length > 0) {
-            notify(`✅ ${capteurs.length} capteurs détectés sur le bridge`);
-        } else {
-            notify('⏳ En attente de données du bridge...');
-        }
-    });
-}, 3000);
 function resetDatabase() {
     if (!confirm('⚠️ Voulez-vous vraiment réinitialiser TOUTES les données (capteurs, quartiers, utilisateurs) ? Cette action est irréversible.')) {
         return;

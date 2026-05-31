@@ -984,8 +984,31 @@
     </div>
 
     <script>
+        function isOnline() {
+            return navigator.onLine;
+        }
+
+        window.addEventListener('online', function() {
+            console.log("🟢 Connexion rétablie");
+            if (currentPhone) loadReportsAuto();
+        });
+
+        window.addEventListener('offline', function() {
+            console.log("🔴 Connexion perdue");
+            document.getElementById('syncBadgeContainer').innerHTML = '<div class="sync-badge sync-offline">📴 Mode hors ligne</div>';
+        });
+
         // ==================== CONFIGURATION ====================
-        const firebaseConfig = { databaseURL: "https://douala-clean-default-rtdb.firebaseio.com" };
+        const firebaseConfig = {
+            apiKey: "AIzaSyC2YNV7tz1nuaV8LCwwBem7OEL2QYXcD0A",
+            authDomain: "interface-de-supervision-694b8.firebaseapp.com",
+            databaseURL: "https://interface-de-supervision-694b8-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "interface-de-supervision-694b8",
+            storageBucket: "interface-de-supervision-694b8.firebasestorage.app",
+            messagingSenderId: "356077253834",
+            appId: "1:356077253834:web:b3aa9c3b505e1090d73033"
+        };
+
         firebase.initializeApp(firebaseConfig);
         const db_online = firebase.database();
 
@@ -1000,7 +1023,6 @@
         let reportsListener = null;
         let gpsWatchId = null;
         let gpsTimeout = null;
-        // NOUVELLES VARIABLES GPS
         let geoPermissionGranted = false;
         let geoPermissionDenied = false;
         let geoReady = false;
@@ -1024,11 +1046,6 @@
                 particle.style.background = `rgba(${colors[idx*3]}, ${colors[idx*3+1]}, ${colors[idx*3+2]}, ${Math.random() * 0.5 + 0.1})`;
                 container.appendChild(particle);
             }
-        }
-
-        // ==================== FONCTION VÉRIFICATION GPS ====================
-        function isGpsAuthorized() {
-            return geoPermissionGranted && !geoPermissionDenied && currentUserLocation !== null;
         }
 
         // ==================== AFFICHAGE FORMULAIRE PRINCIPAL ====================
@@ -1326,12 +1343,18 @@
         window.deleteReport = async function(reportId) {
             if (confirm("⚠️ Êtes-vous sûr de vouloir supprimer ce signalement ? Cette action est irréversible.")) {
                 try {
-                    await db_online.ref('reports/' + reportId).remove();
+                    if (reportId.startsWith('-')) {
+                        await db_online.ref('reports/' + reportId).remove();
+                    }
+                    
                     let localReports = JSON.parse(localStorage.getItem('swms_local_reports') || '[]');
                     localReports = localReports.filter(r => String(r.id) !== String(reportId) && String(r.firebaseId) !== String(reportId));
                     localStorage.setItem('swms_local_reports', JSON.stringify(localReports));
+                    
                     alert("✅ Signalement supprimé avec succès !");
+                    if (currentPhone) loadReportsAuto();
                 } catch (error) {
+                    console.error("Erreur suppression:", error);
                     alert("❌ Erreur lors de la suppression");
                 }
             }
@@ -1416,7 +1439,7 @@
             }
         }
 
-        // ==================== INITIALISATION GPS MODIFIÉE ====================
+        // ==================== INITIALISATION GPS ====================
         function initGeolocation() {
             const locationDiv = document.getElementById('locationStatus');
             const addressCard = document.getElementById('locationAddressCard');
@@ -1425,7 +1448,6 @@
             let startTime = Date.now();
             geoRetryAttempt++;
             
-            // DÉSACTIVER LE BOUTON EN ATTENDANT LE GPS
             sendBtn.disabled = true;
             sendBtn.innerText = '⏳ ATTENTE GPS OBLIGATOIRE...';
             
@@ -1503,7 +1525,6 @@
                         addressCard.style.display = 'block';
                     }
                     
-                    // RÉACTIVER LE BOUTON CAR GPS OK
                     sendBtn.disabled = false;
                     sendBtn.innerText = '📨 ENVOYER LE SIGNALEMENT';
                 },
@@ -1528,11 +1549,9 @@
                     locationDiv.innerHTML = errorMessage;
                     locationDiv.className = 'location-status location-error';
                     
-                    // BLOQUER LE BOUTON
                     sendBtn.disabled = true;
                     sendBtn.innerText = '⛔ GPS NÉCESSAIRE - ACTIVEZ LA LOCALISATION';
                     
-                    // Bouton réessayer
                     const retryBtn = document.createElement('button');
                     retryBtn.innerText = '🔄 RÉESSAYER GPS';
                     retryBtn.style.cssText = 'margin-top: 10px; padding: 6px 15px; background: #00d2ff; border: none; border-radius: 8px; cursor: pointer; font-size: 0.7rem; color: white;';
@@ -1738,9 +1757,8 @@
             document.getElementById('citPhoto').click();
         });
 
-        // ==================== ENVOI DU SIGNALEMENT MODIFIÉ ====================
+        // ==================== ENVOI DU SIGNALEMENT ====================
         window.sendToDashboard = async function() {
-            // VÉRIFICATION STRICTE GPS
             if (!geoReady || geoPermissionDenied || currentUserLocation === null) {
                 const locationDiv = document.getElementById('locationStatus');
                 locationDiv.innerHTML = '⛔ GPS OBLIGATOIRE - ACTIVEZ LA LOCALISATION POUR ENVOYER';
@@ -1754,7 +1772,7 @@
                     btn.disabled = false;
                     btn.innerText = '📨 ENVOYER LE SIGNALEMENT';
                 }, 5000);
-                return; // ARRÊT ICI - PAS D'ENVOI
+                return;
             }
             
             const name = document.getElementById("citName").value.trim();
@@ -1767,7 +1785,6 @@
             const successDiv = document.getElementById("successMessage");
             const errorDiv = document.getElementById("photoErrorMessage");
             
-            // Vérification des photos
             if (photosArray.length === 0) {
                 const photoWrapperDiv = document.getElementById('photoWrapper');
                 photoWrapperDiv.classList.add('required');
@@ -1777,7 +1794,6 @@
                 return;
             }
             
-            // Validation du téléphone
             if (!rawPhone || rawPhone.length !== 9 || !rawPhone.startsWith('6')) {
                 alert("❌ Veuillez entrer un numéro de téléphone valide (9 chiffres commençant par 6)");
                 return;
@@ -1843,37 +1859,52 @@
                     ✓ Signalement envoyé avec succès !<br><br>
                     🎉 Les services techniques spécialisés vous remercient pour votre civisme !<br>
                     📍 Une équipe sera dépêchée dans les plus brefs délais.<br>
-                    🔔 Vous pouvez suivre l'évolution dans l'onglet "MES SIGNALEMENTS"
+                    🔔 Vous pouvez suivre l'évolution dans l'onglet "MES SIGNALEMENTS"<br><br>
+                    👆 <strong>Touchez l'écran pour continuer</strong>
                 `;
                 successDiv.style.display = "block";
                 btn.innerText = "✓ ENVOYÉ !";
+                btn.disabled = true;
                 
-                setTimeout(() => {
+                function dismissMessage() {
                     resetForm();
                     successDiv.style.display = "none";
                     btn.disabled = false;
                     btn.innerText = "📨 ENVOYER LE SIGNALEMENT";
-                }, 5000);
+                    document.removeEventListener('click', dismissMessage);
+                    document.removeEventListener('touchstart', dismissMessage);
+                }
+                
+                document.addEventListener('click', dismissMessage);
+                document.addEventListener('touchstart', dismissMessage);
+                
             } catch (error) {
                 console.error("Erreur Firebase:", error);
                 successDiv.innerHTML = `
                     ⚠️ Signalement sauvegardé localement !<br><br>
                     📱 Il sera synchronisé automatiquement quand la connexion sera rétablie.<br>
-                    🔔 Vous pouvez déjà le suivre dans l'onglet "MES SIGNALEMENTS"
+                    🔔 Vous pouvez déjà le suivre dans l'onglet "MES SIGNALEMENTS"<br><br>
+                    👆 <strong>Touchez l'écran pour continuer</strong>
                 `;
                 successDiv.style.display = "block";
                 btn.innerText = "💾 SAUVEGARDÉ LOCALEMENT";
+                btn.disabled = true;
                 
-                setTimeout(() => {
+                function dismissMessage() {
                     resetForm();
                     successDiv.style.display = "none";
                     btn.disabled = false;
                     btn.innerText = "📨 ENVOYER LE SIGNALEMENT";
-                }, 5000);
+                    document.removeEventListener('click', dismissMessage);
+                    document.removeEventListener('touchstart', dismissMessage);
+                }
+                
+                document.addEventListener('click', dismissMessage);
+                document.addEventListener('touchstart', dismissMessage);
             }
         };
 
-        // ==================== RESET FORM MODIFIÉ ====================
+        // ==================== RESET FORM ====================
         function resetForm() {
             document.getElementById("citName").value = "";
             document.getElementById("citPhone").value = "";
@@ -1889,7 +1920,6 @@
             document.getElementById('photoWrapper').classList.add('required');
             document.getElementById('photoErrorMessage').style.display = 'none';
             
-            // RÉINITIALISER L'ÉTAT GPS
             geoPermissionGranted = false;
             geoPermissionDenied = false;
             geoReady = false;
@@ -1897,17 +1927,14 @@
             currentHierarchy = null;
             currentAddressName = null;
             
-            // Interface GPS
             document.getElementById('locationStatus').innerHTML = '📍 Récupération GPS obligatoire...';
             document.getElementById('locationStatus').className = 'location-status location-pending';
             document.getElementById('locationAddressCard').style.display = 'none';
             document.getElementById('gpsTimer').innerHTML = '';
             
-            // Désactiver le bouton
             document.getElementById('sendBtn').disabled = true;
             document.getElementById('sendBtn').innerText = '⏳ ATTENTE GPS OBLIGATOIRE...';
             
-            // Relancer la géolocalisation
             if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
             if (gpsTimeout) clearTimeout(gpsTimeout);
             setTimeout(initGeolocation, 500);
