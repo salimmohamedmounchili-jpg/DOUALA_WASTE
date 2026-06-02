@@ -2036,7 +2036,22 @@ function initDatabase() {
         createDefaultDatabase();
     }
 }
+function resetAllOnlineStatus() {
+    if (!db || !Array.isArray(db)) return;
+    
+    for (const q of db) {
+        for (const u of q.units) {
+            u.online = true;
+        }
+    }
+    persist();
+    render();
+    updateGraph();
+    console.log("✅ Toutes les poubelles remises en ligne");
+}
 
+// Appeler au démarrage de l'application, après le chargement de la base de données
+setTimeout(resetAllOnlineStatus, 500);
 function createDefaultDatabase() {
     const saved = localStorage.getItem('DOUALA_DB');
     if (saved) {
@@ -2140,6 +2155,7 @@ function authInitUsers() {
 
 function authSaveUsers() {
     localStorage.setItem('AUTH_USERS', JSON.stringify(authUsers));
+    syncUsersToFirebase(); // AJOUTER CETTE LIGNE
     if (document.getElementById('adminPanelOverlay') && document.getElementById('adminPanelOverlay').style.display === 'flex') {
         renderAdminPanel();
     }
@@ -2593,7 +2609,7 @@ function simulate() {
             u.lidOpen = u.lvl < 70 && Math.random() > 0.7;
             
             // Simulation de panne réseau aléatoire (0.1% de chance)
-            if (appSettings.reseau.autoOffline && Math.random() < 0.001) {
+            if (appSettings.reseau.autoOffline && Math.random() < 0.0001) {
                 u.online = false;
                 notify('📴 ' + (appSettings.appareil.langue === 'en' ? 'Sensor offline: ' : 'Capteur hors-ligne: ') + u.id + ' (' + q.nom + ')');
             }
@@ -4678,22 +4694,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Vérification de session au chargement
 function checkSession() {
-    // === NOUVEAU : Écouter les quartiers dans Firebase ===
-    if (typeof db_online !== 'undefined') {
-        db_online.ref('quartiers').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                const quartiersArray = Object.values(data);
-                if (quartiersArray.length > 0) {
-                    db = quartiersArray;
-                    persist();
-                    render();
-                    updateGraph();
-                    console.log("✅ Quartiers chargés depuis Firebase");
-                }
+    // Charger les utilisateurs depuis Firebase
+if (typeof db_online !== 'undefined') {
+    db_online.ref('users').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            authUsers = data;
+            localStorage.setItem('AUTH_USERS', JSON.stringify(authUsers));
+            if (document.getElementById('adminPanelOverlay') && document.getElementById('adminPanelOverlay').style.display === 'flex') {
+                renderAdminPanel();
             }
-        });
-    }
+            console.log("✅ Utilisateurs chargés depuis Firebase");
+        }
+    });
+    
+    // Charger les quartiers depuis Firebase
+    db_online.ref('quartiers').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            const quartiersArray = Object.values(data);
+            if (quartiersArray.length > 0) {
+                db = quartiersArray;
+                persist();
+                render();
+                updateGraph();
+                console.log("✅ Quartiers chargés depuis Firebase");
+            }
+        }
+    });
+}
+    
     // ====================================================
     
     const saved = localStorage.getItem('AUTH_CURRENT_USER');
@@ -4739,12 +4769,33 @@ function resetDatabase() {
     if (!confirm('⚠️ Voulez-vous vraiment réinitialiser TOUTES les données (capteurs, quartiers, utilisateurs) ? Cette action est irréversible.')) {
         return;
     }
+    
+    // 1. Réinitialiser les données dans localStorage
     localStorage.removeItem('DOUALA_DB');
     localStorage.removeItem('AUTH_USERS');
     localStorage.removeItem('PASSWORD_RESET_REQUESTS');
     localStorage.removeItem('ADMIN_MESSAGES');
     localStorage.removeItem('AUTH_CURRENT_USER');
-    location.reload();
+    
+    // 2. Si la base de données locale existe, réinitialiser les capteurs simulés
+    if (db && Array.isArray(db)) {
+        for (const q of db) {
+            for (const u of q.units) {
+                // Réinitialiser uniquement les capteurs simulés (ceux qui ne commencent pas par CAP)
+                if (!u.id.startsWith('CAP')) {
+                    u.lvl = 0;
+                    u.online = true;
+                }
+            }
+        }
+        persist(); // Sauvegarder les modifications
+        render(); // Rafraîchir l'affichage
+        updateGraph(); // Rafraîchir le graphique
+        notify("✅ Base de données réinitialisée - Capteurs simulés remis à 0% et en ligne");
+    } else {
+        // Si db est vide, recharger la page
+        location.reload();
+    }
 }
 // ===== MINI-AJOUT HISTORIQUE (NE CASSE RIEN) =====
 function switchHistoryTab(tabName, btn) {
@@ -4828,6 +4879,17 @@ function approveReport(id) {
 function toggleExportMenu() {
     const menu = document.getElementById('exportMenu');
     if (menu) menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+}
+function syncUsersToFirebase() {
+    if (typeof db_online !== 'undefined') {
+        db_online.ref('users').set(authUsers)
+            .then(() => {
+                console.log("✅ Utilisateurs synchronisés avec Firebase");
+            })
+            .catch((error) => {
+                console.error("❌ Erreur synchronisation utilisateurs:", error);
+            });
+    }
 }
 </script>
 </body>
