@@ -2018,71 +2018,48 @@ const quartiersParMairie = {
 let db = [];
 
 function initDatabase() {
-    const saved = localStorage.getItem('DOUALA_DB');
-    if (saved) {
-        try {
-            db = JSON.parse(saved);
-            if (!db || !Array.isArray(db) || db.length === 0) {
-                throw new Error("Base de données vide");
+    // D'abord, essayer de charger depuis Firebase (si disponible)
+    if (typeof db_online !== 'undefined') {
+        db_online.ref('quartiers').once('value').then((snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                const quartiersArray = Object.values(data);
+                if (quartiersArray.length > 0) {
+                    db = quartiersArray;
+                    persist();
+                    render();
+                    updateGraph();
+                    console.log("✅ Données chargées depuis Firebase");
+                    return;
+                }
             }
-            console.log("Base de données chargée depuis localStorage");
-            return;
-        } catch(e) {
-            console.error("Erreur chargement DB, création d'une nouvelle", e);
+            // Si Firebase est vide, charger depuis localStorage comme fallback
+            const saved = localStorage.getItem('DOUALA_DB');
+            if (saved) {
+                try {
+                    db = JSON.parse(saved);
+                    if (db && Array.isArray(db) && db.length > 0) {
+                        console.log("✅ Base de données chargée depuis localStorage");
+                        return;
+                    }
+                } catch(e) {}
+            }
             createDefaultDatabase();
-        }
+        });
     } else {
-        console.log("Création d'une nouvelle base de données");
+        // Fallback local
+        const saved = localStorage.getItem('DOUALA_DB');
+        if (saved) {
+            try {
+                db = JSON.parse(saved);
+                if (db && Array.isArray(db) && db.length > 0) {
+                    console.log("✅ Base de données chargée depuis localStorage");
+                    return;
+                }
+            } catch(e) {}
+        }
         createDefaultDatabase();
     }
-}
-function resetAllOnlineStatus() {
-    if (!db || !Array.isArray(db)) return;
-    
-    for (const q of db) {
-        for (const u of q.units) {
-            u.online = true;
-        }
-    }
-    persist();
-    render();
-    updateGraph();
-    console.log("✅ Toutes les poubelles remises en ligne");
-}
-
-// Appeler au démarrage de l'application, après le chargement de la base de données
-setTimeout(resetAllOnlineStatus, 500);
-function createDefaultDatabase() {
-    const saved = localStorage.getItem('DOUALA_DB');
-    if (saved) {
-        try {
-            db = JSON.parse(saved);
-            if (db && Array.isArray(db) && db.length > 0) {
-                console.log("Base de données existante conservée");
-                return;
-            }
-        } catch(e) {
-            console.error("Erreur lors du parsing de la base existante");
-        }
-    }
-    
-    db = configurationDouala.map((q, idx) => ({
-        id: "Q-" + (idx + 1).toString().padStart(3, '0'),
-        nom: q.nom,
-        lat: q.lat,
-        lng: q.lng,
-        units: q.points.map((pt, i) => ({
-            id: q.nom.slice(0, 3).toUpperCase() + "-" + (100 + i),
-            loc: pt,
-            lvl: Math.floor(Math.random() * 40),
-            bat: 100,
-            online: true,
-            lidOpen: false,
-            lastUpdate: new Date().toLocaleString('fr-FR')
-        }))
-    }));
-    persist();
-    console.log("Base de données initialisée avec la configuration par défaut");
 }
 
 function persist() {
@@ -2572,54 +2549,109 @@ function updateGraph() {
 
 
 function simulate() {
-    // On ne fait plus d'appel au bridge local (fetchRealtimeData supprimé)
-    
+    // Vérification de base
     if (!db || !Array.isArray(db)) return;
     
+    // Vérifier si Firebase est disponible
+    const firebaseAvailable = typeof db_online !== 'undefined';
+    
+    // Objet pour stocker toutes les mises à jour à envoyer à Firebase en une seule fois
+    const firebaseUpdates = {};
+    const notifications = [];
+    
     for (const q of db) {
+        // Vérifier que le quartier existe et a des unités
+        if (!q || !q.units || !Array.isArray(q.units)) continue;
+        
         for (const u of q.units) {
             // Ne pas toucher aux capteurs qui commencent par CAP (capteurs réels)
-            if (u.id.startsWith('CAP')) continue;
+            if (u.id && u.id.startsWith('CAP')) continue;
             
             // Ne pas toucher aux unités hors ligne
             if (!u.online) continue;
             
-            // Taux de remplissage initial (vitesse de remplissage aléatoire)
+            // 1. Taux de remplissage initial (vitesse de remplissage aléatoire)
             if (!u.tauxRemplissage) {
                 u.tauxRemplissage = appSettings.simulation.simRateMin + Math.random() * (appSettings.simulation.simRateMax - appSettings.simulation.simRateMin);
             }
             
-            // Augmenter le niveau de remplissage
-            u.lvl = Math.min(100, u.lvl + u.tauxRemplissage * 0.3);
+            // 2. Augmenter le niveau de remplissage
+            u.lvl = Math.min(100, (u.lvl || 0) + u.tauxRemplissage * 0.3);
             
-            // ===== COLLECTE AUTOMATIQUE SUPPRIMÉE =====
-            // if (u.lvl > 30 && Math.random() < 0.01) {
-            //     u.lvl = Math.max(0, u.lvl - 30);
-            //     notify(`🗑️ Collecte effectuée sur ${u.id} (${q.nom})`);
-            // }
-            // ==========================================
+            // 3. Diminution progressive de la batterie
+            u.bat = Math.max(5, (u.bat || 100) - 0.02);
             
-            // Diminution progressive de la batterie
-            u.bat = Math.max(5, u.bat - 0.02);
+            // 4. Mise à jour de la date de dernière activité (format ISO pour Firebase)
+            u.lastUpdate = new Date().toISOString();
             
-            // Mise à jour de la date de dernière activité
-            u.lastUpdate = new Date().toLocaleString(appSettings.datetime.formatDate === 'fr' ? 'fr-FR' : 'en-US');
-            
-            // État du couvercle (aléatoire, ouvert si moins de 70%)
+            // 5. État du couvercle (aléatoire, ouvert si moins de 70%)
             u.lidOpen = u.lvl < 70 && Math.random() > 0.7;
             
-            // Simulation de panne réseau aléatoire (0.1% de chance)
+            // 6. Simulation de panne réseau aléatoire (0.1% de chance)
             if (appSettings.reseau.autoOffline && Math.random() < 0.0001) {
                 u.online = false;
-                notify('📴 ' + (appSettings.appareil.langue === 'en' ? 'Sensor offline: ' : 'Capteur hors-ligne: ') + u.id + ' (' + q.nom + ')');
+                notifications.push({
+                    msg: '📴 ' + (appSettings.appareil.langue === 'en' ? 'Sensor offline: ' : 'Capteur hors-ligne: ') + u.id + ' (' + q.nom + ')'
+                });
+            }
+            
+            // 7. Préparer la mise à jour pour Firebase (si disponible)
+            if (firebaseAvailable) {
+                const firebasePath = 'capteurs/' + u.id;
+                firebaseUpdates[firebasePath] = {
+                    id: u.id,
+                    niveau: Math.round(u.lvl),
+                    batterie: Math.round(u.bat),
+                    online: u.online,
+                    lidOpen: u.lidOpen,
+                    lastUpdate: u.lastUpdate,
+                    quartier: q.nom,
+                    loc: u.loc || '',
+                    tauxRemplissage: u.tauxRemplissage || 0.5
+                };
             }
         }
     }
     
-    // Sauvegarder les modifications
+    // 8. Envoyer toutes les mises à jour à Firebase en une seule opération
+    if (firebaseAvailable && Object.keys(firebaseUpdates).length > 0) {
+        // Mettre à jour les capteurs dans Firebase
+        db_online.ref().update(firebaseUpdates)
+            .then(() => {
+                console.log(`✅ ${Object.keys(firebaseUpdates).length} capteurs synchronisés avec Firebase`);
+            })
+            .catch((error) => {
+                console.error("❌ Erreur synchronisation Firebase:", error);
+            });
+        
+        // Mettre à jour les quartiers (structure complète)
+        const quartiersUpdates = {};
+        for (const q of db) {
+            if (q.id) {
+                quartiersUpdates['quartiers/' + q.id] = q;
+            }
+        }
+        if (Object.keys(quartiersUpdates).length > 0) {
+            db_online.ref().update(quartiersUpdates)
+                .catch((error) => {
+                    console.error("❌ Erreur synchronisation quartiers:", error);
+                });
+        }
+    }
+    
+    // 9. Sauvegarder dans localStorage
     persist();
+    
+    // 10. Afficher les notifications
+    for (const notif of notifications) {
+        notify(notif.msg);
+    }
+    
+    // 11. Mettre à jour l'interface
     render();
     updateGraph();
+    
+    console.log("🔄 Simulation terminée - " + (db.length || 0) + " quartiers mis à jour");
 }
 
 function manualRefresh() {
@@ -2810,32 +2842,103 @@ function toggleMenu() {
 }
 // ===================== ÉCOUTE DES SIGNALEMENTS =====================
 function listenToCitizenReports() {
+    // 1. Vérification que Firebase est chargé
     if (typeof firebase === 'undefined') {
-        console.error("Firebase non chargé");
+        console.error("❌ Firebase non chargé - Impossible d'écouter les rapports");
+        // Fallback: charger les rapports locaux
+        try {
+            const localReports = JSON.parse(localStorage.getItem('LOCAL_REPORTS') || '[]');
+            if (localReports.length > 0) {
+                citizenReports = localReports;
+                updateCitizenInboxUI();
+                console.log("📦 Rapports locaux chargés (fallback):", citizenReports.length);
+            }
+        } catch (e) {
+            console.error("Erreur chargement rapports locaux:", e);
+        }
+        return;
+    }
+    
+    // 2. Vérification que db_online est défini
+    if (typeof db_online === 'undefined' || db_online === null) {
+        console.error("❌ db_online non défini");
         return;
     }
     
     try {
+        // 3. Écouter les changements en temps réel sur Firebase
         db_online.ref('reports').on('value', (snapshot) => {
             const data = snapshot.val();
-            citizenReports = data ? Object.entries(data).map(([key, val]) => ({...val, firebaseId: key})).reverse() : [];
+            
+            if (data) {
+                // Convertir l'objet Firebase en tableau avec les IDs
+                citizenReports = Object.entries(data).map(([key, val]) => ({
+                    ...val,
+                    firebaseId: key,
+                    // Assurer que les champs requis existent
+                    name: val.name || "Anonyme",
+                    phone: val.phone || "Non spécifié",
+                    q: val.q || "Quartier inconnu",
+                    loc: val.loc || "Localisation inconnue",
+                    type: val.type || "Autre",
+                    description: val.description || val.desc || "Aucune description",
+                    status: val.status || "En attente",
+                    photos: Array.isArray(val.photos) ? val.photos : [],
+                    timestamp: val.timestamp || new Date().toISOString()
+                })).reverse(); // Du plus récent au plus ancien
+            } else {
+                citizenReports = [];
+            }
+            
+            // 4. Mettre à jour l'interface
             updateCitizenInboxUI();
             
-            if (document.getElementById('historyModal') && document.getElementById('historyModal').style.display === 'flex') {
+            // 5. Mettre à jour l'historique si le modal est ouvert
+            const historyModal = document.getElementById('historyModal');
+            if (historyModal && historyModal.style.display === 'flex') {
                 refreshHistoryList();
             }
             
+            // 6. Mettre à jour le compteur de signalements
             const count = citizenReports.filter(r => r.status === "En attente").length;
             const citCount = document.getElementById("citCount");
             if (citCount) citCount.innerText = count;
             
-            if (count > 0) {
-                const badge = document.getElementById("msgNew");
-                if (badge) badge.style.display = "block";
+            // 7. Afficher le badge si des signalements sont en attente
+            const badge = document.getElementById("msgNew");
+            if (badge) {
+                badge.style.display = count > 0 ? "block" : "none";
+                badge.innerText = count > 0 ? "!" : "";
+            }
+            
+            // 8. Sauvegarder en local (backup)
+            try {
+                localStorage.setItem('LOCAL_REPORTS', JSON.stringify(citizenReports));
+            } catch (e) {
+                console.warn("Impossible de sauvegarder les rapports localement");
+            }
+            
+            console.log(`📥 ${citizenReports.length} rapports chargés depuis Firebase (${count} en attente)`);
+        });
+        
+        // 9. Gestion des erreurs de connexion Firebase
+        db_online.ref('reports').on('error', (error) => {
+            console.error("❌ Erreur de connexion Firebase:", error);
+            // Fallback: charger les rapports locaux
+            try {
+                const localReports = JSON.parse(localStorage.getItem('LOCAL_REPORTS') || '[]');
+                if (localReports.length > 0) {
+                    citizenReports = localReports;
+                    updateCitizenInboxUI();
+                    console.log("📦 Rapports locaux chargés (erreur Firebase):", citizenReports.length);
+                }
+            } catch (e) {
+                console.error("Erreur chargement rapports locaux:", e);
             }
         });
-    } catch(e) {
-        console.error("Erreur Firebase:", e);
+        
+    } catch (e) {
+        console.error("❌ Erreur lors de l'initialisation de l'écoute Firebase:", e);
     }
 }
 
@@ -4008,6 +4111,7 @@ function removePhoto(index, event) {
 }
 
 async function sendToDashboard() {
+    // 1. Récupération des éléments du formulaire
     const name = document.getElementById("citName").value.trim();
     const rawPhone = document.getElementById("citPhone").value.trim();
     const q = document.getElementById("citQuartier").value.trim();
@@ -4015,7 +4119,12 @@ async function sendToDashboard() {
     const type = document.getElementById("citLvl").value;
     const desc = document.getElementById("citDesc").value.trim();
     const btn = document.getElementById("sendBtn");
+    const successDiv = document.getElementById("success");
     
+    // 2. Vérification de la connexion Firebase
+    const isFirebaseReady = (typeof db_online !== 'undefined' && db_online !== null);
+    
+    // 3. Validation des champs
     if (!rawPhone || rawPhone.length !== 9 || !rawPhone.startsWith('6')) {
         alert("Veuillez entrer un numéro de téléphone valide (9 chiffres commençant par 6)");
         return;
@@ -4031,29 +4140,46 @@ async function sendToDashboard() {
         if (!confirmNoPhoto) return;
     }
     
+    // 4. Formatage du numéro de téléphone
     const phone = "+237" + rawPhone;
-    if (btn) btn.disabled = true;
-    if (btn) btn.innerText = "ENVOI EN COURS...";
     
+    // 5. Désactivation du bouton pendant l'envoi
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = "⏳ ENVOI EN COURS...";
+    }
+    
+    // 6. Récupération de la géolocalisation
     let finalAddress = currentAddressName;
-    let finalLat = currentUserLocation?.lat;
-    let finalLng = currentUserLocation?.lng;
+    let finalLat = currentUserLocation?.lat || null;
+    let finalLng = currentUserLocation?.lng || null;
     
     if (!finalAddress) {
         try {
             const location = await new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 5000 });
+                navigator.geolocation.getCurrentPosition(resolve, reject, { 
+                    enableHighAccuracy: true, 
+                    timeout: 8000 
+                });
             });
             finalLat = location.coords.latitude;
             finalLng = location.coords.longitude;
-            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${finalLat}&lon=${finalLng}&zoom=18`);
-            const data = await response.json();
-            finalAddress = data.display_name || `${finalLat.toFixed(5)}, ${finalLng.toFixed(5)}`;
+            
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${finalLat}&lon=${finalLng}&zoom=18`);
+                const data = await response.json();
+                finalAddress = data.display_name || `${finalLat.toFixed(5)}, ${finalLng.toFixed(5)}`;
+            } catch (geoError) {
+                console.warn("Erreur reverse geocoding:", geoError);
+                finalAddress = `${finalLat.toFixed(5)}, ${finalLng.toFixed(5)}`;
+            }
         } catch (error) {
+            console.warn("Erreur géolocalisation:", error);
             finalAddress = "Localisation non disponible";
         }
     }
     
+    // 7. Création de l'objet rapport
     const id = Date.now();
     const report = {
         id: id,
@@ -4063,36 +4189,92 @@ async function sendToDashboard() {
         loc: loc,
         type: type,
         description: desc,
-        photos: photosArray,
+        photos: photosArray || [],
         status: "En attente",
         time: new Date().toLocaleTimeString('fr-FR'),
         date: new Date().toLocaleDateString('fr-FR'),
         timestamp: new Date().toISOString(),
         userLat: finalLat,
         userLng: finalLng,
-        userAddress: finalAddress
+        userAddress: finalAddress,
+        firebaseId: null // Sera rempli après l'envoi Firebase
     };
     
+    // 8. Envoi du rapport
     try {
-        if (typeof db_online !== 'undefined') {
-            await db_online.ref('reports/' + id).set(report);
+        if (isFirebaseReady) {
+            // Envoi vers Firebase
+            const newRef = db_online.ref('reports').push();
+            report.firebaseId = newRef.key;
+            
+            await newRef.set(report);
+            console.log("✅ Rapport envoyé à Firebase avec succès:", report.firebaseId);
+            
+            // Mise à jour des statistiques locales
+            citizenReports.unshift(report);
+            
         } else {
-            console.warn("Firebase non disponible, sauvegarde locale");
+            // Fallback : sauvegarde locale
+            console.warn("⚠️ Firebase non disponible, sauvegarde locale uniquement");
             let localReports = JSON.parse(localStorage.getItem('LOCAL_REPORTS') || '[]');
             localReports.push(report);
             localStorage.setItem('LOCAL_REPORTS', JSON.stringify(localReports));
+            
+            // Mise à jour des statistiques locales
+            citizenReports.unshift(report);
         }
-        const successDiv = document.getElementById("success");
-        if (successDiv) successDiv.style.display = "block";
-        if (btn) btn.innerText = "✓ ENVOYÉ !";
+        
+        // 9. Affichage du succès
+        if (successDiv) {
+            successDiv.style.display = "block";
+            successDiv.innerText = "✅ Signalement envoyé avec succès !";
+            successDiv.style.color = "var(--green)";
+        }
+        
+        if (btn) {
+            btn.innerText = "✅ ENVOYÉ !";
+            btn.style.background = "var(--green)";
+            btn.style.color = "black";
+        }
+        
+        // 10. Notification de succès
+        notify("📨 Signalement envoyé avec succès !");
+        
+        // 11. Réinitialisation du formulaire après délai
         setTimeout(() => {
             closeCitizenPortal();
             resetCitizenForm();
-        }, 2000);
+            if (successDiv) successDiv.style.display = "none";
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = "📨 ENVOYER L'ALERTE";
+                btn.style.background = "";
+                btn.style.color = "";
+            }
+        }, 3000);
+        
     } catch (error) {
-        alert("Erreur réseau : Impossible d'envoyer l'alerte.");
-        if (btn) btn.disabled = false;
-        if (btn) btn.innerText = "RÉESSAYER L'ENVOI";
+        // 12. Gestion des erreurs
+        console.error("❌ Erreur lors de l'envoi du rapport:", error);
+        
+        alert("Erreur réseau : Impossible d'envoyer l'alerte.\n\nDétails: " + error.message);
+        
+        if (btn) {
+            btn.disabled = false;
+            btn.innerText = "🔁 RÉESSAYER";
+            btn.style.background = "var(--red)";
+            btn.style.color = "white";
+        }
+        
+        // Stockage local en cas d'échec (backup)
+        try {
+            let localReports = JSON.parse(localStorage.getItem('LOCAL_REPORTS') || '[]');
+            localReports.push(report);
+            localStorage.setItem('LOCAL_REPORTS', JSON.stringify(localReports));
+            console.log("💾 Rapport sauvegardé localement (backup)");
+        } catch (backupError) {
+            console.error("Erreur sauvegarde locale:", backupError);
+        }
     }
 }
 
@@ -4891,6 +5073,68 @@ function syncUsersToFirebase() {
             });
     }
 }
+// Ajoutez ceci à la fin du script pour charger les données depuis Firebase au démarrage
+window.addEventListener('load', function() {
+    console.log("🚀 Démarrage de l'application...");
+    
+    // Charger les quartiers depuis Firebase
+    if (typeof db_online !== 'undefined') {
+        db_online.ref('quartiers').once('value').then((snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                const quartiersArray = Object.values(data);
+                if (quartiersArray.length > 0) {
+                    db = quartiersArray;
+                    persist();
+                    render();
+                    updateGraph();
+                    console.log("✅ Quartiers chargés depuis Firebase (démarrage)");
+                } else {
+                    // Si Firebase est vide, utiliser la base locale par défaut
+                    initDatabase();
+                    render();
+                    updateGraph();
+                }
+            } else {
+                // Si Firebase est vide, utiliser la base locale par défaut
+                initDatabase();
+                render();
+                updateGraph();
+            }
+        }).catch((error) => {
+            console.error("❌ Erreur chargement initial Firebase:", error);
+            initDatabase();
+            render();
+            updateGraph();
+        });
+    } else {
+        // Fallback : base locale
+        initDatabase();
+        render();
+        updateGraph();
+    }
+    
+    // Écouter les signalements citoyens
+    listenToCitizenReports();
+});
+// Démarrer l'écoute des rapports après l'initialisation de Firebase
+document.addEventListener('DOMContentLoaded', function() {
+    // Attendre que Firebase soit initialisé
+    setTimeout(() => {
+        if (typeof firebase !== 'undefined' && typeof db_online !== 'undefined') {
+            listenToCitizenReports();
+            console.log("✅ Écoute des rapports démarrée");
+        } else {
+            console.warn("Firebase non prêt, réessai dans 2 secondes...");
+            setTimeout(() => {
+                if (typeof firebase !== 'undefined' && typeof db_online !== 'undefined') {
+                    listenToCitizenReports();
+                    console.log("✅ Écoute des rapports démarrée (après délai)");
+                }
+            }, 2000);
+        }
+    }, 1000);
+});
 </script>
 </body>
 </html>
