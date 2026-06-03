@@ -4822,9 +4822,7 @@ function saveNewBinImproved() {
 // Initialiser la base de données
 initDatabase();
 
-// Initialiser Firebase si disponible
-//let db_online = null;
-// Configuration Firebase (100% cloud)
+// ===== CONFIGURATION FIREBASE (UNE SEULE FOIS) =====
 var firebaseConfig = {
     apiKey: "AIzaSyC2YNV7tz1nuaV8LCwwBem7OEL2QYXcD0A",
     authDomain: "interface-de-supervision-694b8.firebaseapp.com",
@@ -4834,35 +4832,42 @@ var firebaseConfig = {
     messagingSenderId: "356077253834",
     appId: "1:356077253834:web:b3aa9c3b505e1090d73033"
 };
-// Initialiser Firebase
-firebase.initializeApp(firebaseConfig);
-var db_online = firebase.database();
-console.log("✅ Firebase connecté !");
-// Écouter les capteurs en temps réel depuis Firebase
-db_online.ref('capteurs').on('value', function(snapshot) {
-    var data = snapshot.val();
-    if (data) {
-        console.log("📡 Capteurs mis à jour :", data);
-        
-        // Mettre à jour les unités existantes
-        for (var id in data) {
-            var capteur = data[id];
-            for (var q of db) {
-                for (var u of q.units) {
-                    if (u.id === id) {
-                        u.lvl = capteur.niveau || u.lvl;
-                        u.bat = capteur.batterie || u.bat;
-                        u.online = capteur.online !== false;
-                        u.lastUpdate = capteur.lastUpdate || new Date().toLocaleString();
+
+// Initialiser Firebase UNE SEULE FOIS
+if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+    var db_online = firebase.database();
+    console.log("✅ Firebase initialisé avec succès");
+} else {
+    console.error("❌ Firebase déjà initialisé ou non chargé");
+}
+
+// Écouter les capteurs (après initialisation)
+if (typeof db_online !== 'undefined') {
+    db_online.ref('capteurs').on('value', function(snapshot) {
+        var data = snapshot.val();
+        if (data) {
+            console.log("📡 Capteurs mis à jour :", data);
+            // Mettre à jour les unités existantes
+            for (var id in data) {
+                var capteur = data[id];
+                for (var q of db) {
+                    for (var u of q.units) {
+                        if (u.id === id) {
+                            u.lvl = capteur.niveau || u.lvl;
+                            u.bat = capteur.batterie || u.bat;
+                            u.online = capteur.online !== false;
+                            u.lastUpdate = capteur.lastUpdate || new Date().toLocaleString();
+                        }
                     }
                 }
             }
+            persist();
+            render();
+            updateGraph();
         }
-        persist();
-        render();
-        updateGraph();
-    }
-});
+    });
+}
 // Initialiser l'authentification
 authInitUsers();
 
@@ -5239,182 +5244,12 @@ function syncUsersToFirebase() {
             .catch((error) => console.error("❌ Erreur synchronisation utilisateurs:", error));
     }
 }
-// ===== EXPORT COMPLET DE LA BASE LOCALE VERS FIREBASE =====
-async function exportLocalToFirebase() {
-    if (typeof db_online === 'undefined') {
-        alert("❌ Firebase n'est pas disponible");
-        return;
-    }
-    
-    if (!confirm("⚠️ Voulez-vous vraiment EXPORTER toute votre base locale vers Firebase ?\n\nCette action va écraser les données Firebase actuelles.")) {
-        return;
-    }
-    
-    const btn = document.querySelector('button[onclick="exportLocalToFirebase()"]');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerText = "⏳ EXPORT EN COURS...";
-    }
-    
-    try {
-        // 1. Exporter les quartiers
-        if (db && Array.isArray(db) && db.length > 0) {
-            const quartiersData = {};
-            for (const q of db) {
-                if (q.id) {
-                    quartiersData[q.id] = q;
-                }
-            }
-            await db_online.ref('quartiers').set(quartiersData);
-            console.log("✅ Quartiers exportés:", Object.keys(quartiersData).length);
-        }
-        
-        // 2. Exporter les utilisateurs (employés et admins)
-        if (authUsers && Array.isArray(authUsers) && authUsers.length > 0) {
-            const usersData = {};
-            for (const u of authUsers) {
-                if (u.id) {
-                    usersData[u.id] = u;
-                }
-            }
-            await db_online.ref('users').set(usersData);
-            console.log("✅ Utilisateurs exportés:", Object.keys(usersData).length);
-        }
-        
-        // 3. Exporter les capteurs (si présents)
-        const capteursData = {};
-        if (db && Array.isArray(db)) {
-            for (const q of db) {
-                if (q.units && Array.isArray(q.units)) {
-                    for (const u of q.units) {
-                        if (u.id) {
-                            capteursData[u.id] = {
-                                id: u.id,
-                                niveau: Math.round(u.lvl || 0),
-                                batterie: Math.round(u.bat || 100),
-                                online: u.online !== false,
-                                lastUpdate: new Date().toISOString(),
-                                quartier: q.nom,
-                                loc: u.loc || '',
-                                lidOpen: u.lidOpen || false
-                            };
-                        }
-                    }
-                }
-            }
-            if (Object.keys(capteursData).length > 0) {
-                await db_online.ref('capteurs').set(capteursData);
-                console.log("✅ Capteurs exportés:", Object.keys(capteursData).length);
-            }
-        }
-        
-        // 4. Exporter les rapports citoyens (si présents)
-        if (citizenReports && Array.isArray(citizenReports) && citizenReports.length > 0) {
-            const reportsData = {};
-            for (const r of citizenReports) {
-                const id = r.firebaseId || r.id || Date.now() + Math.random();
-                reportsData[id] = {
-                    ...r,
-                    firebaseId: id
-                };
-            }
-            await db_online.ref('reports').set(reportsData);
-            console.log("✅ Rapports exportés:", Object.keys(reportsData).length);
-        }
-        
-        // 5. Exporter les messages admin
-        if (adminMessages && Array.isArray(adminMessages) && adminMessages.length > 0) {
-            const messagesData = {};
-            for (const m of adminMessages) {
-                const id = m.id || Date.now() + Math.random();
-                messagesData[id] = {
-                    ...m,
-                    id: id
-                };
-            }
-            await db_online.ref('adminMessages').set(messagesData);
-            console.log("✅ Messages admin exportés:", Object.keys(messagesData).length);
-        }
-        
-        // 6. Exporter les demandes de réinitialisation
-        if (passwordResetRequests && Array.isArray(passwordResetRequests) && passwordResetRequests.length > 0) {
-            const requestsData = {};
-            for (const r of passwordResetRequests) {
-                const id = r.id || Date.now() + Math.random();
-                requestsData[id] = {
-                    ...r,
-                    id: id
-                };
-            }
-            await db_online.ref('passwordResetRequests').set(requestsData);
-            console.log("✅ Demandes de réinitialisation exportées:", Object.keys(requestsData).length);
-        }
-        
-        alert("✅ EXPORT COMPLET VERS FIREBASE RÉUSSI !\n\nToutes vos données locales sont maintenant sur Firebase.\n\nVeuillez maintenant rafraîchir votre page GitHub Pages.");
-        
-    } catch (error) {
-        console.error("❌ Erreur lors de l'export:", error);
-        alert("❌ Erreur lors de l'export: " + error.message);
-    } finally {
-        if (btn) {
-            btn.disabled = false;
-            btn.innerText = "⬆️ EXPORTER VERS FIREBASE";
-        }
-    }
-}
-// ===== DIAGNOSTIC ET FORÇAGE D'AFFICHAGE =====
-// À AJOUTER À LA FIN DU SCRIPT
 
 function forceShowAllData() {
-    console.log("🔍 DIAGNOSTIC - Affichage forcé des données");
-    
-    // 1. Afficher le nombre de quartiers
-    console.log("📊 Nombre de quartiers dans db:", db ? db.length : 0);
-    if (db && db.length > 0) {
-        console.log("Quartiers:", db.map(q => q.nom).join(", "));
-    }
-    
-    // 2. Forcer le re-rendu
-    if (typeof render === 'function') {
-        render();
-        console.log("✅ Rendexécuté");
-    }
-    if (typeof updateGraph === 'function') {
-        updateGraph();
-        console.log("✅ Graphique mis à jour");
-    }
-    
-    // 3. Forcer la synchronisation depuis Firebase
-    if (typeof db_online !== 'undefined') {
-        db_online.ref('quartiers').once('value')
-            .then(snapshot => {
-                const data = snapshot.val();
-                if (data) {
-                    console.log("✅ Données lues depuis Firebase:", Object.keys(data).length, "quartiers");
-                    const quartiersArray = Object.values(data);
-                    if (quartiersArray.length > 0) {
-                        db = quartiersArray;
-                        persist();
-                        render();
-                        updateGraph();
-                        console.log("✅ DB mise à jour avec les données Firebase");
-                    }
-                } else {
-                    console.warn("⚠️ Aucune donnée dans Firebase");
-                }
-            })
-            .catch(err => console.error("❌ Erreur lecture Firebase:", err));
-    }
-    
-    // 4. Vérifier l'affichage du tableau
-    const mainBody = document.getElementById("mainBody");
-    if (mainBody) {
-        console.log("✅ Tableau trouvé, contenu actuel:", mainBody.innerHTML.length, "caractères");
-    } else {
-        console.error("❌ Tableau #mainBody non trouvé");
-    }
+    console.log("🔍 Affichage forcé des données");
+    if (typeof render === 'function') render();
+    if (typeof updateGraph === 'function') updateGraph();
 }
-
 // Appeler la fonction après un délai
 setTimeout(forceShowAllData, 2000);
 </script>
