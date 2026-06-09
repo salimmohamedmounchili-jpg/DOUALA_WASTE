@@ -29,7 +29,6 @@
             margin: 0 auto;
         }
 
-        /* ========== ÉCRAN DE BIENVENUE / CIVISME ========== */
         .welcome-screen {
             position: fixed;
             top: 0;
@@ -276,7 +275,6 @@
             }
         }
 
-        /* ========== FORMULAIRE PRINCIPAL ========== */
         .main-content {
             display: none;
             animation: fadeSlideIn 0.5s ease;
@@ -494,6 +492,12 @@
             background: rgba(255, 145, 0, 0.1);
             border-left: 3px solid #ff9100;
         }
+        
+        .location-warning {
+            color: #ffd700;
+            background: rgba(255, 215, 0, 0.1);
+            border-left: 3px solid #ffd700;
+        }
 
         .location-address-card {
             background: rgba(0, 210, 255, 0.1);
@@ -551,11 +555,6 @@
             font-size: 0.9rem;
             margin-top: 10px;
             transition: all 0.3s ease;
-        }
-
-        .btn-send:hover {
-            transform: scale(1.02);
-            box-shadow: 0 0 20px rgba(188, 19, 254, 0.5);
         }
 
         .btn-send:disabled {
@@ -735,7 +734,6 @@
             color: #00d2ff;
         }
 
-        /* Localisation détaillée dans les signalements */
         .location-detail-block {
             background: rgba(0, 210, 255, 0.08);
             border-radius: 10px;
@@ -778,7 +776,6 @@
             margin-top: 3px;
         }
 
-        /* Photos en grand dans les signalements */
         .report-photos-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -830,31 +827,51 @@
             background: rgba(255, 49, 49, 0.15);
             color: #ff3131;
         }
+        
+        .gps-activate-btn {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #00d2ff;
+            border: none;
+            border-radius: 20px;
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            font-size: 0.75rem;
+        }
+        
+        .gps-help-text {
+            font-size: 0.65rem;
+            color: #ff9100;
+            margin-top: 8px;
+            padding: 6px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
-    <!-- ÉCRAN DE BIENVENUE / CIVISME AVEC ANIMATIONS -->
+    <!-- ÉCRAN DE BIENVENUE / CIVISME -->
     <div id="welcomeScreen" class="welcome-screen">
         <div class="particles" id="particles"></div>
         <div class="welcome-card">
-            <div class="welcome-icon">
-                <i class="fas fa-hand-peace" style="font-size: 4rem; color: #39ff14;"></i>
-            </div>
+            <div class="welcome-icon">🗑️📢</div>
             <div class="welcome-title">DOUALA PROPRE</div>
             <div class="welcome-subtitle">CHAQUE GESTE COMPTE !</div>
             <div class="welcome-message">
                 <p>🌍 <strong>Ensemble, faisons de notre ville un modèle de propreté en Afrique.</strong></p>
                 <br>
-                <p>Chaque signalement que vous envoyez permet à nos équipes techniques spécialisées d'intervenir rapidement. Votre civisme est la clé d'une Douala plus propre et plus saine pour tous les quartiers.</p>
+                <p>Chaque signalement que vous envoyez permet à nos équipes techniques spécialisées d'intervenir rapidement. Votre civisme est la clé d'une Douala plus propre.</p>
             </div>
             <div class="welcome-stats">
                 <p>🏆 <strong>+ de 1000 signalements déjà traités</strong></p>
-                <p>⚡ Intervention rapide dans tous les quartiers de Douala</p>
-                <p>📸 Une photo = un problème résolu plus rapidement</p>
-                <p>🤝 Tous les quartiers sont concernés et bénéficient du même traitement</p>
+                <p>⚡ Intervention rapide dans tous les quartiers</p>
+                <p>📸 Photo obligatoire pour un traitement prioritaire</p>
+                <p>🤝 Tous les quartiers bénéficient du même traitement</p>
             </div>
-            <button class="btn-yes" id="btnYes" onclick="showMainForm()">✅ OUI, JE M'ENGAGE !</button>
-            <button class="btn-no" id="btnNo" onclick="showMainForm()">🔇 Non merci, je viens juste pour signaler</button>
+            <button class="btn-yes" id="btnYes">✅ OUI, JE M'ENGAGE !</button>
+            <button class="btn-no" id="btnNo">🔇 Non merci, je viens juste pour signaler</button>
             <div class="admin-signature">
                 <strong>Salim MOHAMED</strong> <small>● Administrateur</small><br>
                 <span style="font-size: 0.55rem;">SWMS Douala - Command Center</span>
@@ -862,7 +879,7 @@
         </div>
     </div>
 
-    <!-- CONTENU PRINCIPAL (FORMULAIRE) -->
+    <!-- CONTENU PRINCIPAL -->
     <div id="mainContent" class="main-content">
         <div class="container">
             <div class="header">
@@ -880,11 +897,11 @@
                 <div class="card">
                     <h2>📝 NOUVEAU SIGNALEMENT</h2>
                     
-                    <div id="locationStatus" class="location-status location-pending">📍 Récupération de votre position (30s max)...</div>
+                    <div id="locationStatus" class="location-status location-pending">📍 Récupération de votre position (60s max)...</div>
                     <div id="gpsTimer" class="gps-timer"></div>
                     
                     <div class="location-address-card" id="locationAddressCard" style="display:none;">
-                        <div class="address-label">📍 VOTRE POSITION GPS</div>
+                        <div class="address-label">📍 VOTRE POSITION</div>
                         <div class="address-value" id="exactAddress">Chargement...</div>
                         <div class="hierarchy-info" id="hierarchyInfo"></div>
                         <div class="coords-value" id="coordsDisplay"></div>
@@ -931,16 +948,16 @@
                         <label>📸 PHOTOS <span style="color:#ff3131;">(OBLIGATOIRE)</span></label>
                         <div class="photo-btn-wrapper required" id="photoWrapper">
                             <span id="photoStatusText">📷 PRENDRE UNE PHOTO</span>
-                            <div class="photo-required-text">⚠️ PHOTO OBLIGATOIRE - Cliquez ici pour prendre une photo</div>
+                            <div class="photo-required-text">⚠️ PHOTO OBLIGATOIRE - Cliquez ici</div>
                             <input type="file" id="citPhoto" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFiles(this)">
                             <div id="galleryPreview"></div>
                             <div class="photo-count" id="photoCount"></div>
                         </div>
                     </div>
                     
-                    <div id="photoErrorMessage" class="error-message">❌ La photo est obligatoire ! Veuillez prendre au moins une photo.</div>
+                    <div id="photoErrorMessage" class="error-message">❌ La photo est obligatoire !</div>
                     
-                    <button class="btn-send" id="sendBtn" onclick="sendToDashboard()">📨 ENVOYER LE SIGNALEMENT</button>
+                    <button class="btn-send" id="sendBtn">📨 ENVOYER LE SIGNALEMENT</button>
                     <div id="successMessage" class="success-message"></div>
                 </div>
             </div>
@@ -950,11 +967,11 @@
                     <h2>📍 MES SIGNALEMENTS</h2>
                     
                     <div id="savedPhoneInfo" class="saved-phone-info" style="display:none;">
-                        <span>📱 Suivi automatique pour le <strong id="displayPhone"></strong></span>
-                        <button class="clear-phone-btn" onclick="clearSavedPhone()">Changer de numéro</button>
+                        <span>📱 Suivi pour <strong id="displayPhone"></strong></span>
+                        <button class="clear-phone-btn" onclick="clearSavedPhone()">Changer</button>
                     </div>
                     
-                    <div class="filter-buttons" id="filterButtons">
+                    <div class="filter-buttons">
                         <button class="filter-btn active" onclick="setFilter('ALL')">📋 Tous</button>
                         <button class="filter-btn" onclick="setFilter('En attente')">⏳ En attente</button>
                         <button class="filter-btn" onclick="setFilter('Vu')">👁️ Vu</button>
@@ -964,16 +981,14 @@
                     <div id="syncBadgeContainer"></div>
                     
                     <div id="reportsList">
-                        <div class="empty-reports" id="emptyReportsMsg">
-                            📱 Aucun signalement pour le moment
-                        </div>
+                        <div class="empty-reports">📱 Aucun signalement pour le moment</div>
                     </div>
                 </div>
             </div>
             
             <footer>
                 SWMS Douala - Unité de Coordination Urbaine<br>
-                📸 Photo obligatoire | Suivi en temps réel | Consultation hors ligne
+                📸 Photo obligatoire | Suivi en temps réel
             </footer>
         </div>
     </div>
@@ -984,975 +999,711 @@
     </div>
 
     <script>
-        function isOnline() {
-            return navigator.onLine;
-        }
+    // ==================== CONFIGURATION ====================
+    const firebaseConfig = {
+        apiKey: "AIzaSyC2YNV7tz1nuaV8LCwwBem7OEL2QYXcD0A",
+        authDomain: "interface-de-supervision-694b8.firebaseapp.com",
+        databaseURL: "https://interface-de-supervision-694b8-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "interface-de-supervision-694b8",
+        storageBucket: "interface-de-supervision-694b8.firebasestorage.app",
+        messagingSenderId: "356077253834",
+        appId: "1:356077253834:web:b3aa9c3b505e1090d73033"
+    };
 
-        window.addEventListener('online', function() {
-            console.log("🟢 Connexion rétablie");
-            if (currentPhone) loadReportsAuto();
+    firebase.initializeApp(firebaseConfig);
+    const db_online = firebase.database();
+
+    // ==================== VARIABLES ====================
+    let photosArray = [];
+    let currentUserLocation = null;
+    let currentAddressName = null;
+    let currentHierarchy = null;
+    let allReports = [];
+    let currentFilter = "ALL";
+    let currentPhone = "";
+    let reportsListener = null;
+    let gpsWatchId = null;
+    let gpsTimeout = null;
+    let gpsReady = false;
+    let gpsPermissionDenied = false;
+
+    // ==================== PARTICULES ====================
+    function createParticles() {
+        const container = document.getElementById('particles');
+        if (!container) return;
+        for (let i = 0; i < 60; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            const size = Math.random() * 6 + 2;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 12 + 's';
+            particle.style.animationDuration = (Math.random() * 6 + 4) + 's';
+            particle.style.background = `rgba(57, 255, 20, ${Math.random() * 0.5 + 0.1})`;
+            container.appendChild(particle);
+        }
+    }
+
+    // ==================== LISTE QUARTIERS ====================
+    const quartiersDouala = [
+        "Akwa", "New Bell", "Deido", "Bonabéri", "Ndokoti", 
+        "Logpom", "Village", "Logbaba", "Bonanjo", "Bonamoussadi", 
+        "Kotto", "Makepe", "Bali", "Nylon", "Bonassama", 
+        "Mabanda", "Sodiko", "Boquette", "Nyalla", "Nkololoun"
+    ];
+
+    const datalist = document.getElementById('quartiers-list');
+    if (datalist) {
+        quartiersDouala.sort().forEach(q => {
+            let option = document.createElement('option');
+            option.value = q;
+            datalist.appendChild(option);
         });
+    }
 
-        window.addEventListener('offline', function() {
-            console.log("🔴 Connexion perdue");
-            document.getElementById('syncBadgeContainer').innerHTML = '<div class="sync-badge sync-offline">📴 Mode hors ligne</div>';
+    // ==================== BOUTONS BIENVENUE ====================
+    document.getElementById('btnYes').addEventListener('click', function() { showMainForm(); });
+    document.getElementById('btnNo').addEventListener('click', function() { showMainForm(); });
+
+    // ==================== AFFICHAGE FORMULAIRE ====================
+    function showMainForm() {
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const mainContent = document.getElementById('mainContent');
+        
+        welcomeScreen.classList.add('hide');
+        mainContent.classList.add('show');
+        
+        setTimeout(() => {
+            initGeolocation();
+            const saved = getSavedPhone();
+            if (saved && saved.length === 9) {
+                document.getElementById('citPhone').value = saved;
+            }
+            document.getElementById('photoWrapper').classList.add('required');
+        }, 100);
+    }
+
+    // ==================== GESTION TÉLÉPHONE ====================
+    function getSavedPhone() {
+        return localStorage.getItem('swms_citizen_phone');
+    }
+
+    function savePhone(phone) {
+        localStorage.setItem('swms_citizen_phone', phone);
+        currentPhone = phone;
+    }
+
+    function clearSavedPhone() {
+        localStorage.removeItem('swms_citizen_phone');
+        currentPhone = "";
+        document.getElementById('savedPhoneInfo').style.display = 'none';
+        if (reportsListener) {
+            db_online.ref('reports').off('value', reportsListener);
+            reportsListener = null;
+        }
+        document.getElementById('reportsList').innerHTML = '<div class="empty-reports">📱 Aucun signalement pour le moment</div>';
+    }
+
+    // ==================== CHANGEMENT D'ONGLETS ====================
+    window.switchTab = function(tab) {
+        const reportTab = document.getElementById('reportTab');
+        const followTab = document.getElementById('followTab');
+        const tabs = document.querySelectorAll('.tab');
+        
+        if (tab === 'report') {
+            reportTab.classList.add('active');
+            followTab.classList.remove('active');
+            tabs[0].classList.add('active');
+            tabs[1].classList.remove('active');
+        } else {
+            reportTab.classList.remove('active');
+            followTab.classList.add('active');
+            tabs[0].classList.remove('active');
+            tabs[1].classList.add('active');
+            
+            const saved = getSavedPhone();
+            if (saved && saved.length === 9) {
+                currentPhone = saved;
+                document.getElementById('displayPhone').innerText = saved;
+                document.getElementById('savedPhoneInfo').style.display = 'flex';
+                loadReportsAuto();
+            } else {
+                document.getElementById('savedPhoneInfo').style.display = 'none';
+                document.getElementById('reportsList').innerHTML = '<div class="empty-reports">📱 Envoyez un signalement pour commencer le suivi</div>';
+            }
+        }
+    };
+
+    // ==================== SAUVEGARDE LOCALE ====================
+    function saveReportLocally(report) {
+        try {
+            let localReports = JSON.parse(localStorage.getItem('swms_local_reports') || '[]');
+            localReports = localReports.filter(r => r.id !== report.id);
+            localReports.unshift({...report, savedLocally: true, localSaveTime: new Date().toISOString()});
+            if (localReports.length > 50) localReports = localReports.slice(0, 50);
+            localStorage.setItem('swms_local_reports', JSON.stringify(localReports));
+        } catch(e) { console.warn('⚠️ Erreur sauvegarde locale:', e); }
+    }
+
+    function getLocalReports(phone) {
+        try {
+            const allLocal = JSON.parse(localStorage.getItem('swms_local_reports') || '[]');
+            return allLocal.filter(r => r.phone === phone);
+        } catch(e) { return []; }
+    }
+
+    function mergeReports(firebaseReports, localReports) {
+        const merged = [...firebaseReports];
+        const firebaseIds = new Set(firebaseReports.map(r => String(r.id || r.firebaseId)));
+        localReports.forEach(localReport => {
+            const localId = String(localReport.id || localReport.firebaseId);
+            if (!firebaseIds.has(localId)) merged.push({...localReport, _fromLocal: true});
         });
+        return merged.sort((a, b) => new Date(b.timestamp || b.localSaveTime || 0) - new Date(a.timestamp || a.localSaveTime || 0));
+    }
 
-        // ==================== CONFIGURATION ====================
-        const firebaseConfig = {
-            apiKey: "AIzaSyC2YNV7tz1nuaV8LCwwBem7OEL2QYXcD0A",
-            authDomain: "interface-de-supervision-694b8.firebaseapp.com",
-            databaseURL: "https://interface-de-supervision-694b8-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "interface-de-supervision-694b8",
-            storageBucket: "interface-de-supervision-694b8.firebasestorage.app",
-            messagingSenderId: "356077253834",
-            appId: "1:356077253834:web:b3aa9c3b505e1090d73033"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db_online = firebase.database();
-
-        // ==================== VARIABLES ====================
-        let photosArray = [];
-        let currentUserLocation = null;
-        let currentAddressName = null;
-        let currentHierarchy = null;
-        let allReports = [];
-        let currentFilter = "ALL";
-        let currentPhone = "";
-        let reportsListener = null;
-        let gpsWatchId = null;
-        let gpsTimeout = null;
-        let geoPermissionGranted = false;
-        let geoPermissionDenied = false;
-        let geoReady = false;
-        let geoRetryAttempt = 0;
-
-        // ==================== PARTICULES ANIMÉES ====================
-        function createParticles() {
-            const container = document.getElementById('particles');
-            if (!container) return;
-            for (let i = 0; i < 80; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                const size = Math.random() * 6 + 2;
-                particle.style.width = size + 'px';
-                particle.style.height = size + 'px';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.animationDelay = Math.random() * 12 + 's';
-                particle.style.animationDuration = (Math.random() * 6 + 4) + 's';
-                const colors = ['39', '255', '20', '0', '210', '255', '188', '19', '254'];
-                const idx = Math.floor(Math.random() * 3);
-                particle.style.background = `rgba(${colors[idx*3]}, ${colors[idx*3+1]}, ${colors[idx*3+2]}, ${Math.random() * 0.5 + 0.1})`;
-                container.appendChild(particle);
-            }
-        }
-
-        // ==================== AFFICHAGE FORMULAIRE PRINCIPAL ====================
-        function showMainForm() {
-            const welcomeScreen = document.getElementById('welcomeScreen');
-            const mainContent = document.getElementById('mainContent');
-            
-            welcomeScreen.classList.add('hide');
-            mainContent.classList.add('show');
-            
-            setTimeout(() => {
-                initGeolocation();
-                loadStatistics();
-                const saved = getSavedPhone();
-                if (saved && saved.length === 9) {
-                    document.getElementById('citPhone').value = saved;
-                }
-                document.getElementById('photoWrapper').classList.add('required');
-            }, 100);
-        }
-
-        async function loadStatistics() {
-            try {
-                const snapshot = await db_online.ref('reports').once('value');
-                const data = snapshot.val();
-                const reports = data ? Object.values(data) : [];
-                const resolved = reports.filter(r => r.status === 'Traité').length;
-                const active = reports.filter(r => r.status === 'En attente' || r.status === 'Vu').length;
-            } catch(e) { console.log("Stats non chargées"); }
-        }
-
-        // ==================== GESTION TÉLÉPHONE LOCAL ====================
-        function getSavedPhone() {
-            return localStorage.getItem('swms_citizen_phone');
-        }
-
-        function savePhone(phone) {
-            localStorage.setItem('swms_citizen_phone', phone);
-            currentPhone = phone;
-        }
-
-        function clearSavedPhone() {
-            localStorage.removeItem('swms_citizen_phone');
-            currentPhone = "";
-            document.getElementById('savedPhoneInfo').style.display = 'none';
-            if (reportsListener) {
-                db_online.ref('reports').off('value', reportsListener);
-                reportsListener = null;
-            }
-            document.getElementById('reportsList').innerHTML = '<div class="empty-reports">📱 Aucun signalement pour le moment</div>';
-            document.getElementById('syncBadgeContainer').innerHTML = '';
-        }
-
-        // ==================== LISTE QUARTIERS ====================
-        const quartiersDouala = [
-            "Akwa", "New Bell", "Deido", "Bonabéri", "Ndokoti", 
-            "Logpom", "Village", "Logbaba", "Bonanjo", "Bonamoussadi", 
-            "Kotto", "Makepe", "Bali", "Nylon", "Bonassama", 
-            "Mabanda", "Sodiko", "Boquette", "Nyalla", "Nkololoun"
-        ];
-
-        const datalist = document.getElementById('quartiers-list');
-        if (datalist) {
-            quartiersDouala.sort().forEach(q => {
-                let option = document.createElement('option');
-                option.value = q;
-                datalist.appendChild(option);
-            });
-        }
-
-        // ==================== CHANGEMENT D'ONGLETS ====================
-        window.switchTab = function(tab) {
-            const reportTab = document.getElementById('reportTab');
-            const followTab = document.getElementById('followTab');
-            const tabs = document.querySelectorAll('.tab');
-            
-            if (tab === 'report') {
-                reportTab.classList.add('active');
-                followTab.classList.remove('active');
-                tabs[0].classList.add('active');
-                tabs[1].classList.remove('active');
-            } else {
-                reportTab.classList.remove('active');
-                followTab.classList.add('active');
-                tabs[0].classList.remove('active');
-                tabs[1].classList.add('active');
-                
-                const saved = getSavedPhone();
-                if (saved && saved.length === 9) {
-                    currentPhone = saved;
-                    document.getElementById('displayPhone').innerText = saved;
-                    document.getElementById('savedPhoneInfo').style.display = 'flex';
-                    loadReportsAuto();
-                } else {
-                    document.getElementById('savedPhoneInfo').style.display = 'none';
-                    document.getElementById('reportsList').innerHTML = '<div class="empty-reports">📱 Envoyez un signalement pour commencer le suivi</div>';
-                    document.getElementById('syncBadgeContainer').innerHTML = '';
-                }
-            }
-        };
-
-        // ==================== SAUVEGARDE LOCALE ====================
-        function saveReportLocally(report) {
-            try {
-                let localReports = JSON.parse(localStorage.getItem('swms_local_reports') || '[]');
-                localReports = localReports.filter(r => r.id !== report.id);
-                localReports.unshift({
-                    ...report,
-                    savedLocally: true,
-                    localSaveTime: new Date().toISOString()
-                });
-                if (localReports.length > 50) localReports = localReports.slice(0, 50);
-                localStorage.setItem('swms_local_reports', JSON.stringify(localReports));
-            } catch(e) {
-                console.warn('⚠️ Sauvegarde locale impossible:', e);
-            }
-        }
-
-        function getLocalReports(phone) {
-            try {
-                const allLocal = JSON.parse(localStorage.getItem('swms_local_reports') || '[]');
-                return allLocal.filter(r => r.phone === phone);
-            } catch(e) {
-                return [];
-            }
-        }
-
-        function mergeReports(firebaseReports, localReports) {
-            const merged = [...firebaseReports];
-            const firebaseIds = new Set(firebaseReports.map(r => String(r.id || r.firebaseId)));
-            
-            localReports.forEach(localReport => {
-                const localId = String(localReport.id || localReport.firebaseId);
-                if (!firebaseIds.has(localId)) {
-                    merged.push({...localReport, _fromLocal: true});
-                }
-            });
-            
-            return merged.sort((a, b) => {
-                const timeA = a.timestamp || a.localSaveTime || 0;
-                const timeB = b.timestamp || b.localSaveTime || 0;
-                return new Date(timeB) - new Date(timeA);
-            });
-        }
-
-        // ==================== CHARGEMENT RAPIDE DES SIGNALEMENTS ====================
-        function loadReportsAuto() {
-            if (!currentPhone || currentPhone.length !== 9) return;
-            
-            const fullPhone = "+237" + currentPhone;
-            const reportsContainer = document.getElementById('reportsList');
-            const syncBadgeContainer = document.getElementById('syncBadgeContainer');
-            
-            const localReports = getLocalReports(fullPhone);
-            if (localReports.length > 0) {
-                allReports = localReports.map(r => ({...r, firebaseId: r.firebaseId || r.id}));
-                renderReportsList();
-                syncBadgeContainer.innerHTML = '<div class="sync-badge sync-instant">⚡ Affichage instantané - Synchronisation en cours...</div>';
-            } else {
-                allReports = [];
-                reportsContainer.innerHTML = '<div class="empty-reports">⏳ Chargement de vos signalements...</div>';
-            }
-            
-            if (reportsListener) {
-                db_online.ref('reports').off('value', reportsListener);
-            }
-            
-            reportsListener = db_online.ref('reports')
-                .orderByChild('phone')
-                .equalTo(fullPhone)
-                .on('value', (snapshot) => {
-                    const data = snapshot.val();
-                    let firebaseReports = [];
-                    
-                    if (data) {
-                        firebaseReports = Object.entries(data).map(([key, val]) => ({
-                            ...val, 
-                            firebaseId: key
-                        }));
-                        firebaseReports.forEach(r => saveReportLocally(r));
-                    }
-                    
-                    const freshLocalReports = getLocalReports(fullPhone);
-                    allReports = mergeReports(firebaseReports, freshLocalReports);
-                    
-                    renderReportsList();
-                    syncBadgeContainer.innerHTML = '<div class="sync-badge sync-instant">✅ Données à jour - ' + new Date().toLocaleTimeString('fr-FR') + '</div>';
-                    
-                }, (error) => {
-                    console.error('Firebase error:', error);
-                    const fallbackReports = getLocalReports(fullPhone);
-                    if (fallbackReports.length > 0) {
-                        allReports = fallbackReports.map(r => ({...r, firebaseId: r.firebaseId || r.id}));
-                        renderReportsList();
-                        syncBadgeContainer.innerHTML = '<div class="sync-badge sync-offline">⚠️ Mode hors ligne - Données locales</div>';
-                    } else {
-                        reportsContainer.innerHTML = '<div class="empty-reports">⚠️ Impossible de charger les signalements. Vérifiez votre connexion.</div>';
-                    }
-                });
-        }
-
-        // ==================== FILTRES ====================
-        window.setFilter = function(filter) {
-            currentFilter = filter;
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.textContent.includes(filter === 'ALL' ? 'Tous' : filter)) {
-                    btn.classList.add('active');
-                }
-            });
+    // ==================== CHARGEMENT SIGNALEMENTS ====================
+    function loadReportsAuto() {
+        if (!currentPhone || currentPhone.length !== 9) return;
+        const fullPhone = "+237" + currentPhone;
+        const reportsContainer = document.getElementById('reportsList');
+        const syncBadgeContainer = document.getElementById('syncBadgeContainer');
+        
+        const localReports = getLocalReports(fullPhone);
+        if (localReports.length > 0) {
+            allReports = localReports.map(r => ({...r, firebaseId: r.firebaseId || r.id}));
             renderReportsList();
-        };
-
-        // ==================== AFFICHAGE DES STATUTS ====================
-        function getStatusClass(status) {
-            if (status === 'En attente') return 'status-en-attente';
-            if (status === 'Vu') return 'status-vu';
-            if (status === 'Traité') return 'status-traite';
-            return 'status-en-attente';
+            syncBadgeContainer.innerHTML = '<div class="sync-badge sync-instant">⚡ Affichage instantané</div>';
+        } else {
+            allReports = [];
+            reportsContainer.innerHTML = '<div class="empty-reports">⏳ Chargement...</div>';
         }
-
-        function getStatusText(status) {
-            if (status === 'En attente') return '⏳ EN ATTENTE';
-            if (status === 'Vu') return '👁️ VU PAR L\'ÉQUIPE';
-            if (status === 'Traité') return '✅ TRAITÉ - ÉQUIPE ENVOYÉE';
-            return '⏳ EN ATTENTE';
-        }
-
-        function getTypeIcon(type) {
-            if (type === 'Poubelle qui déborde') return '🗑️';
-            if (type === 'Dépôt sauvage') return '🚮';
-            if (type === 'Caniveau bouché') return '🌊';
-            return '📌';
-        }
-
-        // ==================== RENDU DE LA LISTE ====================
-        function renderReportsList() {
-            const container = document.getElementById('reportsList');
-            let filteredReports = allReports;
-            
-            if (currentFilter !== 'ALL') {
-                filteredReports = allReports.filter(r => r.status === currentFilter);
+        
+        if (reportsListener) db_online.ref('reports').off('value', reportsListener);
+        
+        reportsListener = db_online.ref('reports').orderByChild('phone').equalTo(fullPhone).on('value', (snapshot) => {
+            const data = snapshot.val();
+            let firebaseReports = [];
+            if (data) {
+                firebaseReports = Object.entries(data).map(([key, val]) => ({...val, firebaseId: key}));
+                firebaseReports.forEach(r => saveReportLocally(r));
             }
-            
-            if (filteredReports.length === 0) {
-                container.innerHTML = '<div class="empty-reports">📭 Aucun signalement ' + (currentFilter !== 'ALL' ? currentFilter.toLowerCase() : '') + '</div>';
-                return;
+            const freshLocalReports = getLocalReports(fullPhone);
+            allReports = mergeReports(firebaseReports, freshLocalReports);
+            renderReportsList();
+            syncBadgeContainer.innerHTML = '<div class="sync-badge sync-instant">✅ À jour - ' + new Date().toLocaleTimeString('fr-FR') + '</div>';
+        }, (error) => {
+            console.error('Firebase error:', error);
+            const fallbackReports = getLocalReports(fullPhone);
+            if (fallbackReports.length > 0) {
+                allReports = fallbackReports.map(r => ({...r, firebaseId: r.firebaseId || r.id}));
+                renderReportsList();
+                syncBadgeContainer.innerHTML = '<div class="sync-badge sync-offline">⚠️ Mode hors ligne</div>';
             }
-            
-            container.innerHTML = filteredReports.map(report => `
-                <div class="report-item">
-                    <div class="report-header">
-                        <span class="report-date">📅 ${report.date || new Date(report.timestamp).toLocaleDateString()} à ${report.time || ''}</span>
-                        <span class="report-status ${getStatusClass(report.status)}">
-                            ${getStatusText(report.status)}
-                        </span>
-                    </div>
-                    <div class="report-type">
-                        ${getTypeIcon(report.type)} ${report.type || 'Non spécifié'}
-                    </div>
-                    
-                    <div class="location-detail-block">
-                        <div class="location-detail-label">📍 LOCALISATION EXACTE</div>
-                        ${report.userAddress ? `<div class="location-detail-address">🎯 ${report.userAddress.substring(0, 150)}${report.userAddress.length > 150 ? '...' : ''}</div>` : ''}
-                        ${report.gpsQuartier && report.gpsQuartier !== 'Non détecté' ? `<div class="location-detail-quartier">🏘️ Quartier: ${report.gpsQuartier}</div>` : ''}
-                        ${report.gpsMairie ? `<div class="location-detail-mairie">🏛️ ${report.gpsMairie} | ${report.gpsArrondissement || ''}</div>` : ''}
-                        ${report.userLat ? `<div class="location-detail-coords">📐 ${Number(report.userLat).toFixed(6)}, ${Number(report.userLng).toFixed(6)}</div>` : ''}
-                        ${report.locationSource === 'manual' ? `
-                            <div style="background: rgba(255, 145, 0, 0.1); border-radius: 5px; padding: 4px 8px; margin-top: 5px; font-size: 0.65rem; color: #ff9100; border-left: 2px solid #ff9100;">
-                                ℹ️ Adresse saisie manuellement (GPS non autorisé)
-                            </div>
-                        ` : report.locationAuthorized ? `
-                            <div style="background: rgba(57, 255, 20, 0.1); border-radius: 5px; padding: 4px 8px; margin-top: 5px; font-size: 0.65rem; color: #39ff14; border-left: 2px solid #39ff14;">
-                                📡 Position GPS autorisée et vérifiée
-                            </div>
-                        ` : ''}
-                    </div>
-                    
-                    ${report.description ? `<div class="report-desc">📝 "${escapeHtml(report.description.substring(0, 120))}${report.description.length > 120 ? '...' : ''}"</div>` : ''}
-                    
-                    ${report.photos && report.photos.length > 0 ? `
-                        <div class="report-photos-grid">
-                            ${report.photos.map(photo => `
-                                <img src="${photo}" class="report-photo-large" onclick="viewPhoto('${photo}')" alt="Photo signalement" loading="lazy">
-                            `).join('')}
-                        </div>
-                    ` : '<span style="font-size:0.65rem; color:#64748b; display:block; margin-top:8px;">📷 Aucune photo</span>'}
-                    
-                    <button class="btn-delete-report" onclick="deleteReport('${report.firebaseId || report.id}')">🗑️ Supprimer ce signalement</button>
+        });
+    }
+
+    // ==================== FILTRES ====================
+    window.setFilter = function(filter) {
+        currentFilter = filter;
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.textContent.includes(filter === 'ALL' ? 'Tous' : filter)) btn.classList.add('active');
+        });
+        renderReportsList();
+    };
+
+    function getStatusClass(status) {
+        if (status === 'En attente') return 'status-en-attente';
+        if (status === 'Vu') return 'status-vu';
+        if (status === 'Traité') return 'status-traite';
+        return 'status-en-attente';
+    }
+
+    function getStatusText(status) {
+        if (status === 'En attente') return '⏳ EN ATTENTE';
+        if (status === 'Vu') return '👁️ VU PAR L\'ÉQUIPE';
+        if (status === 'Traité') return '✅ TRAITÉ';
+        return '⏳ EN ATTENTE';
+    }
+
+    function getTypeIcon(type) {
+        if (type === 'Poubelle qui déborde') return '🗑️';
+        if (type === 'Dépôt sauvage') return '🚮';
+        if (type === 'Caniveau bouché') return '🌊';
+        return '📌';
+    }
+
+    function renderReportsList() {
+        const container = document.getElementById('reportsList');
+        let filteredReports = currentFilter === 'ALL' ? allReports : allReports.filter(r => r.status === currentFilter);
+        
+        if (filteredReports.length === 0) {
+            container.innerHTML = '<div class="empty-reports">📭 Aucun signalement</div>';
+            return;
+        }
+        
+        container.innerHTML = filteredReports.map(report => `
+            <div class="report-item">
+                <div class="report-header">
+                    <span class="report-date">📅 ${report.date || new Date(report.timestamp).toLocaleDateString()} à ${report.time || ''}</span>
+                    <span class="report-status ${getStatusClass(report.status)}">${getStatusText(report.status)}</span>
                 </div>
-            `).join('');
-        }
+                <div class="report-type">${getTypeIcon(report.type)} ${report.type || 'Non spécifié'}</div>
+                ${report.description ? `<div class="report-desc">📝 "${escapeHtml(report.description.substring(0, 100))}${report.description.length > 100 ? '...' : ''}"</div>` : ''}
+                ${report.photos && report.photos.length > 0 ? `
+                    <div class="report-photos-grid">
+                        ${report.photos.slice(0, 3).map(photo => `<img src="${photo}" class="report-photo-large" onclick="viewPhoto('${photo}')" loading="lazy">`).join('')}
+                    </div>
+                ` : '<span style="font-size:0.65rem; color:#64748b;">📷 Aucune photo</span>'}
+                <button class="btn-delete-report" onclick="deleteReport('${report.firebaseId || report.id}')">🗑️ Supprimer</button>
+            </div>
+        `).join('');
+    }
 
-        // ==================== SUPPRESSION ====================
-        window.deleteReport = async function(reportId) {
-            if (confirm("⚠️ Êtes-vous sûr de vouloir supprimer ce signalement ? Cette action est irréversible.")) {
-                try {
-                    if (reportId.startsWith('-')) {
-                        await db_online.ref('reports/' + reportId).remove();
-                    }
-                    
-                    let localReports = JSON.parse(localStorage.getItem('swms_local_reports') || '[]');
-                    localReports = localReports.filter(r => String(r.id) !== String(reportId) && String(r.firebaseId) !== String(reportId));
-                    localStorage.setItem('swms_local_reports', JSON.stringify(localReports));
-                    
-                    alert("✅ Signalement supprimé avec succès !");
-                    if (currentPhone) loadReportsAuto();
-                } catch (error) {
-                    console.error("Erreur suppression:", error);
-                    alert("❌ Erreur lors de la suppression");
-                }
-            }
-        };
-
-        // ==================== VISIONNEUSE PHOTO ====================
-        window.viewPhoto = function(photoUrl) {
-            const modal = document.getElementById('photoModal');
-            const modalImg = document.getElementById('modalPhoto');
-            modalImg.src = photoUrl;
-            modal.style.display = 'flex';
-        };
-
-        window.closePhotoModal = function() {
-            document.getElementById('photoModal').style.display = 'none';
-        };
-
-        // ==================== GÉOLOCALISATION ET HIÉRARCHIE ====================
-        async function getLocationHierarchy(lat, lng) {
+    window.deleteReport = async function(reportId) {
+        if (confirm("⚠️ Supprimer ce signalement ?")) {
             try {
-                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&namedetails=1`);
-                const data = await response.json();
-                
-                if (data && data.address) {
-                    let lieu = data.name || data.address.road || data.address.pedestrian || data.address.footway || "";
-                    let quartier = data.address.suburb || data.address.neighbourhood || data.address.city_district || "";
-                    let commune = data.address.city || data.address.town || data.address.village || "Douala";
-                    let region = data.address.state || data.address.province || "Littoral";
-                    let pays = data.address.country || "Cameroun";
-                    
-                    let arrondissement = "";
-                    let mairie = "";
-                    
-                    const quartierLower = (quartier + " " + lieu + " " + commune).toLowerCase();
-                    
-                    if (quartierLower.includes("bonanjo") || quartierLower.includes("akwa") || quartierLower.includes("bali") || quartierLower.includes("deido")) {
-                        arrondissement = "Douala 1er";
-                        mairie = "Mairie de Bonanjo";
-                    }
-                    else if (quartierLower.includes("new bell") || quartierLower.includes("nkololoun") || quartierLower.includes("babylone") || quartierLower.includes("nylon")) {
-                        arrondissement = "Douala 2e";
-                        mairie = "Mairie de New Bell";
-                    }
-                    else if (quartierLower.includes("ndokoti") || quartierLower.includes("logbaba") || quartierLower.includes("village") || quartierLower.includes("nyalla")) {
-                        arrondissement = "Douala 3e";
-                        mairie = "Mairie de Logbaba";
-                    }
-                    else if (quartierLower.includes("bonabéri") || quartierLower.includes("bonassama") || quartierLower.includes("mabanda") || quartierLower.includes("sodiko") || quartierLower.includes("boquette")) {
-                        arrondissement = "Douala 4e";
-                        mairie = "Mairie de Bonabéri";
-                    }
-                    else if (quartierLower.includes("bonamoussadi") || quartierLower.includes("logpom") || quartierLower.includes("kotto") || quartierLower.includes("makepe")) {
-                        arrondissement = "Douala 5e";
-                        mairie = "Mairie de Kotto";
-                    }
-                    else {
-                        arrondissement = "Douala";
-                        mairie = "Communauté Urbaine de Douala (CUD)";
-                    }
-                    
-                    let fullAddress = "";
-                    if (lieu) fullAddress += lieu;
-                    if (quartier) fullAddress += (fullAddress ? ", " : "") + quartier;
-                    if (arrondissement && arrondissement !== "Douala") fullAddress += (fullAddress ? ", " : "") + arrondissement;
-                    if (commune && !fullAddress.includes(commune)) fullAddress += (fullAddress ? ", " : "") + commune;
-                    
-                    return {
-                        lieu: lieu || "Position GPS",
-                        quartier: quartier || "Quartier non détecté",
-                        arrondissement: arrondissement,
-                        mairie: mairie,
-                        commune: commune,
-                        region: region,
-                        pays: pays,
-                        fullAddress: fullAddress || data.display_name
-                    };
-                }
-                return null;
-            } catch (error) {
-                console.error("Erreur géocodage:", error);
-                return null;
-            }
+                if (reportId && reportId.startsWith('-')) await db_online.ref('reports/' + reportId).remove();
+                let localReports = JSON.parse(localStorage.getItem('swms_local_reports') || '[]');
+                localReports = localReports.filter(r => String(r.id) !== String(reportId) && String(r.firebaseId) !== String(reportId));
+                localStorage.setItem('swms_local_reports', JSON.stringify(localReports));
+                alert("✅ Supprimé !");
+                if (currentPhone) loadReportsAuto();
+            } catch(error) { console.error(error); alert("❌ Erreur"); }
         }
+    };
 
-        // ==================== INITIALISATION GPS ====================
-        function initGeolocation() {
-            const locationDiv = document.getElementById('locationStatus');
-            const addressCard = document.getElementById('locationAddressCard');
-            const gpsTimerDiv = document.getElementById('gpsTimer');
-            const sendBtn = document.getElementById('sendBtn');
-            let startTime = Date.now();
-            geoRetryAttempt++;
-            
+    window.viewPhoto = function(photoUrl) {
+        document.getElementById('modalPhoto').src = photoUrl;
+        document.getElementById('photoModal').style.display = 'flex';
+    };
+
+    window.closePhotoModal = function() {
+        document.getElementById('photoModal').style.display = 'none';
+    };
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) { return m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;'); });
+    }
+
+    // ==================== GPS OBLIGATOIRE ====================
+    function initGeolocation() {
+        const locationDiv = document.getElementById('locationStatus');
+        const addressCard = document.getElementById('locationAddressCard');
+        const gpsTimerDiv = document.getElementById('gpsTimer');
+        const sendBtn = document.getElementById('sendBtn');
+        
+        // BOUTON DÉSACTIVÉ TANT QUE GPS NON TROUVÉ
+        sendBtn.disabled = true;
+        sendBtn.innerText = '⏳ ATTENTE GPS...';
+        
+        if (!navigator.geolocation) {
+            locationDiv.innerHTML = '❌ GPS non supporté par votre navigateur';
+            locationDiv.className = 'location-status location-error';
             sendBtn.disabled = true;
-            sendBtn.innerText = '⏳ ATTENTE GPS OBLIGATOIRE...';
-            
-            if (!navigator.geolocation) {
-                locationDiv.innerHTML = '❌ GPS non supporté - Impossible d\'envoyer un signalement';
-                locationDiv.className = 'location-status location-error';
-                sendBtn.disabled = true;
-                sendBtn.innerText = '⛔ GPS NON SUPPORTÉ';
-                return;
-            }
-            
-            locationDiv.innerHTML = '📍 Récupération GPS obligatoire (30s max)...';
-            locationDiv.className = 'location-status location-pending';
-            
-            const timerInterval = setInterval(() => {
-                const elapsed = Math.floor((Date.now() - startTime) / 1000);
-                const remaining = 30 - elapsed;
-                if (remaining > 0 && !geoReady) {
-                    gpsTimerDiv.innerHTML = `⏱️ Temps restant: ${remaining}s`;
-                } else if (remaining <= 0 && !geoReady) {
-                    gpsTimerDiv.innerHTML = "⏰ Délai dépassé";
-                    clearInterval(timerInterval);
-                } else {
-                    gpsTimerDiv.innerHTML = "";
-                    clearInterval(timerInterval);
-                }
-            }, 1000);
-            
-            gpsWatchId = navigator.geolocation.watchPosition(
-                async (position) => {
-                    const { latitude, longitude, accuracy } = position.coords;
-                    currentUserLocation = { lat: latitude, lng: longitude, accuracy };
-                    geoPermissionGranted = true;
-                    geoPermissionDenied = false;
-                    geoReady = true;
-                    
-                    if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
-                    if (gpsTimeout) clearTimeout(gpsTimeout);
-                    
-                    locationDiv.innerHTML = '📍 GPS obtenu. Recherche adresse...';
-                    
-                    const hierarchy = await getLocationHierarchy(latitude, longitude);
-                    
-                    if (hierarchy) {
-                        currentHierarchy = hierarchy;
-                        currentAddressName = hierarchy.fullAddress;
-                        
-                        locationDiv.innerHTML = `✅ GPS vérifié (précision ${Math.round(accuracy)}m)`;
-                        locationDiv.className = 'location-status location-success';
-                        gpsTimerDiv.innerHTML = "✓ GPS OK !";
-                        
-                        document.getElementById('exactAddress').innerHTML = `📍 ${hierarchy.lieu}`;
-                        document.getElementById('hierarchyInfo').innerHTML = `🏘️ ${hierarchy.quartier} | 🏛️ ${hierarchy.mairie} | ${hierarchy.arrondissement}`;
-                        document.getElementById('coordsDisplay').innerHTML = `📐 Lat: ${latitude.toFixed(6)} | Lng: ${longitude.toFixed(6)}`;
-                        addressCard.style.display = 'block';
-                    } else {
-                        currentAddressName = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
-                        currentHierarchy = { 
-                            lieu: "Position GPS", 
-                            quartier: "Non détecté", 
-                            arrondissement: "Douala", 
-                            mairie: "CUD",
-                            commune: "Douala",
-                            region: "Littoral",
-                            pays: "Cameroun",
-                            fullAddress: currentAddressName 
-                        };
-                        
-                        locationDiv.innerHTML = `✅ GPS OK (adresse approximative)`;
-                        locationDiv.className = 'location-status location-success';
-                        gpsTimerDiv.innerHTML = "✓ GPS OK !";
-                        document.getElementById('exactAddress').innerHTML = `📍 ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
-                        document.getElementById('hierarchyInfo').innerHTML = `🏘️ Non détecté | 🏛️ CUD | Douala`;
-                        document.getElementById('coordsDisplay').innerHTML = `📐 Lat: ${latitude.toFixed(6)} | Lng: ${longitude.toFixed(6)}`;
-                        addressCard.style.display = 'block';
-                    }
-                    
-                    sendBtn.disabled = false;
-                    sendBtn.innerText = '📨 ENVOYER LE SIGNALEMENT';
-                },
-                (error) => {
-                    let errorMessage = "";
-                    switch(error.code) {
-                        case error.PERMISSION_DENIED:
-                            errorMessage = "⛔ GPS REFUSÉ - Impossible d'envoyer le signalement. Activez la localisation.";
-                            geoPermissionDenied = true;
-                            geoPermissionGranted = false;
-                            geoReady = false;
-                            break;
-                        case error.POSITION_UNAVAILABLE:
-                            errorMessage = "⚠️ GPS non disponible - Réessayez ou autorisez la localisation.";
-                            break;
-                        case error.TIMEOUT:
-                            errorMessage = "⚠️ Délai GPS dépassé - Réessayez.";
-                            break;
-                        default:
-                            errorMessage = "⚠️ Erreur GPS - Réessayez.";
-                    }
-                    locationDiv.innerHTML = errorMessage;
-                    locationDiv.className = 'location-status location-error';
-                    
-                    sendBtn.disabled = true;
-                    sendBtn.innerText = '⛔ GPS NÉCESSAIRE - ACTIVEZ LA LOCALISATION';
-                    
-                    const retryBtn = document.createElement('button');
-                    retryBtn.innerText = '🔄 RÉESSAYER GPS';
-                    retryBtn.style.cssText = 'margin-top: 10px; padding: 6px 15px; background: #00d2ff; border: none; border-radius: 8px; cursor: pointer; font-size: 0.7rem; color: white;';
-                    retryBtn.onclick = function() {
-                        locationDiv.innerHTML = '📍 Nouvelle tentative GPS...';
-                        locationDiv.className = 'location-status location-pending';
-                        this.remove();
-                        if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
-                        if (gpsTimeout) clearTimeout(gpsTimeout);
-                        initGeolocation();
-                    };
-                    locationDiv.appendChild(retryBtn);
-                    
-                    if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
-                    if (gpsTimeout) clearTimeout(gpsTimeout);
-                    gpsTimerDiv.innerHTML = "";
-                },
-                { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
-            );
-            
-            gpsTimeout = setTimeout(() => {
-                if (!geoReady && gpsWatchId) {
-                    navigator.geolocation.clearWatch(gpsWatchId);
-                    locationDiv.innerHTML = "⏰ Délai GPS dépassé - Activez la localisation pour envoyer.";
-                    locationDiv.className = 'location-status location-error';
-                    gpsTimerDiv.innerHTML = "⚠️ GPS nécessaire";
-                    sendBtn.disabled = true;
-                    sendBtn.innerText = '⛔ GPS NÉCESSAIRE - ACTIVEZ LA LOCALISATION';
-                }
-            }, 30000);
+            sendBtn.innerText = '⛔ GPS INDISPENSABLE';
+            return;
         }
+        
+        locationDiv.innerHTML = '📍 Activation GPS obligatoire... (60s max)';
+        locationDiv.className = 'location-status location-pending';
+        gpsTimerDiv.innerHTML = '';
+        
+        let startTime = Date.now();
+        const timerInterval = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const remaining = 60 - elapsed;
+            if (remaining > 0 && !gpsReady) {
+                gpsTimerDiv.innerHTML = `⏱️ Temps restant: ${remaining}s`;
+            } else if (remaining <= 0 && !gpsReady) {
+                gpsTimerDiv.innerHTML = "⏰ Délai dépassé - Vérifiez votre GPS";
+                clearInterval(timerInterval);
+            } else if (gpsReady) {
+                gpsTimerDiv.innerHTML = "✓ GPS OK - Vous pouvez envoyer";
+                clearInterval(timerInterval);
+            }
+        }, 1000);
+        
+        gpsWatchId = navigator.geolocation.watchPosition(
+            function(position) {
+                const { latitude, longitude, accuracy } = position.coords;
+                currentUserLocation = { lat: latitude, lng: longitude, accuracy };
+                gpsReady = true;
+                gpsPermissionDenied = false;
+                
+                if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
+                if (gpsTimeout) clearTimeout(gpsTimeout);
+                clearInterval(timerInterval);
+                
+                locationDiv.innerHTML = `✅ GPS activé (précision ${Math.round(accuracy)}m)`;
+                locationDiv.className = 'location-status location-success';
+                gpsTimerDiv.innerHTML = "✓ GPS OK";
+                
+                // ACTIVER LE BOUTON
+                sendBtn.disabled = false;
+                sendBtn.innerText = '📨 ENVOYER LE SIGNALEMENT';
+                
+                // Récupération adresse
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data && data.display_name) {
+                            currentAddressName = data.display_name;
+                            document.getElementById('exactAddress').innerHTML = `📍 ${data.display_name.substring(0, 80)}...`;
+                            addressCard.style.display = 'block';
+                            
+                            // Extraction du quartier approximatif
+                            let quartierTrouve = "Non détecté";
+                            const quartiers = ["Akwa", "New Bell", "Deido", "Bonabéri", "Ndokoti", "Logpom", "Village", "Logbaba", "Bonanjo", "Bonamoussadi", "Kotto", "Makepe", "Bali", "Nylon"];
+                            for (let q of quartiers) {
+                                if (data.display_name.toLowerCase().includes(q.toLowerCase())) {
+                                    quartierTrouve = q;
+                                    break;
+                                }
+                            }
+                            document.getElementById('hierarchyInfo').innerHTML = `🏘️ Quartier: ${quartierTrouve}`;
+                            document.getElementById('coordsDisplay').innerHTML = `📐 ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+                        }
+                    })
+                    .catch(err => console.log("Erreur adresse:", err));
+            },
+            function(error) {
+                let errorMessage = "";
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMessage = "⛔ GPS REFUSÉ - Activez la localisation pour envoyer";
+                        gpsPermissionDenied = true;
+                        showActivationHelp();
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMessage = "⚠️ GPS non disponible - Vérifiez votre connexion";
+                        break;
+                    case error.TIMEOUT:
+                        errorMessage = "⚠️ Délai GPS dépassé - Réessayez";
+                        break;
+                    default:
+                        errorMessage = "⚠️ Erreur GPS - Réessayez";
+                }
+                locationDiv.innerHTML = errorMessage;
+                locationDiv.className = 'location-status location-error';
+                gpsTimerDiv.innerHTML = "";
+                clearInterval(timerInterval);
+                
+                // BOUTON RESTE DÉSACTIVÉ
+                sendBtn.disabled = true;
+                sendBtn.innerText = '⛔ GPS NÉCESSAIRE';
+            },
+            { enableHighAccuracy: true, timeout: 60000, maximumAge: 5000 }
+        );
+        
+        gpsTimeout = setTimeout(() => {
+            if (!gpsReady && gpsWatchId) {
+                navigator.geolocation.clearWatch(gpsWatchId);
+                locationDiv.innerHTML = "⏰ Délai dépassé - Activez la localisation";
+                locationDiv.className = 'location-status location-error';
+                gpsTimerDiv.innerHTML = "❌ GPS nécessaire";
+                sendBtn.disabled = true;
+                sendBtn.innerText = '⛔ GPS INDISPENSABLE';
+            }
+        }, 60000);
+    }
 
-        // ==================== AJOUT DES INFOS DE LOCALISATION SUR LA PHOTO ====================
-        async function addGpsInfoToPhoto(originalBase64) {
-            return new Promise((resolve) => {
+    function showActivationHelp() {
+        const locationDiv = document.getElementById('locationStatus');
+        const existingBtn = document.getElementById('enableGpsBtn');
+        if (existingBtn) existingBtn.remove();
+        
+        const helpHtml = `
+            <div style="margin-top: 10px; padding: 12px; background: rgba(0,0,0,0.6); border-radius: 12px;">
+                <div style="font-size: 0.75rem; color: #ff9100; margin-bottom: 8px;">📱 COMMENT ACTIVER LA LOCALISATION :</div>
+                <div style="font-size: 0.7rem; color: #cbd5e1; margin-bottom: 10px;">
+                    • <strong>Android</strong> : Paramètres → Apps → Navigateur → Permissions → Localisation → Autoriser<br>
+                    • <strong>iPhone</strong> : Réglages → Confidentialité → Localisation → Navigateur → Toujours<br>
+                    • <strong>Ordinateur</strong> : Cliquez sur l'icône 🔒 dans la barre d'adresse → Autoriser la localisation
+                </div>
+                <button id="enableGpsBtn" style="background: #00d2ff; color: black; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-weight: bold; width: 100%;">
+                    🔄 RÉESSAYER LA LOCALISATION
+                </button>
+            </div>
+        `;
+        locationDiv.insertAdjacentHTML('beforeend', helpHtml);
+        document.getElementById('enableGpsBtn')?.addEventListener('click', () => {
+            locationDiv.innerHTML = '📍 Nouvelle tentative GPS...';
+            locationDiv.className = 'location-status location-pending';
+            if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
+            if (gpsTimeout) clearTimeout(gpsTimeout);
+            initGeolocation();
+        });
+    }
+
+    // ==================== PHOTOS RAPIDES ====================
+    let isProcessingPhoto = false;
+
+    window.handleFiles = async function(input) {
+        const files = Array.from(input.files);
+        if (files.length === 0) return;
+        
+        if (isProcessingPhoto) {
+            alert("⏳ Traitement en cours...");
+            input.value = '';
+            return;
+        }
+        
+        isProcessingPhoto = true;
+        const photoStatus = document.getElementById("photoStatusText");
+        photoStatus.innerText = "⌛ Compression...";
+        
+        for (let file of files) {
+            if (photosArray.length >= 3) {
+                alert("Maximum 3 photos");
+                break;
+            }
+            if (file.type.startsWith('image/')) {
+                const compressed = await compressImageFast(file);
+                photosArray.push(compressed);
+            }
+        }
+        
+        renderGalleryFast();
+        const count = photosArray.length;
+        document.getElementById('photoCount').innerText = count > 0 ? `${count} photo(s)` : '';
+        photoStatus.innerText = count > 0 ? `✅ ${count} photo(s)` : "📷 PRENDRE UNE PHOTO";
+        
+        const photoWrapperDiv = document.getElementById('photoWrapper');
+        if (count > 0) {
+            photoWrapperDiv.classList.remove('required');
+            document.getElementById('photoErrorMessage').style.display = 'none';
+        } else {
+            photoWrapperDiv.classList.add('required');
+        }
+        
+        input.value = '';
+        isProcessingPhoto = false;
+    };
+
+    function compressImageFast(file) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (e) => {
                 const img = new Image();
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
+                    let width = img.width, height = img.height;
+                    const MAX_SIZE = 800;
+                    if (width > height) {
+                        if (width > MAX_SIZE) { height = (height * MAX_SIZE) / width; width = MAX_SIZE; }
+                    } else {
+                        if (height > MAX_SIZE) { width = (width * MAX_SIZE) / height; height = MAX_SIZE; }
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
                     const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    
-                    const now = new Date();
-                    const dateStr = now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                    const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                    
-                    const textZoneHeight = 220;
-                    
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
-                    ctx.fillRect(0, canvas.height - textZoneHeight, canvas.width, textZoneHeight);
-                    
-                    ctx.strokeStyle = '#39ff14';
-                    ctx.lineWidth = 3;
-                    ctx.strokeRect(5, canvas.height - textZoneHeight + 5, canvas.width - 10, textZoneHeight - 10);
-                    
-                    const fontSizeBig = Math.max(20, Math.floor(canvas.width / 22));
-                    const fontSizeMedium = Math.max(16, Math.floor(canvas.width / 28));
-                    const fontSizeSmall = Math.max(13, Math.floor(canvas.width / 35));
-                    
-                    let yOffset = canvas.height - textZoneHeight + 22;
-                    
-                    ctx.font = `bold ${fontSizeBig}px "Courier New", monospace`;
-                    ctx.fillStyle = '#39ff14';
-                    ctx.fillText(`📅 ${dateStr}  |  ⏰ ${timeStr}`, 12, yOffset);
-                    yOffset += fontSizeBig + 8;
-                    
-                    if (currentHierarchy && currentHierarchy.quartier && currentHierarchy.quartier !== "Non détecté") {
-                        ctx.font = `bold ${fontSizeMedium}px "Courier New", monospace`;
-                        ctx.fillStyle = '#bc13fe';
-                        let quartierText = `🏘️ QUARTIER : ${currentHierarchy.quartier}`;
-                        if (quartierText.length > 50) quartierText = quartierText.substring(0, 47) + "...";
-                        ctx.fillText(quartierText, 12, yOffset);
-                        yOffset += fontSizeMedium + 6;
-                    }
-                    
-                    if (currentHierarchy && currentHierarchy.mairie) {
-                        ctx.font = `${fontSizeMedium}px "Courier New", monospace`;
-                        ctx.fillStyle = '#ff9100';
-                        let mairieText = `🏛️ MAIRIE : ${currentHierarchy.mairie}`;
-                        if (mairieText.length > 55) mairieText = mairieText.substring(0, 52) + "...";
-                        ctx.fillText(mairieText, 12, yOffset);
-                        yOffset += fontSizeMedium + 6;
-                    }
-                    
-                    if (currentHierarchy && currentHierarchy.arrondissement) {
-                        ctx.font = `${fontSizeMedium}px "Courier New", monospace`;
-                        ctx.fillStyle = '#00d2ff';
-                        ctx.fillText(`🗺️ ARRONDISSEMENT : ${currentHierarchy.arrondissement}`, 12, yOffset);
-                        yOffset += fontSizeMedium + 6;
-                    }
-                    
-                    if (currentHierarchy && currentHierarchy.commune) {
-                        ctx.font = `${fontSizeSmall}px "Courier New", monospace`;
-                        ctx.fillStyle = '#39ff14';
-                        ctx.fillText(`🏙️ VILLE : ${currentHierarchy.commune}`, 12, yOffset);
-                        yOffset += fontSizeSmall + 6;
-                    }
-                    
-                    if (currentHierarchy && currentHierarchy.region) {
-                        ctx.font = `${fontSizeSmall}px "Courier New", monospace`;
-                        ctx.fillStyle = '#ffffff';
-                        ctx.fillText(`📌 RÉGION : ${currentHierarchy.region}`, 12, yOffset);
-                        yOffset += fontSizeSmall + 6;
-                    }
-                    
-                    if (currentHierarchy && currentHierarchy.pays) {
-                        ctx.font = `${fontSizeSmall}px "Courier New", monospace`;
-                        ctx.fillStyle = '#ffffff';
-                        ctx.fillText(`🌍 PAYS : ${currentHierarchy.pays}`, 12, yOffset);
-                        yOffset += fontSizeSmall + 6;
-                    }
-                    
-                    if (currentUserLocation) {
-                        ctx.font = `bold ${fontSizeSmall}px "Courier New", monospace`;
-                        ctx.fillStyle = '#cbd5e1';
-                        ctx.fillText(`📍 GPS : ${currentUserLocation.lat.toFixed(6)}°, ${currentUserLocation.lng.toFixed(6)}°`, 12, yOffset);
-                    }
-                    
-                    const finalDataUrl = canvas.toDataURL('image/jpeg', 0.9);
-                    resolve(finalDataUrl);
+                    ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.7));
                 };
-                img.src = originalBase64;
-            });
-        }
-
-        // ==================== GESTION DES FICHIERS PHOTOS ====================
-        window.handleFiles = async function(input) {
-            const files = Array.from(input.files);
-            if (files.length === 0) return;
-            
-            const photoStatus = document.getElementById("photoStatusText");
-            photoStatus.innerText = "⌛ Ajout des informations de localisation sur la photo...";
-            
-            for (let file of files) {
-                if (photosArray.length >= 5) {
-                    alert("Maximum 5 photos autorisées.");
-                    break;
-                }
-                
-                if (file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    const base64 = await new Promise((resolve) => {
-                        reader.onload = (ev) => resolve(ev.target.result);
-                        reader.readAsDataURL(file);
-                    });
-                    
-                    const photoWithGps = await addGpsInfoToPhoto(base64);
-                    photosArray.push(photoWithGps);
-                }
-            }
-            
-            renderGallery();
-            const count = photosArray.length;
-            document.getElementById('photoCount').innerText = count > 0 ? `${count} photo(s) - Localisation incluse` : '';
-            photoStatus.innerText = count > 0 ? `✅ ${count} photo(s) - Quartier, Mairie, Arrondissement, Ville, Région, Pays visibles` : "📷 PRENDRE UNE PHOTO";
-            
-            const photoWrapperDiv = document.getElementById('photoWrapper');
-            if (count > 0) {
-                photoWrapperDiv.classList.remove('required');
-                document.getElementById('photoErrorMessage').style.display = 'none';
-            } else {
-                photoWrapperDiv.classList.add('required');
-            }
-            
-            input.value = '';
-        };
-
-        function renderGallery() {
-            const preview = document.getElementById("galleryPreview");
-            if (!preview) return;
-            preview.innerHTML = "";
-            photosArray.forEach((src, index) => {
-                const container = document.createElement("div");
-                container.className = "thumb-container";
-                container.innerHTML = `
-                    <img src="${src}" class="img-thumb">
-                    <div class="remove-badge" onclick="removePhoto(${index}, event)">×</div>
-                `;
-                preview.appendChild(container);
-            });
-        }
-
-        window.removePhoto = function(index, event) {
-            event.stopPropagation();
-            photosArray.splice(index, 1);
-            renderGallery();
-            const count = photosArray.length;
-            document.getElementById('photoCount').innerText = count > 0 ? `${count} photo(s) - Localisation incluse` : '';
-            const photoStatus = document.getElementById("photoStatusText");
-            photoStatus.innerText = count > 0 ? `✅ ${count} photo(s) - Localisation visible` : "📷 PRENDRE UNE PHOTO";
-            
-            const photoWrapperDiv = document.getElementById('photoWrapper');
-            if (count === 0) {
-                photoWrapperDiv.classList.add('required');
-            } else {
-                photoWrapperDiv.classList.remove('required');
-            }
-        };
-
-        document.getElementById('photoWrapper').addEventListener('click', function(e) {
-            if (e.target.classList && e.target.classList.contains('remove-badge')) return;
-            document.getElementById('citPhoto').click();
-        });
-
-        // ==================== ENVOI DU SIGNALEMENT ====================
-        window.sendToDashboard = async function() {
-            if (!geoReady || geoPermissionDenied || currentUserLocation === null) {
-                const locationDiv = document.getElementById('locationStatus');
-                locationDiv.innerHTML = '⛔ GPS OBLIGATOIRE - ACTIVEZ LA LOCALISATION POUR ENVOYER';
-                locationDiv.className = 'location-status location-error';
-                locationDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                
-                const btn = document.getElementById('sendBtn');
-                btn.disabled = true;
-                btn.innerText = '⛔ GPS NÉCESSAIRE';
-                setTimeout(() => {
-                    btn.disabled = false;
-                    btn.innerText = '📨 ENVOYER LE SIGNALEMENT';
-                }, 5000);
-                return;
-            }
-            
-            const name = document.getElementById("citName").value.trim();
-            const rawPhone = document.getElementById("citPhone").value.trim();
-            const q = document.getElementById("citQuartier").value.trim();
-            const loc = document.getElementById("citLoc").value.trim();
-            const type = document.getElementById("citLvl").value;
-            const desc = document.getElementById("citDesc").value.trim();
-            const btn = document.getElementById("sendBtn");
-            const successDiv = document.getElementById("successMessage");
-            const errorDiv = document.getElementById("photoErrorMessage");
-            
-            if (photosArray.length === 0) {
-                const photoWrapperDiv = document.getElementById('photoWrapper');
-                photoWrapperDiv.classList.add('required');
-                errorDiv.innerHTML = "❌ La photo est obligatoire ! Veuillez prendre au moins une photo.";
-                errorDiv.style.display = 'block';
-                photoWrapperDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                return;
-            }
-            
-            if (!rawPhone || rawPhone.length !== 9 || !rawPhone.startsWith('6')) {
-                alert("❌ Veuillez entrer un numéro de téléphone valide (9 chiffres commençant par 6)");
-                return;
-            }
-            
-            if (!name || !q || !loc || !type) {
-                alert("❌ Veuillez remplir tous les champs obligatoires");
-                return;
-            }
-            
-            const phone = "+237" + rawPhone;
-            btn.disabled = true;
-            btn.innerText = "⏳ ENVOI EN COURS...";
-            
-            savePhone(rawPhone);
-            
-            let finalAddress = currentAddressName || (currentHierarchy ? currentHierarchy.fullAddress : "Localisation non disponible");
-            let finalLat = currentUserLocation?.lat;
-            let finalLng = currentUserLocation?.lng;
-            let finalQuartier = currentHierarchy?.quartier || "";
-            let finalArrondissement = currentHierarchy?.arrondissement || "";
-            let finalMairie = currentHierarchy?.mairie || "";
-            let finalLieu = currentHierarchy?.lieu || "";
-            let finalCommune = currentHierarchy?.commune || "";
-            let finalRegion = currentHierarchy?.region || "";
-            let finalPays = currentHierarchy?.pays || "";
-            
-            const id = Date.now();
-            
-            const report = {
-                id: id,
-                name: name,
-                phone: phone,
-                q: q,
-                loc: loc,
-                type: type,
-                description: desc,
-                photos: photosArray,
-                status: "En attente",
-                time: new Date().toLocaleTimeString('fr-FR'),
-                date: new Date().toLocaleDateString('fr-FR'),
-                timestamp: new Date().toISOString(),
-                userLat: finalLat,
-                userLng: finalLng,
-                userAddress: finalAddress,
-                gpsQuartier: finalQuartier,
-                gpsArrondissement: finalArrondissement,
-                gpsMairie: finalMairie,
-                gpsLieu: finalLieu,
-                gpsCommune: finalCommune,
-                gpsRegion: finalRegion,
-                gpsPays: finalPays,
-                locationSource: "gps",
-                locationAuthorized: true
+                img.src = e.target.result;
             };
-            
-            saveReportLocally(report);
-            
-            try {
-                await db_online.ref('reports/' + id).set(report);
-                
-                successDiv.innerHTML = `
-                    ✓ Signalement envoyé avec succès !<br><br>
-                    🎉 Les services techniques spécialisés vous remercient pour votre civisme !<br>
-                    📍 Une équipe sera dépêchée dans les plus brefs délais.<br>
-                    🔔 Vous pouvez suivre l'évolution dans l'onglet "MES SIGNALEMENTS"<br><br>
-                    👆 <strong>Touchez l'écran pour continuer</strong>
-                `;
-                successDiv.style.display = "block";
-                btn.innerText = "✓ ENVOYÉ !";
-                btn.disabled = true;
-                
-                function dismissMessage() {
-                    resetForm();
-                    successDiv.style.display = "none";
-                    btn.disabled = false;
-                    btn.innerText = "📨 ENVOYER LE SIGNALEMENT";
-                    document.removeEventListener('click', dismissMessage);
-                    document.removeEventListener('touchstart', dismissMessage);
-                }
-                
-                document.addEventListener('click', dismissMessage);
-                document.addEventListener('touchstart', dismissMessage);
-                
-            } catch (error) {
-                console.error("Erreur Firebase:", error);
-                successDiv.innerHTML = `
-                    ⚠️ Signalement sauvegardé localement !<br><br>
-                    📱 Il sera synchronisé automatiquement quand la connexion sera rétablie.<br>
-                    🔔 Vous pouvez déjà le suivre dans l'onglet "MES SIGNALEMENTS"<br><br>
-                    👆 <strong>Touchez l'écran pour continuer</strong>
-                `;
-                successDiv.style.display = "block";
-                btn.innerText = "💾 SAUVEGARDÉ LOCALEMENT";
-                btn.disabled = true;
-                
-                function dismissMessage() {
-                    resetForm();
-                    successDiv.style.display = "none";
-                    btn.disabled = false;
-                    btn.innerText = "📨 ENVOYER LE SIGNALEMENT";
-                    document.removeEventListener('click', dismissMessage);
-                    document.removeEventListener('touchstart', dismissMessage);
-                }
-                
-                document.addEventListener('click', dismissMessage);
-                document.addEventListener('touchstart', dismissMessage);
-            }
-        };
+        });
+    }
 
-        // ==================== RESET FORM ====================
-        function resetForm() {
-            document.getElementById("citName").value = "";
-            document.getElementById("citPhone").value = "";
-            document.getElementById("citQuartier").value = "";
-            document.getElementById("citLoc").value = "";
-            document.getElementById("citDesc").value = "";
-            document.getElementById("citLvl").value = "Poubelle qui déborde";
-            photosArray = [];
-            renderGallery();
-            document.getElementById('photoCount').innerText = '';
-            const photoStatus = document.getElementById("photoStatusText");
-            if (photoStatus) photoStatus.innerText = "📷 PRENDRE UNE PHOTO";
-            document.getElementById('photoWrapper').classList.add('required');
-            document.getElementById('photoErrorMessage').style.display = 'none';
-            
-            geoPermissionGranted = false;
-            geoPermissionDenied = false;
-            geoReady = false;
-            currentUserLocation = null;
-            currentHierarchy = null;
-            currentAddressName = null;
-            
-            document.getElementById('locationStatus').innerHTML = '📍 Récupération GPS obligatoire...';
-            document.getElementById('locationStatus').className = 'location-status location-pending';
-            document.getElementById('locationAddressCard').style.display = 'none';
-            document.getElementById('gpsTimer').innerHTML = '';
-            
-            document.getElementById('sendBtn').disabled = true;
-            document.getElementById('sendBtn').innerText = '⏳ ATTENTE GPS OBLIGATOIRE...';
-            
-            if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
-            if (gpsTimeout) clearTimeout(gpsTimeout);
-            setTimeout(initGeolocation, 500);
-        }
+    function renderGalleryFast() {
+        const preview = document.getElementById("galleryPreview");
+        if (!preview) return;
+        preview.innerHTML = "";
+        photosArray.forEach((src, index) => {
+            const container = document.createElement("div");
+            container.className = "thumb-container";
+            container.innerHTML = `<img src="${src}" class="img-thumb"><div class="remove-badge" onclick="removePhotoFast(${index}, event)">×</div>`;
+            preview.appendChild(container);
+        });
+    }
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
+    window.removePhotoFast = function(index, event) {
+        event.stopPropagation();
+        photosArray.splice(index, 1);
+        renderGalleryFast();
+        const count = photosArray.length;
+        document.getElementById('photoCount').innerText = count > 0 ? `${count} photo(s)` : '';
+        document.getElementById("photoStatusText").innerText = count > 0 ? `✅ ${count} photo(s)` : "📷 PRENDRE UNE PHOTO";
+        const photoWrapperDiv = document.getElementById('photoWrapper');
+        if (count === 0) photoWrapperDiv.classList.add('required');
+        else photoWrapperDiv.classList.remove('required');
+    };
+
+    document.getElementById('photoWrapper')?.addEventListener('click', function(e) {
+        if (e.target.classList && e.target.classList.contains('remove-badge')) return;
+        document.getElementById('citPhoto').click();
+    });
+
+    // ==================== ENVOI (UNIQUEMENT SI GPS OK) ====================
+    // ==================== ENVOI CORRIGÉ ====================
+window.sendToDashboard = async function() {
+    const btn = document.getElementById("sendBtn");
+    const successDiv = document.getElementById("successMessage");
+    const errorDiv = document.getElementById("photoErrorMessage");
+    
+    // VÉRIFICATION GPS OBLIGATOIRE
+    if (!gpsReady || !currentUserLocation) {
+        const locationDiv = document.getElementById('locationStatus');
+        locationDiv.innerHTML = '⛔ GPS OBLIGATOIRE - Activez la localisation';
+        locationDiv.className = 'location-status location-error';
+        locationDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        alert("📡 Veuillez activer la localisation pour envoyer un signalement");
+        return;
+    }
+    
+    // Éviter les doubles envois
+    if (btn.disabled && btn.innerText === "⏳ ENVOI...") return;
+    
+    btn.disabled = true;
+    btn.innerText = "⏳ ENVOI...";
+    
+    const name = document.getElementById("citName").value.trim();
+    const rawPhone = document.getElementById("citPhone").value.trim();
+    const q = document.getElementById("citQuartier").value.trim();
+    const loc = document.getElementById("citLoc").value.trim();
+    const type = document.getElementById("citLvl").value;
+    const desc = document.getElementById("citDesc").value.trim();
+    
+    // Validation photo
+    if (photosArray.length === 0) {
+        document.getElementById('photoWrapper').classList.add('required');
+        errorDiv.innerHTML = "❌ Photo obligatoire !";
+        errorDiv.style.display = 'block';
+        btn.disabled = false;
+        btn.innerText = "📨 ENVOYER";
+        setTimeout(() => errorDiv.style.display = 'none', 2000);
+        return;
+    }
+    
+    // Validation téléphone
+    if (!rawPhone || rawPhone.length !== 9 || !rawPhone.startsWith('6')) {
+        alert("❌ Numéro invalide (9 chiffres, commence par 6)");
+        btn.disabled = false;
+        btn.innerText = "📨 ENVOYER";
+        return;
+    }
+    
+    // Validation champs
+    if (!name || !q || !loc) {
+        alert("❌ Remplissez tous les champs");
+        btn.disabled = false;
+        btn.innerText = "📨 ENVOYER";
+        return;
+    }
+    
+    const phone = "+237" + rawPhone;
+    savePhone(rawPhone);
+    
+    // CORRECTION IMPORTANTE: Utiliser push() au lieu de set() avec un ID fixe
+    // pour que l'admin puisse écouter correctement
+    const newReportRef = db_online.ref('reports').push();
+    const reportId = newReportRef.key;
+    
+    const report = {
+        id: reportId,
+        name: name,
+        phone: phone,
+        q: q,
+        loc: loc,
+        type: type,
+        description: desc.substring(0, 200),
+        photos: photosArray.slice(0, 3),
+        status: "En attente",
+        time: new Date().toLocaleTimeString('fr-FR'),
+        date: new Date().toLocaleDateString('fr-FR'),
+        timestamp: new Date().toISOString(),
+        userLat: currentUserLocation.lat,
+        userLng: currentUserLocation.lng,
+        userAddress: currentAddressName || `Lat: ${currentUserLocation.lat.toFixed(6)}, Lng: ${currentUserLocation.lng.toFixed(6)}`,
+        locationSource: "gps",
+        locationAuthorized: true
+    };
+    
+    // Sauvegarde locale
+    saveReportLocally(report);
+    
+    // Message succès immédiat
+    successDiv.innerHTML = "✅ Signalement envoyé ! Merci pour votre civisme !";
+    successDiv.style.display = "block";
+    btn.innerText = "✓ ENVOYÉ !";
+    
+    // CORRECTION: Envoyer à Firebase avec push()
+    try {
+        await newReportRef.set(report);
+        console.log("✅ Signalement envoyé à Firebase, ID:", reportId);
+    } catch(error) {
+        console.warn("⚠️ Firebase hors ligne, sauvegarde locale uniquement:", error);
+        // Déjà sauvegardé localement
+    }
+    
+    // Réinitialisation
+    setTimeout(() => {
+        resetForm();
+        successDiv.style.display = "none";
+        btn.disabled = false;
+        btn.innerText = "📨 ENVOYER";
+    }, 2000);
+};
+
+    function resetForm() {
+        document.getElementById("citName").value = "";
+        document.getElementById("citPhone").value = "";
+        document.getElementById("citQuartier").value = "";
+        document.getElementById("citLoc").value = "";
+        document.getElementById("citDesc").value = "";
+        document.getElementById("citLvl").value = "Poubelle qui déborde";
+        photosArray = [];
+        renderGalleryFast();
+        document.getElementById('photoCount').innerText = '';
+        document.getElementById("photoStatusText").innerText = "📷 PRENDRE UNE PHOTO";
+        document.getElementById('photoWrapper').classList.add('required');
+        document.getElementById('photoErrorMessage').style.display = 'none';
+        
+        gpsReady = false;
+        currentUserLocation = null;
+        currentAddressName = null;
+        
+        document.getElementById('locationStatus').innerHTML = '📍 Activation GPS obligatoire... (60s max)';
+        document.getElementById('locationStatus').className = 'location-status location-pending';
+        document.getElementById('locationAddressCard').style.display = 'none';
+        document.getElementById('gpsTimer').innerHTML = '';
+        
+        if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
+        if (gpsTimeout) clearTimeout(gpsTimeout);
+        setTimeout(initGeolocation, 500);
+    }
+
+    // ==================== CONFIGURATION BOUTON ====================
+    document.addEventListener('DOMContentLoaded', function() {
+        const sendBtn = document.getElementById('sendBtn');
+        if (sendBtn) {
+            sendBtn.removeAttribute('onclick');
+            sendBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                sendToDashboard();
             });
+            console.log("✅ Bouton ENVOYER configuré");
         }
+        
+        // Configurer les filtres
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const text = this.textContent;
+                if (text.includes('Tous')) setFilter('ALL');
+                else if (text.includes('Attente')) setFilter('En attente');
+                else if (text.includes('Vu')) setFilter('Vu');
+                else if (text.includes('Traités')) setFilter('Traité');
+            });
+        });
+    });
 
-        // ==================== INITIALISATION ====================
-        window.showMainForm = showMainForm;
-        createParticles();
-    </script>
+    // ==================== INITIALISATION ====================
+    createParticles();
+</script>
 </body>
 </html>
